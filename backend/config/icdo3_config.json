@@ -1,0 +1,5 @@
+{
+  "csv_path": "data/diagnosis_codes/diagnosis-codes-list.csv",
+  "use_llm_extraction": true,
+  "fallback_to_patterns": true
+}

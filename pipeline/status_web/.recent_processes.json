@@ -1,0 +1,30 @@
+{
+  "sessions": [
+    {
+      "id": "8835d2d8-0f34-4419-a957-20271e43a903",
+      "started_at": "2026-02-03T16:01:36.855941"
+    },
+    {
+      "id": "6e7c7ac5-40b2-4578-acce-efa9a2ace064",
+      "started_at": "2026-02-03T14:38:40.308526",
+      "continued_task_id": "9af79da7-45be-4592-89ae-cde4dac8d2df",
+      "continued_at": "2026-02-03T14:43:51.574318"
+    },
+    {
+      "id": "f3546c30-467d-441c-a3f0-adc17d6511c5",
+      "started_at": "2026-02-03T13:51:35.624203",
+      "continued_task_id": "2496bfed-b35a-4ad8-a0a3-e8fb43206e17",
+      "continued_at": "2026-02-03T14:02:43.679005"
+    },
+    {
+      "id": "01d717f4-e857-414c-a4de-b3cf2937c5f6",
+      "started_at": "2026-02-03T13:36:12.005108",
+      "continued_task_id": "068ac200-8356-4f4f-9097-79a48876cbe2",
+      "continued_at": "2026-02-03T13:42:29.217097"
+    },
+    {
+      "id": "39c33a67-ef8f-4518-8d87-4585bc0b5ac3",
+      "started_at": "2026-02-03T13:17:20.448179"
+    }
+  ]
+}

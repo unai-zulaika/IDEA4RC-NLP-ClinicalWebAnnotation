@@ -1,0 +1,92 @@
+data/diagnosis_codes/diagnosis-codes-list.csv
+test_data/
+
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg
+
+# Node.js
+node_modules/
+.next/
+out/
+.npm
+.eslintcache
+.yarn/
+.pnp/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env*.local
+
+# Runtime data and sessions
+backend/sessions/
+backend/data/faiss_store/*.index
+backend/data/faiss_store/*.parquet
+backend/data/faiss_store/*.json
+!backend/data/faiss_store/.gitkeep
+
+# Large data files (keep structure, ignore large files)
+backend/data/fewshots.json
+backend/data/*.zip
+*.zip
+
+# Pipeline runtime data
+pipeline/api/*.db
+pipeline/api/results/
+pipeline/status_web/*.db
+
+# Test data (keep directory, ignore contents)
+test_data/*
+!test_data/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Docker
+.docker/
+
+# Standalone tools (development utilities)
+standalone_linking_tool/
+
+# Screenshots and misc
+*.png
+*.jpg
+*.jpeg
+
+# Keep directory structures
+!**/.gitkeep

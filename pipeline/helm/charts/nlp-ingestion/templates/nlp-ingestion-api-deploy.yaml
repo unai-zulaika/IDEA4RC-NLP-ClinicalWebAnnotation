@@ -1,0 +1,24 @@
+#Capsule Workbench Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.nlp-ingestion-api..name }}
+  namespace: {{ .Values.nlp-ingestion-api.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.nlp-ingestion-api.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.nlp-ingestion-api.name }}
+    spec:
+      containers:
+        - name: {{ .Values.nlp-ingestion-api.name }}
+          image: {{ .Values.nlp-ingestion-api.image }}
+          # env:
+          #   - name: BACK_END_BASE_PATH
+          #     value: "http://{{ .Values.etl.service.name }}.{{ .Values.etl.namespace }}.svc.cluster.local:{{ .Values.etl.service.port }}/"
+          # ports:
+          #   - containerPort: {{ .Values.nlp-ingestion-api.port }}

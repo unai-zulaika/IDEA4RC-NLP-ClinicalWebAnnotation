@@ -1,0 +1,38 @@
+version: "3.8"
+
+# Development override - use with: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  annotation-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data:ro
+      - annotation-sessions:/app/sessions
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
+
+  annotation-web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: ["npm", "run", "dev"]
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+
+  pipeline-api:
+    volumes:
+      - ./pipeline/api:/app
+      - ./data:/data/shared:ro
+    command: ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  pipeline-dashboard:
+    volumes:
+      - ./pipeline/status_web:/app
+    command: ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.runOnSave=true"]

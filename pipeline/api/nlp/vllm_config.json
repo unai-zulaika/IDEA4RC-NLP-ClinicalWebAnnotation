@@ -1,0 +1,7 @@
+{
+  "use_vllm": true,
+  "vllm_endpoint": "http://localhost:8000/v1",
+  "model_name": "unsloth/Llama-3.2-3B-Instruct-unsloth-bnb-4bit",
+  "batch_size": 8,
+  "timeout": 30
+}

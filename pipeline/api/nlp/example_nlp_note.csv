@@ -1,0 +1,5 @@
+﻿text;date;p_id;note_id;report_type
+Patient presented with progressive neck mass. CT neck w/ contrast shows 3.2 cm enhancing lesion at right tonsillar pillar. No airway compromise. Recommend ENT evaluation.;14/03/2024;101;1;radiology
+Pathology report: Biopsy from left maxillary sinus. Sections reveal poorly differentiated squamous cell carcinoma. p16 positive. Surgical margins not applicable.;15/03/2024;101;2;pathology
+Patient seen in oncology clinic today. Reports mild dysphagia and odynophagia. Weight stable. Plan to initiate cisplatin-based chemoradiotherapy. Labs within acceptable limits.;16/03/2024;101;3;consultation
+Operative note: Right partial pharyngectomy performed. Frozen section margins negative. Estimated blood loss 120 mL. Patient tolerated procedure well and transferred to PACU.;20/03/2024;101;4;surgery

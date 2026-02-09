@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.nlp-ingestion.api.name }}
+  namespace: {{ .Values.nlp-ingestion.namespace }}
+spec:
+  ports:
+    - port: {{ .Values.nlp-ingestion.api.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.nlp-ingestion.api.name }}

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -f docker-compose.yml
+      --chart
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: results-ui
+  name: results-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: results-ui
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -f docker-compose.yml
+          --chart
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/app-network: "true"
+        io.kompose.service: results-ui
+    spec:
+      containers:
+      - image: results-ui
+        imagePullPolicy: ""
+        name: results-ui
+        ports:
+        - containerPort: 80
+        resources: {}
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: results-public
+          readOnly: true
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: results-public
+        persistentVolumeClaim:
+          claimName: results-public
+          readOnly: true
+status: {}

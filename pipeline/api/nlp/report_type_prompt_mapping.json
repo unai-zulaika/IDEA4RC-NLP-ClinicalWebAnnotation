@@ -1,0 +1,55 @@
+{
+  "consultation": [
+    "gender-int",
+    "ageatdiagnosis-int",
+    "tumorsite-int",
+    "tumordiameter-int",
+    "tumordepth-int",
+    "histological-tipo-int",
+    "biopsygrading-int",
+    "tumorbiopsytype-int",
+    "stage_at_diagnosis-int",
+    "previous_cancer_treatment-int",
+    "occurrence_cancer-int"
+  ],
+  "radiology": [
+    "tumordiameter-int",
+    "tumordepth-int",
+    "tumorsite-int"
+  ],
+  "pathology": [
+    "histological-tipo-int",
+    "biopsygrading-int",
+    "biopsymitoticcount-int",
+    "necrosis_in_biopsy-int",
+    "tumorbiopsytype-int",
+    "surgical-specimen-grading-int",
+    "surgical-mitotic-count-int",
+    "necrosis_in_surgical-int"
+  ],
+  "staging": [
+    "stage_at_diagnosis-int"
+  ],
+  "surgery": [
+    "surgerytype-fs30-int",
+    "surgerymargins-int",
+    "reexcision-int",
+    "surgical-specimen-grading-int",
+    "surgical-mitotic-count-int",
+    "necrosis_in_surgical-int"
+  ],
+  "oncology": [
+    "chemotherapy_start-int",
+    "chemotherapy_end-int",
+    "radiotherapy_start-int",
+    "radiotherapy_end-int",
+    "response-to-int",
+    "patient-status-int"
+  ],
+  "follow-up": [
+    "patient-status-int",
+    "recur_or_prog-int",
+    "recurrencetype-int"
+  ]
+}
+
