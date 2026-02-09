@@ -1,0 +1,7 @@
+{
+  "use_vllm": true,
+  "vllm_endpoint": "http://localhost:8000/v1",
+  "model_name": "unsloth/medgemma-27b-text-it-unsloth-bnb-4bit",
+  "batch_size": 8,
+  "timeout": 150
+}

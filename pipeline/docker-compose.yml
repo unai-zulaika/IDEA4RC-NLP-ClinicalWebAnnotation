@@ -1,0 +1,39 @@
+version: "3.0"
+
+services:
+  backend:
+    build: { context: ./api }
+    container_name: api
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_PATH=/data/results/data
+    volumes:
+      - results-public:/data/results            # RW
+    networks: [ app-network ]
+
+  frontend:
+    build: { context: ./status_web }
+    container_name: streamlit
+    ports:
+      - "8501:8501"
+    depends_on: [ backend ]
+    networks: [ app-network ]
+
+  results_ui:
+    build: { context: ./results_ui }
+    container_name: results_ui
+    ports:
+      - "5173:80"
+    volumes:
+      - results-public:/usr/share/nginx/html:ro  # only dynamic content
+    depends_on: [ backend ]
+    networks: [ app-network ]
+
+volumes:
+  results-public:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

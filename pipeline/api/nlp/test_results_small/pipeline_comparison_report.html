@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Analysis Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .filters {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .filters input, .filters select {
+            margin: 5px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .note-card {
+            background-color: white;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .note-card.success {
+            border-left: 5px solid #27ae60;
+        }
+        .note-card.no-entities {
+            border-left: 5px solid #e74c3c;
+        }
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .note-id {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .entity-badge {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .entity-badge.success {
+            background-color: #27ae60;
+            color: white;
+        }
+        .entity-badge.no-entities {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .note-text {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 3px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .entities-section {
+            margin-top: 10px;
+        }
+        .entity-item {
+            padding: 5px 10px;
+            margin: 5px 0;
+            background-color: #e8f5e9;
+            border-radius: 3px;
+            border-left: 3px solid #27ae60;
+        }
+        .entity-variable {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .entity-value {
+            color: #555;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Pipeline Analysis Report</h1>
+        <p>Input texts vs extracted entities comparison</p>
+    </div>
+    
+    <div class="filters">
+        <input type="text" id="search-input" placeholder="Search by note_id, p_id, or report_type..." style="width: 300px;">
+        <select id="success-filter">
+            <option value="all">All Notes</option>
+            <option value="success">With Entities</option>
+            <option value="no-entities">No Entities</option>
+        </select>
+        <select id="report-type-filter">
+            <option value="all">All Report Types</option>
+        </select>
+    </div>
+    
+    <div id="notes-container"></div>
+    
+    <script>
+        const notes = [{"note_id":"P001_2018-03-15_consultation_1","p_id":"P001","note_date":"2018-03-15","report_type":"consultation","note_text_preview":"15 marzo 2018\n\nMotivo della visita:\nVisita presso il centro sarcomi per massa inguinale della coscia sinistra.\n\nAnamnesi e quadro clinico:\nPaziente femmina 34 anni, riferisce da circa 6 mesi comparsa ...","note_text":"15 marzo 2018\n\nMotivo della visita:\nVisita presso il centro sarcomi per massa inguinale della coscia sinistra.\n\nAnamnesi e quadro clinico:\nPaziente femmina 34 anni, riferisce da circa 6 mesi comparsa di una tumefazione in accrescimento della regione anteriore della coscia sinistra, inizialmente di piccole dimensioni e progressivamente aumentata. Lesione caratterizzata come indolore, consistente, senza segni di flogosi locale; assenza di febbre, perdita di peso o altre manifestazioni sistemiche. Secondo la documentazione in nostro possesso la lesione è stata classificata istologicamente come myxoid liposarcoma (ICD-O-3 8852\/3), grado FNCLCC 2.\n\nEsame obiettivo:\nAlla ispezione e palpazione si apprezza in regione anteriore della coscia sinistra massa solida stazionaria, del diametro clinico stimato in circa 110 mm (11 cm), non calda, non eritematosa, non dolorabile alla pressione. Non evidenti ulcerazioni cutanee. Funzione motoria degli arti inferiori conservata, sensibilità intatta, pedio palpabile bilateralmente. Stato generale buono; attività quotidiane mantenute.\n\nValutazione:\nSarcoma dei tessuti molli della coscia sinistra, istotipo myxoid liposarcoma, FNCLCC 2, massa di grandi dimensioni (>10 cm) localizzata nel compartimento anteriore. Necessaria stadiazione completa e valutazione multidisciplinare per definire sequenza terapeutica (considerare ruolo della radioterapia neoadiuvante in funzione dell'estensione e dei rapporti con strutture nobili).\n\nPiano terapeutico e indagini programmate:\n- RMN con mdc della coscia sinistra per valutare estensione intramuscolare, rapporto con femore e neuro-vascolar bundle; eseguirla preferibilmente entro 2 settimane (programmata in base a disponibilità).  \n- TC torace senza e con contrasto per staging polmonare (ricerca metastasi polmonari) da effettuarsi contestualmente alla RMN; considerare anche TC torace-thoraco addomino-pelvica se indicato.  \n- Revisione del materiale istologico\/biopsico presso la nostra anatomia patologica per conferma diagnostica e grading (documentazione inviata). Se non disponibile, eseguire core-biopsy ecoguidata\/TC-guidata.  \n- Discussione preliminare in MDT sarcoma non appena disponibili RMN\/TC e referto istologico confermato; obiettivi: definire indicazione a chirurgia conservativa con margini ampi versus neoadiuvante radioterapia per preservare funzione e ottenere resezione oncologicamente adeguata.  \n- Counseling preoperatorio e informazione su possibili opzioni terapeutiche, rischi e sequenza trattamento; valutare preservazione della fertilità in caso di trattamenti sistemici o radioterapici prolungati.  \n- Follow-up clinico in ambulatorio sarcoma dopo acquisizione esami di imaging e confronto in tumor board; contatto telefonico fissato per appuntamento successivo.\n\nConclusioni:\nReferto del 15\/03\/2018: paziente con myxoid liposarcoma della coscia sinistra, FNCLCC 2, massa stimata 11 cm, in buone condizioni generali. Staging radiologico e revisione istologica necessari; discussione multidisciplinare pianificata per definire strategia terapeutica (chirurgia ± radioterapia neoadiuvante).","entities_extracted":"[]","entity_count":0,"extraction_success":false},{"note_id":"P001_2018-03-22_radiology_2","p_id":"P001","note_date":"2018-03-22","report_type":"radiology","note_text_preview":"Esame: RMN coscia sinistra\nData: 22\/03\/2018\n\nMotivo dell’esame: massa in accrescimento nell’emitorace anteriore della coscia sinistra, riferita da circa 6 mesi.\n\nTecnica: RMN della coscia sinistra ese...","note_text":"Esame: RMN coscia sinistra\nData: 22\/03\/2018\n\nMotivo dell’esame: massa in accrescimento nell’emitorace anteriore della coscia sinistra, riferita da circa 6 mesi.\n\nTecnica: RMN della coscia sinistra eseguita il 22\/03\/2018 con sequenze ponderate T1, T2 e STIR nelle varie piani. Sequenze dinamiche\/contrasto non documentate nella richiesta.\n\nRisultati:\n- Nel compartimento anteriore della coscia sinistra si identifica una formazione profonda, ben delimitata, di interessamento intramuscolare, di dimensioni massime 110 mm in asse maggiore.\n- Lesione eterogenea con predominante componente a segnale mioide: iperintensa nelle sequenze T2\/STIR e a segnale intermedio\/basso in T1, con setti interni visibili e aree di differente intensità di segnale compatibili con componente mixoide.\n- Nei piani esaminati la massa si pone in contatto aderente con il pacchetto neurovascolare femorale anteriore sinistro, senza evidenza di avvolgimento o caratteri di invasione vascolare macroscopica (abutting, non encasement).\n- Non si mostrano evidenze di infiltrazione corticale ossea o di contiguità con il femore.\n- Non lesioni linfonodali loco-regionali evidenti nelle sequenze acquisite.\n\nConclusione:\nFormazione profonda del compartimento anteriore della coscia sinistra, 110 mm, morfologia e caratteristiche di segnale compatibili con lesione a componente mixoide (quadro compatibile con liposarcoma mixoide); margini ben definiti, setti interni. Lesione in stretto rapporto con il pacchetto neurovascolare femorale sinistro ma senza chiari segni di encasement o invasione ossea. Si consiglia stadiazione torace (TC torace) per valutazione metastatica e discussione multidisciplinare per pianificazione terapeutica e chirurgica, tenendo conto del rapporto con strutture neurovascolari.","entities_extracted":"[]","entity_count":0,"extraction_success":false},{"note_id":"P001_2018-03-30_pathology_3","p_id":"P001","note_date":"2018-03-30","report_type":"pathology","note_text_preview":"Referto anatomopatologico\nData prelievo: 30\/03\/2018\n\nPaziente: donna, 34 anni. Sede clinica: coscia sinistra, compartimento anteriore; massa nota da circa 6 mesi, dimensioni riportate alla RMN del 22\/...","note_text":"Referto anatomopatologico\nData prelievo: 30\/03\/2018\n\nPaziente: donna, 34 anni. Sede clinica: coscia sinistra, compartimento anteriore; massa nota da circa 6 mesi, dimensioni riportate alla RMN del 22\/03\/2018 circa 110 mm.\n\nMateriale inviato: biopsia core ecoguidata, campioni representativi.\n\nEsame microscopico: campioni costituiti da tessuto neoplastico a prevalente componente mixoide, con cellule fusate e adipocitare immature immerse in abbondante matrice mucoide. Si riconosce una componente cellulare a cellule rotonde\/primitive presente in quantità limitata nel materiale esaminato. Necrosi non significativa nel campione disponibile. Attività mitotica moderata nel contesto dei frammenti valutabili.\n\nDiagnosi: quadro compatibile con liposarcoma mixoide (ICD-O-3 8852\/3). Componente round-cell limitata. Grado FNCLCC provvisorio: 2 (intermedio) in base al materiale bioptico.\n\nCommento: il giudizio istologico e la gradazione sono provvisori in quanto la valutazione su biopsia core può sottostimare l'entità della componente round-cell e la presenza di necrosi\/mitosi diffuse; pertanto conferma e grado definitivo devono essere stabiliti sul pezzo chirurgico di resezione. La lesione è compatibile con primitivo della coscia sinistra come da riferimenti clinico-radiologici (RMN 22\/03\/2018). Si consiglia stadiazione per immagini (TC torace) prima di intervento e discussione in incontro multidisciplinare per pianificazione del trattamento terapeutico.","entities_extracted":"[]","entity_count":0,"extraction_success":false}];
+        
+        // Populate report type filter
+        const reportTypes = [...new Set(notes.map(n => n.report_type || 'N/A'))].sort();
+        const reportTypeFilter = document.getElementById('report-type-filter');
+        reportTypes.forEach(rt => {
+            const option = document.createElement('option');
+            option.value = rt;
+            option.textContent = rt;
+            reportTypeFilter.appendChild(option);
+        });
+        
+        function renderNotes(filteredNotes) {
+            const container = document.getElementById('notes-container');
+            container.innerHTML = '';
+            
+            filteredNotes.forEach(note => {
+                const card = document.createElement('div');
+                const hasEntities = note.entity_count > 0;
+                card.className = 'note-card ' + (hasEntities ? 'success' : 'no-entities');
+                
+                const entities = JSON.parse(note.entities_extracted || '[]');
+                const entitiesHtml = entities.map(e => `
+                    <div class="entity-item">
+                        <span class="entity-variable">${e.core_variable || 'N/A'}:</span>
+                        <span class="entity-value">${e.value || 'N/A'}</span>
+                    </div>
+                `).join('');
+                
+                card.innerHTML = `
+                    <div class="note-header">
+                        <div class="note-id">
+                            Note: ${note.note_id || 'N/A'} | Patient: ${note.p_id || 'N/A'} | Type: ${note.report_type || 'N/A'}
+                        </div>
+                        <div class="entity-badge ${hasEntities ? 'success' : 'no-entities'}">
+                            ${note.entity_count} entities
+                        </div>
+                    </div>
+                    <div class="note-text">${(note.note_text_preview || note.note_text || '[NO TEXT]').replace(/\n/g, '<br>')}</div>
+                    <div class="entities-section">
+                        <strong>Extracted Entities:</strong>
+                        ${entities.length > 0 ? entitiesHtml : '<div style="color: #999; font-style: italic;">No entities extracted</div>'}
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        function filterNotes() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const successFilter = document.getElementById('success-filter').value;
+            const reportTypeFilter = document.getElementById('report-type-filter').value;
+            
+            let filtered = notes.filter(note => {
+                const matchesSearch = !searchTerm || 
+                    (note.note_id && note.note_id.toString().toLowerCase().includes(searchTerm)) ||
+                    (note.p_id && note.p_id.toString().toLowerCase().includes(searchTerm)) ||
+                    (note.report_type && note.report_type.toLowerCase().includes(searchTerm));
+                
+                const matchesSuccessFilter = successFilter === 'all' ||
+                    (successFilter === 'success' && note.entity_count > 0) ||
+                    (successFilter === 'no-entities' && note.entity_count === 0);
+                
+                const matchesReportType = reportTypeFilter === 'all' || note.report_type === reportTypeFilter;
+                
+                return matchesSearch && matchesSuccessFilter && matchesReportType;
+            });
+            
+            renderNotes(filtered);
+        }
+        
+        document.getElementById('search-input').addEventListener('input', filterNotes);
+        document.getElementById('success-filter').addEventListener('change', filterNotes);
+        document.getElementById('report-type-filter').addEventListener('change', filterNotes);
+        
+        // Initial render
+        renderNotes(notes);
+    </script>
+</body>
+</html>

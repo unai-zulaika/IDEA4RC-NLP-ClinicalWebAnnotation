@@ -1,0 +1,14 @@
+patient_id,original_source,core_variable,date_ref,value,record_id,linked_to,quality,types,entity,icdo3_code
+TEST001,CGM.structured,Patient.sex,2023-06-15,8507,1,,,CodeableConcept,Patient,
+TEST001,CGM.structured,Patient.birthYear,2023-06-15,1965,1,,,Integer,Patient,
+TEST001,CGM.structured,CancerEpisode.patient,2023-06-15,TEST001,2,1,,reference,CancerEpisode,
+TEST001,CGM.structured,CancerEpisode.cancerStartDate,2023-06-15,2023-05-10,2,1,,date in the ISO format ISO8601,CancerEpisode,
+TEST001,CGM.structured,Diagnosis.cancerEpisode,2023-06-15,2,3,2,,reference,Diagnosis,
+TEST001,CGM.structured,Diagnosis.dateOfDiagnosis,2023-06-15,2023-06-15,3,2,,date in the ISO format ISO8601,Diagnosis,
+TEST001,CGM.structured,Diagnosis.ageAtDiagnosis,2023-06-15,58,3,2,,Integer,Diagnosis,
+TEST001,CGM.structured,EpisodeEvent.cancerEpisode,2023-07-15,2,4,2,,reference,EpisodeEvent,
+TEST001,CGM.structured,EpisodeEvent.diseaseStatus,2023-07-15,32947,4,2,,CodeableConcept,EpisodeEvent,
+TEST001,CGM.structured,Surgery.episodeEvent,2023-07-30,4,5,4,,reference,Surgery,
+TEST001,CGM.structured,Surgery.dateOfSurgery,2023-07-30,2023-07-30,5,4,,date in the ISO format ISO8601,Surgery,
+TEST001,NLP_LLM,Diagnosis.histologySubgroup,15/06/2023,Undifferentiated pleomorphic sarcoma ([8805/3]),6,2,,CodeableConcept,Diagnosis,8805/3-C32.0
+TEST001,NLP_LLM,Diagnosis.subsite,15/06/2023,Right thigh,6,2,,CodeableConcept,Diagnosis,8805/3-C32.0

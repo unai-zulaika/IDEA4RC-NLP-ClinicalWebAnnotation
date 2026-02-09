@@ -1,0 +1,56 @@
+[
+    {
+        "PatientID": "TEST001",
+        "Entity": "Patient1",
+        "Phase": "Diagnosis",
+        "Total": 2,
+        "Present": 2,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "TEST001",
+        "Entity": "CancerEpisode2",
+        "Phase": "Diagnosis",
+        "Total": 2,
+        "Present": 2,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "TEST001",
+        "Entity": "Diagnosis3",
+        "Phase": "Diagnosis",
+        "Total": 3,
+        "Present": 3,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "TEST001",
+        "Entity": "EpisodeEvent4",
+        "Phase": "Diagnosis",
+        "Total": 2,
+        "Present": 2,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "TEST001",
+        "Entity": "Surgery5",
+        "Phase": "Diagnosis",
+        "Total": 2,
+        "Present": 2,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "TEST001",
+        "Entity": "Diagnosis6",
+        "Phase": "Diagnosis",
+        "Total": 2,
+        "Present": 2,
+        "Missing": [],
+        "Complete": true
+    }
+]

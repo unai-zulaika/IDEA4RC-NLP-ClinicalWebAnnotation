@@ -1,0 +1,89 @@
+version: "3.8"
+
+services:
+  # Main Annotation API (FastAPI)
+  annotation-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: annotation-api
+    ports:
+      - "8001:8001"
+    environment:
+      - VLLM_API_URL=${VLLM_API_URL:-http://host.docker.internal:8000}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data:ro
+      - annotation-sessions:/app/sessions
+    networks:
+      - clinical-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/server/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Annotation Web UI (Next.js)
+  annotation-web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: annotation-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+    depends_on:
+      annotation-api:
+        condition: service_healthy
+    networks:
+      - clinical-network
+    restart: unless-stopped
+
+  # NLP Pipeline API (FastAPI)
+  pipeline-api:
+    build:
+      context: ./pipeline/api
+      dockerfile: Dockerfile
+    container_name: pipeline-api
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_PATH=/data/results/data
+      - NLP_BACKEND_URL=http://annotation-api:8001
+      - NLP_FRONTEND_URL=http://annotation-web:3000
+    volumes:
+      - ./data:/data/shared:ro
+      - pipeline-results:/data/results
+    networks:
+      - clinical-network
+    restart: unless-stopped
+
+  # Pipeline Monitoring Dashboard (Streamlit)
+  pipeline-dashboard:
+    build:
+      context: ./pipeline/status_web
+      dockerfile: Dockerfile
+    container_name: pipeline-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      - NLP_BACKEND_URL=http://annotation-api:8001
+      - NLP_FRONTEND_URL=http://annotation-web:3000
+      - PIPELINE_API_URL=http://pipeline-api:8000
+    depends_on:
+      - pipeline-api
+    networks:
+      - clinical-network
+    restart: unless-stopped
+
+volumes:
+  annotation-sessions:
+    driver: local
+  pipeline-results:
+    driver: local
+
+networks:
+  clinical-network:
+    driver: bridge

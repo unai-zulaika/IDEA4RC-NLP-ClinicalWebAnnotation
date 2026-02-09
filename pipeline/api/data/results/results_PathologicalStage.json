@@ -1,0 +1,1615 @@
+{
+    "run_id": {
+        "run_name": null,
+        "run_time": "2026-02-03T14:03:04.798704+00:00"
+    },
+    "run_results": {
+        "ValidationResultIdentifier::default/__none__/20260203T140304.798704Z/PathologicalStage_validator_checkpoint-f{entity_name}_data_asset": {
+            "validation_result": {
+                "success": false,
+                "results": [
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.imagingForPrimarySite",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.imagingForPrimarySite": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.imagingForPrimarySite": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.ctForPrimarySite",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.ctForPrimarySite": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.ctForPrimarySite": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.mriForPrimarySite",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.mriForPrimarySite": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.mriForPrimarySite": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.usForPrimarySite",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.usForPrimarySite": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.usForPrimarySite": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.otherImagingForPrimarySite",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.otherImagingForPrimarySite": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.otherImagingForPrimarySite": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.imagingForNeck",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.imagingForNeck": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.imagingForNeck": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.ctForNeck",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.ctForNeck": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.ctForNeck": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.mriForNeck",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.mriForNeck": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.mriForNeck": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.usForNeck",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.usForNeck": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.usForNeck": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.otherImagingForNeck",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.otherImagingForNeck": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.otherImagingForNeck": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.imagingForMetastasis",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.imagingForMetastasis": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.imagingForMetastasis": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.ctForMetastasis",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.ctForMetastasis": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.ctForMetastasis": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.mriForMetastasis",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.mriForMetastasis": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.mriForMetastasis": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.usForMetastasis",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.usForMetastasis": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.usForMetastasis": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.otherImagingForMetastasis",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.otherImagingForMetastasis": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.otherImagingForMetastasis": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.localised",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.numberOfTumorNodules",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.numberOfTumorNodules": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.numberOfTumorNodules": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.locoRegional",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.regionalNodalMetastases",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.softTissue",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.softTissue": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.softTissue": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.distantLymphNode",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.distantLymphNode": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.distantLymphNode": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.lung",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.lung": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.lung": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.metastasisatbone",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.metastasisatbone": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.metastasisatbone": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.liver",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.liver": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.liver": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.pleura",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.pleura": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.pleura": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.peritoneum",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.peritoneum": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.peritoneum": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.brain",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.brain": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.brain": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.otherViscera",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.otherViscera": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.otherViscera": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "PathologicalStage.unknown",
+                                "ignore_row_if": "never",
+                                "batch_id": "PathologicalStage_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "PathologicalStage.unknown": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "PathologicalStage.unknown": null,
+                                    "patient_id": "3",
+                                    "record_id": "6"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    }
+                ],
+                "evaluation_parameters": {},
+                "statistics": {
+                    "evaluated_expectations": 29,
+                    "successful_expectations": 3,
+                    "unsuccessful_expectations": 26,
+                    "success_percent": 10.344827586206897
+                },
+                "meta": {
+                    "great_expectations_version": "0.18.15",
+                    "expectation_suite_name": "default",
+                    "run_id": {
+                        "run_name": null,
+                        "run_time": "2026-02-03T14:03:04.798704+00:00"
+                    },
+                    "batch_spec": {
+                        "batch_data": "PandasDataFrame"
+                    },
+                    "batch_markers": {
+                        "ge_load_time": "20260203T140304.801103Z",
+                        "pandas_data_fingerprint": "0bc5be9dab9f24934893ac40f4bd02bf"
+                    },
+                    "active_batch_definition": {
+                        "datasource_name": "PathologicalStage_validator_checkpoint",
+                        "data_connector_name": "fluent",
+                        "data_asset_name": "f{entity_name}_data_asset",
+                        "batch_identifiers": {}
+                    },
+                    "validation_time": "20260203T140304.808762Z",
+                    "checkpoint_name": "PathologicalStage_checkpoint",
+                    "validation_id": null,
+                    "checkpoint_id": null
+                }
+            },
+            "actions_results": {
+                "store_validation_result": {
+                    "class": "StoreValidationResultAction"
+                },
+                "store_evaluation_params": {
+                    "class": "StoreEvaluationParametersAction"
+                },
+                "update_data_docs": {
+                    "class": "UpdateDataDocsAction"
+                }
+            }
+        }
+    },
+    "checkpoint_config": {
+        "expectation_suite_name": "default",
+        "template_name": null,
+        "module_name": "great_expectations.checkpoint",
+        "ge_cloud_id": null,
+        "config_version": 1.0,
+        "slack_webhook": null,
+        "validations": [],
+        "action_list": [
+            {
+                "name": "store_validation_result",
+                "action": {
+                    "class_name": "StoreValidationResultAction"
+                }
+            },
+            {
+                "name": "store_evaluation_params",
+                "action": {
+                    "class_name": "StoreEvaluationParametersAction"
+                }
+            },
+            {
+                "name": "update_data_docs",
+                "action": {
+                    "class_name": "UpdateDataDocsAction"
+                }
+            }
+        ],
+        "evaluation_parameters": {},
+        "notify_on": null,
+        "name": "PathologicalStage_checkpoint",
+        "notify_with": null,
+        "run_name_template": null,
+        "expectation_suite_ge_cloud_id": null,
+        "default_validation_id": null,
+        "site_names": null,
+        "profilers": [],
+        "runtime_configuration": {
+            "result_format": {
+                "result_format": "COMPLETE",
+                "unexpected_index_column_names": [
+                    "patient_id",
+                    "record_id"
+                ],
+                "return_unexpected_index_query": true
+            }
+        },
+        "batch_request": {
+            "datasource_name": "PathologicalStage_validator_checkpoint",
+            "data_asset_name": "f{entity_name}_data_asset"
+        },
+        "class_name": "Checkpoint"
+    },
+    "success": false
+}

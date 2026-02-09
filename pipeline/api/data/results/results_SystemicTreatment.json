@@ -1,0 +1,559 @@
+{
+    "run_id": {
+        "run_name": null,
+        "run_time": "2026-02-03T14:03:05.872915+00:00"
+    },
+    "run_results": {
+        "ValidationResultIdentifier::default/__none__/20260203T140305.872915Z/SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset": {
+            "validation_result": {
+                "success": false,
+                "results": [
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.diagnosisReference",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "SystemicTreatment.diagnosisReference": null,
+                                    "patient_id": "3",
+                                    "record_id": "8"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "SystemicTreatment.diagnosisReference": null,
+                                    "patient_id": "3",
+                                    "record_id": "8"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.episodeEvent",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.systemictreatmentHospital",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "SystemicTreatment.systemictreatmentHospital": null,
+                                    "patient_id": "3",
+                                    "record_id": "8"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "SystemicTreatment.systemictreatmentHospital": null,
+                                    "patient_id": "3",
+                                    "record_id": "8"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.typeOfSystemicTreatment",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.chemotherapyInfo",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.startDateSystemicTreatment",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.endDateSystemicTreatment",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.numberOfCycles/Administrations",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "SystemicTreatment.numberOfCycles/Administrations": null,
+                                    "patient_id": "3",
+                                    "record_id": "8"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "SystemicTreatment.numberOfCycles/Administrations": null,
+                                    "patient_id": "3",
+                                    "record_id": "8"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.regimen",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "SystemicTreatment.regimen": null,
+                                    "patient_id": "3",
+                                    "record_id": "8"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "SystemicTreatment.regimen": null,
+                                    "patient_id": "3",
+                                    "record_id": "8"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.reasonForEndOfTreatment",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "SystemicTreatment.treatmentResponse",
+                                "ignore_row_if": "never",
+                                "batch_id": "SystemicTreatment_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 1,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    }
+                ],
+                "evaluation_parameters": {},
+                "statistics": {
+                    "evaluated_expectations": 11,
+                    "successful_expectations": 7,
+                    "unsuccessful_expectations": 4,
+                    "success_percent": 63.63636363636363
+                },
+                "meta": {
+                    "great_expectations_version": "0.18.15",
+                    "expectation_suite_name": "default",
+                    "run_id": {
+                        "run_name": null,
+                        "run_time": "2026-02-03T14:03:05.872915+00:00"
+                    },
+                    "batch_spec": {
+                        "batch_data": "PandasDataFrame"
+                    },
+                    "batch_markers": {
+                        "ge_load_time": "20260203T140305.874874Z",
+                        "pandas_data_fingerprint": "58c100c26cc95ed1a4d09cbbe6936c94"
+                    },
+                    "active_batch_definition": {
+                        "datasource_name": "SystemicTreatment_validator_checkpoint",
+                        "data_connector_name": "fluent",
+                        "data_asset_name": "f{entity_name}_data_asset",
+                        "batch_identifiers": {}
+                    },
+                    "validation_time": "20260203T140305.879475Z",
+                    "checkpoint_name": "SystemicTreatment_checkpoint",
+                    "validation_id": null,
+                    "checkpoint_id": null
+                }
+            },
+            "actions_results": {
+                "store_validation_result": {
+                    "class": "StoreValidationResultAction"
+                },
+                "store_evaluation_params": {
+                    "class": "StoreEvaluationParametersAction"
+                },
+                "update_data_docs": {
+                    "class": "UpdateDataDocsAction"
+                }
+            }
+        }
+    },
+    "checkpoint_config": {
+        "expectation_suite_name": "default",
+        "template_name": null,
+        "module_name": "great_expectations.checkpoint",
+        "ge_cloud_id": null,
+        "config_version": 1.0,
+        "slack_webhook": null,
+        "validations": [],
+        "action_list": [
+            {
+                "name": "store_validation_result",
+                "action": {
+                    "class_name": "StoreValidationResultAction"
+                }
+            },
+            {
+                "name": "store_evaluation_params",
+                "action": {
+                    "class_name": "StoreEvaluationParametersAction"
+                }
+            },
+            {
+                "name": "update_data_docs",
+                "action": {
+                    "class_name": "UpdateDataDocsAction"
+                }
+            }
+        ],
+        "evaluation_parameters": {},
+        "notify_on": null,
+        "name": "SystemicTreatment_checkpoint",
+        "notify_with": null,
+        "run_name_template": null,
+        "expectation_suite_ge_cloud_id": null,
+        "default_validation_id": null,
+        "site_names": null,
+        "profilers": [],
+        "runtime_configuration": {
+            "result_format": {
+                "result_format": "COMPLETE",
+                "unexpected_index_column_names": [
+                    "patient_id",
+                    "record_id"
+                ],
+                "return_unexpected_index_query": true
+            }
+        },
+        "batch_request": {
+            "datasource_name": "SystemicTreatment_validator_checkpoint",
+            "data_asset_name": "f{entity_name}_data_asset"
+        },
+        "class_name": "Checkpoint"
+    },
+    "success": false
+}

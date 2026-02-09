@@ -1,0 +1,2717 @@
+[INFO] Loading report type prompt mapping from: report_type_prompt_mapping.json
+[INFO] Loaded mapping for 7 report types
+[INFO] Loading confidence config from: confidence_config.json
+[INFO] Loaded confidence config: default_threshold=-0.15, 15 prompt-specific thresholds
+================================================================================
+LLM Evaluation Pipeline for INT Prompts
+================================================================================
+Mode: Few-shot (k=3)
+Report type filtering: ENABLED (7 report types mapped)
+Confidence thresholding: ENABLED (default threshold: -0.15)
+  Using 15 prompt-specific thresholds
+================================================================================
+
+[STEP 1] Loading data...
+  Loading notes from: first_patient_notes.csv
+  Loaded 18 notes
+  Loading expected annotations from JSON: annotated_patient_notes_with_spans_full_verified.json
+[INFO] Loading annotations from JSON: annotated_patient_notes_with_spans_full_verified.json
+[INFO] Loaded annotations for 205 notes
+  Loaded annotations for 205 notes
+  [Time: 0.17s]
+
+[STEP 2] Adapting prompts...
+[INFO] Adapting INT prompts for model_runner...
+[INFO] Loaded 27 adapted prompts into model_runner
+  [Time: 0.00s]
+
+[STEP 3] Setting up FAISS indexes for few-shot examples...
+[INFO] SentenceTransformer using device: cuda
+  Building FAISS indexes from patients 2-3...
+[INFO] Extracted 2 patients for fewshot building
+[INFO] Built FAISS index for 'biopsygrading-int': 10 examples
+[INFO] Built FAISS index for 'surgerymargins-int': 26 examples
+[INFO] Built FAISS index for 'tumordepth-int': 36 examples
+[INFO] Built FAISS index for 'biopsymitoticcount-int': 4 examples
+[INFO] Built FAISS index for 'gender-int': 39 examples
+[INFO] Built FAISS index for 'reexcision-int': 1 examples
+[INFO] Built FAISS index for 'necrosis_in_biopsy-int': 2 examples
+[INFO] Built FAISS index for 'previous_cancer_treatment-int': 3 examples
+[INFO] Built FAISS index for 'chemotherapy_start-int': 10 examples
+[INFO] Built FAISS index for 'surgerytype-fs30-int': 10 examples
+[INFO] Built FAISS index for 'radiotherapy_start-int': 9 examples
+[INFO] Built FAISS index for 'recurrencetype-int': 12 examples
+[INFO] Built FAISS index for 'radiotherapy_end-int': 13 examples
+[INFO] Built FAISS index for 'tumorbiopsytype-int': 12 examples
+[INFO] Built FAISS index for 'necrosis_in_surgical-int': 7 examples
+[INFO] Built FAISS index for 'tumordiameter-int': 39 examples
+[INFO] Built FAISS index for 'patient-status-int': 22 examples
+[INFO] Built FAISS index for 'response-to-int': 6 examples
+[INFO] Built FAISS index for 'stage_at_diagnosis-int': 37 examples
+[INFO] Built FAISS index for 'chemotherapy_end-int': 9 examples
+[INFO] Built FAISS index for 'occurrence_cancer-int': 8 examples
+[INFO] Built FAISS index for 'surgical-specimen-grading-int': 28 examples
+[INFO] Built FAISS index for 'ageatdiagnosis-int': 39 examples
+[INFO] Built FAISS index for 'recur_or_prog-int': 18 examples
+[INFO] Built FAISS index for 'histological-tipo-int': 39 examples
+[INFO] Built FAISS index for 'surgical-mitotic-count-int': 7 examples
+[INFO] Built FAISS index for 'tumorsite-int': 39 examples
+
+[INFO] Completed: 27 built, 0 skipped/total
+  [Time: 11.57s]
+
+[STEP 4] Initializing LLM model...
+  Model path: meta-llama-3.1-8b-instruct-q4_k_m.gguf
+  [INFO] Setting LLAMA_N_GPU_LAYERS=-1 for maximum GPU usage
+  [INFO] Using optimized settings: n_ctx=8192, n_batch=1024, flash_attn=True
+  [INFO] Note: Processing is sequential (one prompt at a time), not batched
+[VLLM] Connected to server at http://localhost:8000/v1
+[VLLM] Available models: unsloth/Llama-3.2-3B-Instruct-unsloth-bnb-4bit
+[VLLM] Initialized successfully with model: unsloth/Llama-3.2-3B-Instruct-unsloth-bnb-4bit
+[model_runner] Using VLLM backend
+  Model initialized successfully
+  GPU memory usage: 5.84GB / 6.00GB
+  GPU utilization: 100% (compute), 56% (memory)
+  Active GPU processes: 2
+  [WARN] Could not check GPU status: unsupported operand type(s) for /: 'NoneType' and 'int'
+  [Time: 0.01s]
+
+[STEP 5] Running LLM inference and evaluation...
+  This may take a while...
+
+  Processing note: P001_2018-03-15_consultation_1 (consultation)
+    Filtered prompts: 11/27 prompts relevant to consultation
+    [1/93] gender-int ... 
+    Prompt (4891 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in extracting structured clinical information from medical notes. 
+    Identify the Patient's gender from the provided medical note. Take note of the singular, third-person pronouns also. Output your response exactly in the following format:
+    
+    Format:
+    Patient's gender [male/female/unknown].
+    
+    Do not include any explanations, reasoning, extra text, the medical note — only output the annotation value in the specified format above.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Paziente F, 85 anni, nota per lesione profonda della parete addominale anteriore trattata con escissione ampia e ricostruzione il 10/06/2022; istologia definitiva (20/06/2022) ha confermato pleomorphic liposarcoma (ICD-O-3 8858/3), FNCLCC grado 3,
+        ... [truncated 4091 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 5 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 5 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.193) but no placeholders, keeping prediction
+✓ Match (sim: 1.00, 1.37s)
+  Expected:  Patient's gender Female
+  Predicted: Patient's gender Female
+    [2/93] ageatdiagnosis-int ... 
+    Prompt (4749 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in extracting structured clinical information from oncology notes. Identify the age at diagnosis of the patient from the given medical note and output it in the exact format below.
+    
+    Format:
+    Age at diagnosis [age] years.
+    
+    The age must be formatted in the above format only starting with 'Age at diagnosis' and followed by the age in number followed by 'years'. Do not add explanations.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Paziente F, 85 anni, nota per lesione profonda della parete addominale anteriore trattata con escissione ampia e ricostruzione il 10/06/2022; istologia definitiva (20/06/2022) ha confermato pleomorphic liposarcoma (ICD-O-3 8858/3), FNCLCC grado 3, dimensione massima 200 mm, margine profon
+        ... [truncated 3949 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 7 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 7 logprobs from content array
+✓ Match (sim: 1.00, 2.83s)
+  Expected:  Age at diagnosis 34 years
+  Predicted: Age at diagnosis 34 years
+    [3/93] tumorsite-int ... 
+    Prompt (7958 chars):
+    ----------------------------------------------------------------------
+    Task:
+    You are a clinical information extraction assistant.
+    From the provided medical note, identify the tumor location category and the exact tumor site.
+    
+    Instructions:
+    
+    1. Read the note carefully and find the actual tumor site mentioned for the current case, not historical disease, treatment site, or previous surgery.
+    
+    2. Determine the broader anatomical category that best fits the tumor site (e.g., Upper and Lower limbs, Trunk wall, Intra abdominal, Genito urinary, Head and neck, Breast).
+    
+    3. Then specify the exact site (e.g., Upper leg, Groin, Thoracic wall, Paravertebral – thoracolumbar, skin of right breast, etc.).
+    
+    4. When both an organ and a surface or subregion are mentioned, prioritize the most specific surface or subregion (e.g., “skin of right breast” → not Breast).
+    
+    5. When ter
+        ... [truncated 7158 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 16 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 16 logprobs from content array
+✗ Mismatch (sim: 0.36, 3.11s)
+  Expected:  Tumor site (Upper and Lower limbs): left thigh (anterior compartment)
+  Predicted: Tumor site (Head and neck): skin of left thigh.
+    [4/93] tumordiameter-int ... 
+    Prompt (5121 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract the tumor longest diameter (in mm) and the date from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    Tumor longest diameter: [value]mm (at initial imaging on [date]).
+    Tumor longest diameter unknown.
+    
+    If the date is missing, output [put date].  
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Paziente femmina, diagnostico di liposarcoma pleomorfo della parete addominale anteriore (ICD-O-3 8858/3), FNCLCC grado 3, dimensione massima 200 mm. In anamnesi: escissione chirurgica ampia con ricostruzione effettuata il 10/06/2022; esame istologico definitivo datato 20/06/2022 confermava resezione con margine profondo R1.
+    - Annotation:
+        ... [truncated 4321 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 21 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 21 logprobs from content array
+✓ Match (sim: 0.85, 2.44s)
+  Expected:  Tumor longest diameter: 110 mm (at initial imaging on 2018-03-15)
+  Predicted: Tumor longest diameter: 110 mm (at initial imaging on 15 marzo 2018).
+    [5/93] tumordepth-int ... 
+    Prompt (5313 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology pathology and radiology reports.
+    
+    Task:
+    From the given medical note, determine the tumor depth and output **only one** of the two values: `superficial` or `deep`.
+    
+    Output format (exact):
+    Annotation: Tumor depth: [superficial|deep].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Dati clinici rilevanti: donna 85 anni con massa profonda della parete addominale anteriore, di circa 20 cm di diametro alla RMN eseguita il 02/05/2022; comparsa della tumefazione riportata da circa 3 mesi. ... Commento e raccomandazioni: il quadro istologico è compatibile con un sarcoma di alto grado a differenziazione lipogenica, in linea con l'immagine radiologica di massa profonda subfasciale di 200 mm. Consi
+        ... [truncated 4513 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 8 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 8 logprobs from content array
+✗ Mismatch (sim: 0.41, 2.54s)
+  Expected:  Tumor depth: deep (intramuscular)
+  Predicted: Tumor depth: superficial
+    [6/93] histological-tipo-int ... 
+    Prompt (5237 chars):
+    ----------------------------------------------------------------------
+    Task: You are a clinical information extraction assistant.
+    Your task is to carefully read the given medical note and identify the histological type of the tumor.
+    
+    Always select only one histological type from the controlled list provided below.
+    
+    If multiple histological types are mentioned, choose the most specific or final diagnosis.
+    
+    Output strictly in the following format:
+    Annotation: Histological type: [selected type] ([ICD-O-3 code]).
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Paziente femmina, precedentemente trattata per liposarcoma pleomorfo della parete addominale anteriore (ICD-O-3 8858/3), FNCLCC grado 3, massa di circa 200 mm, sottoposta a escissione ampia con ricostruzione il 10/06/2022; esame istologico definitivo 20/06/2022 confermava pleomo
+        ... [truncated 4437 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 27 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 27 logprobs from content array
+✓ Match (sim: 0.85, 3.29s)
+  Expected:  Histological type: Myxoid liposarcoma (8852/3)
+  Predicted: Histological type: Myxoid liposarcoma (ICD-O-3: 8852/3)
+    [7/93] biopsygrading-int ... 
+    Prompt (4590 chars):
+    ----------------------------------------------------------------------
+    Task: You are a medical text annotation assistant.
+    Your task is to read a given medical note and identify the biopsy grading (FNCLCC) mentioned in the note.
+    
+    Output strictly in the following format:
+    Biopsy grading (FNCLCC): [value].
+    
+    The values can be from the following options: 1 or  2 or 3 or Other classification system high or Other classification system low or Biopsy grading not applicable or Unknown biopsy grading.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Documentazione istologica disponibile: pleomorphic liposarcoma (ICD-O-3 8858/3), FNCLCC grado 3; dimensione massima riportata circa 200 mm.
+    - Annotation: Biopsy grading (FNCLCC): Grade 3
+    
+    Example:
+    - Medical Note: Biopsia core del 12/05/2022: sarcoma pleomorfo con differenziazione lipogenica, istoti
+        ... [truncated 3790 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 12 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 12 logprobs from content array
+✗ Mismatch (sim: 0.78, 2.47s)
+  Expected:  Biopsy grading (FNCLCC): 2
+  Predicted: Biopsy grading (FNCLCC): Grade 2
+    [8/93] tumorbiopsytype-int ... 
+    Prompt (5302 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant.  
+    Your task: From the given medical note, extract the biopsy type and the date (if present).  
+    If the date is missing, output 'unknown'.  
+    If the place is not mentioned, output 'in the hospital'.  
+    Always present the output in the following structured format:  
+    
+    Annotation: Baseline/primary tumor [biopsy type] biopsy has been performed on [date] in [place].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Biopsia core del 12/05/2022: sarcoma pleomorfo con differenziazione lipogenica, istotipo coerente con pleomorphic liposarcoma (ICD-O-3 8858/3); grado FNCLCC 3 su materiale bioptico.
+    - Annotation: Baseline/primary tumor core needle biopsy has been performed on 12/05/2022 in unknown
+    
+    Example:
+    - Medical Note: Di
+        ... [truncated 4502 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 23 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 23 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.88s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Baseline/primary tumor core needle biopsy has been performed on 15 marzo 2018 in unknown
+    [9/93] stage_at_diagnosis-int ... 
+    Prompt (5384 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in extracting structured clinical information from medical notes. Identify the stage at diagnosis from the provided medical note. 
+    The response must be any one of the following answers: 
+    
+    Possible Answers: 
+    Stage at diagnosis: localized. 
+    Stage at diagnosis: loco-regional (In transit metastasis). 
+    Stage at diagnosis: metastatic (regional nodal metastases). 
+    Unknown stage at diagnosis. 
+    
+    Do not include any explanations, reasoning, extra text, the medical note.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Tac torace-addome-pelvi del 05/05/2022 senza evidenza di metastasi a distanza (staging cM0). Biopsia core del 12/05/2022: sarcoma pleomorfo con differenziazione lipogenica, istotipo coerente con pleomorphic lip
+        ... [truncated 4584 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 10 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 10 logprobs from content array
+✗ Mismatch (sim: 0.38, 2.59s)
+  Expected:  Stage at diagnosis (AJCC/UICC or local staging): localized
+  Predicted: Stage at diagnosis (clinical/pathologic): localized
+    [10/93] previous_cancer_treatment-int ... 
+    Prompt (6636 chars):
+    ----------------------------------------------------------------------
+    Task:
+    You are a clinical information extraction assistant. From the given medical note, identify and classify whether the patient has received any previous cancer treatment.
+    If treatments are present, list them exactly as mentioned (e.g., surgery, chemotherapy, radiation, other) following the provided output patterns.
+    
+    Always present the output in the following structured format and in English:
+    Annotation: Previous cancer treatment: [select one option].
+    
+    Allowed output options (strictly select one):
+    
+    Previous cancer treatment: radiation, chemotherapy.
+    Previous cancer treatment: radiation, other.
+    Previous cancer treatment: radiation, surgery, other.
+    Previous cancer treatment: surgery, chemotherapy, radiation, other.
+    Previous cancer treatment: surgery, radiation, other.
+    Previous cancer treat
+        ... [truncated 5836 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 11 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 11 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.87s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Previous cancer treatment: No previous or concurrent cancers.
+    [11/93] occurrence_cancer-int ... 
+    Prompt (5855 chars):
+    ----------------------------------------------------------------------
+    Task:
+    You are a clinical information extraction assistant.
+    
+    From the given medical note, identify if there is any mention or evidence of other (non-index) cancers occurring in the patient — either in the past or concurrently.
+    Extract the exact description if available (e.g., “prostate cancer”, “breast cancer”, “gastric adenocarcinoma”).
+    If such information is missing, ambiguous, or not mentioned, indicate that explicitly.
+    
+    Always present the output in the following structured format and in English:
+    
+    Format:
+    Annotation: Occurrence of other cancer [type]: [description].
+    
+    Allowed output options (strictly select one):
+    
+    Occurrence of other cancer unknown at initial excision.
+    Occurrence of other cancer prostate cancer.
+    Occurrence of other cancer sarcoma.
+    Occurrence of other cancer breast cancer.
+        ... [truncated 5055 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 9 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 9 logprobs from content array
+    [CONFIDENCE] Rejected prediction (confidence: -0.209 < threshold: -0.150)
+✗ Mismatch (sim: 0.00, 2.58s)
+  Expected:  No previous or concurrent cancers
+  Predicted: [NO PREDICTION]
+  Note P001_2018-03-15_consultation_1 completed in 28.99s (avg 2.635s per prompt)
+
+  Processing note: P001_2018-03-22_radiology_2 (radiology)
+    Filtered prompts: 3/27 prompts relevant to radiology
+    [12/93] tumordiameter-int ... 
+    Prompt (4115 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract the tumor longest diameter (in mm) and the date from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    Tumor longest diameter: [value]mm (at initial imaging on [date]).
+    Tumor longest diameter unknown.
+    
+    If the date is missing, output [put date].  
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Paziente maschio, 29 anni, noto per neoformazione a livello del dorso del piede destro di circa 20 mm comparsa da circa 3 settimane (prima valutazione 01/09/2019). In anamnesi recente: ecografia 03/09/2019 e RMN 10/09/2019 che hanno documentato lesione sottocutanea di 20 mm con interessamento focale del muscolo estensore superficiale, bio
+        ... [truncated 3315 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 22 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 22 logprobs from content array
+✓ Match (sim: 1.00, 2.74s)
+  Expected:  Tumor longest diameter: 110 mm (at initial imaging on 22/03/2018)
+  Predicted: Tumor longest diameter: 110 mm (at initial imaging on 22/03/2018).
+    [13/93] tumordepth-int ... 
+    Prompt (4456 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology pathology and radiology reports.
+    
+    Task:
+    From the given medical note, determine the tumor depth and output **only one** of the two values: `superficial` or `deep`.
+    
+    Output format (exact):
+    Annotation: Tumor depth: [superficial|deep].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Indicazione: massa sottocutanea del dorso del piede destro di circa 20 mm, presente da circa 3 settimane; valutata in ambulatorio il 01/09/2019 e studiata con ecografia (03/09/2019) e RMN (10/09/2019) che hanno documentato lesione sottocutanea con interessamento focale del muscolo estensore superficiale e assenza di invasione ossea evidente. ... che hanno documentato lesione sottocutanea con interessamento focal
+        ... [truncated 3656 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 8 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 8 logprobs from content array
+✗ Mismatch (sim: 0.78, 2.50s)
+  Expected:  Tumor depth: deep (intramuscular)
+  Predicted: Tumor depth: deep
+    [14/93] tumorsite-int ... 
+    Prompt (6252 chars):
+    ----------------------------------------------------------------------
+    Task:
+    You are a clinical information extraction assistant.
+    From the provided medical note, identify the tumor location category and the exact tumor site.
+    
+    Instructions:
+    
+    1. Read the note carefully and find the actual tumor site mentioned for the current case, not historical disease, treatment site, or previous surgery.
+    
+    2. Determine the broader anatomical category that best fits the tumor site (e.g., Upper and Lower limbs, Trunk wall, Intra abdominal, Genito urinary, Head and neck, Breast).
+    
+    3. Then specify the exact site (e.g., Upper leg, Groin, Thoracic wall, Paravertebral – thoracolumbar, skin of right breast, etc.).
+    
+    4. When both an organ and a surface or subregion are mentioned, prioritize the most specific surface or subregion (e.g., “skin of right breast” → not Breast).
+    
+    5. When ter
+        ... [truncated 5452 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 20 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 20 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.268) but no placeholders, keeping prediction
+✗ Mismatch (sim: 0.17, 2.96s)
+  Expected:  Tumor site (Upper and Lower limbs): Left thigh (anterior compartment)
+  Predicted: Tumor site (Trunk wall): Anterior abdominal wall (intra muscular)
+  Note P001_2018-03-22_radiology_2 completed in 8.19s (avg 2.731s per prompt)
+
+  Processing note: P001_2018-03-30_pathology_3 (pathology)
+    Filtered prompts: 8/27 prompts relevant to pathology
+    [15/93] histological-tipo-int ... 
+    Prompt (3778 chars):
+    ----------------------------------------------------------------------
+    Task: You are a clinical information extraction assistant.
+    Your task is to carefully read the given medical note and identify the histological type of the tumor.
+    
+    Always select only one histological type from the controlled list provided below.
+    
+    If multiple histological types are mentioned, choose the most specific or final diagnosis.
+    
+    Output strictly in the following format:
+    Annotation: Histological type: [selected type] ([ICD-O-3 code]).
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Anamnesi essenziale: donna, 85 anni, diagnostico istologico di pleomorphic liposarcoma (ICD-O-3 8858/3) FNCLCC grado 3, lesione profonda della parete addominale anteriore diametro max 200 mm. ... Intervento chirurgico di escissione ampia con component separation e ricostruzione 
+        ... [truncated 2978 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 27 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 27 logprobs from content array
+✗ Mismatch (sim: 0.58, 2.66s)
+  Expected:  Histological type: Myxoid liposarcoma (8852/3)
+  Predicted: Histological type: Liposarcoma mixoide (ICD-O-3: 8852/3)
+    [16/93] biopsygrading-int ... 
+    Prompt (2953 chars):
+    ----------------------------------------------------------------------
+    Task: You are a medical text annotation assistant.
+    Your task is to read a given medical note and identify the biopsy grading (FNCLCC) mentioned in the note.
+    
+    Output strictly in the following format:
+    Biopsy grading (FNCLCC): [value].
+    
+    The values can be from the following options: 1 or  2 or 3 or Other classification system high or Other classification system low or Biopsy grading not applicable or Unknown biopsy grading.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Documentazione istologica disponibile: pleomorphic liposarcoma (ICD-O-3 8858/3), FNCLCC grado 3; dimensione massima riportata circa 200 mm.
+    - Annotation: Biopsy grading (FNCLCC): Grade 3
+    
+    Example:
+    - Medical Note: Istologia conosciuta: liposarcoma pleomorfo, ICD-O 8858/3, FNCLCC grado 3 (referto ist
+        ... [truncated 2153 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 12 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 12 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.058) but no placeholders, keeping prediction
+✓ Match (sim: 1.00, 2.28s)
+  Expected:  Biopsy grading (FNCLCC): Grade 2
+  Predicted: Biopsy grading (FNCLCC): grade 2
+    [17/93] biopsymitoticcount-int ... 
+    Prompt (3162 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in extracting structured clinical information from oncology notes. 
+    Identify the biopsy mitotic count from the provided medical note and output it exactly in the following format:
+    
+    Format:
+    Biopsy mitotic count: [value]HPF/mm2.
+    (If not explicitly stated or unclear, output: “Unknown biopsy mitotic count.”)
+    
+    Do not include any explanations, reasoning, extra text, the medical note — only output the annotation value in the specified format above.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Documentazione istologica disponibile: pleomorphic liposarcoma (ICD-O-3 8858/3), FNCLCC grado 3; dimensione massima riportata circa 200 mm. ... - Richiesta invio/referto istologico completo in cartella (se non già presente) per 
+        ... [truncated 2362 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 14 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 14 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.166) but no placeholders, keeping prediction
+✗ Mismatch (sim: 0.51, 2.67s)
+  Expected:  Unknown biopsy mitotic count
+  Predicted: Biopsy mitotic count: 1HPF/mm2.
+    [18/93] necrosis_in_biopsy-int ... 
+    Prompt (2848 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract necrosis information from the provided medical note and output it in a precise, templated format.
+    
+    Possible Output Formats (use only one):
+    Necrosis in biopsy specimen (type of): [percentage value] of tumor.
+    Necrosis in biopsy specimen (type of): absent.
+    Necrosis in biopsy specimen (type of): none.
+    Necrosis in biopsy specimen (type of): present.
+    Necrosis in biopsy specimen (type of): unknown.
+    
+    Do not include explanations, reasoning, or any extra text — only one final annotation line exactly as specified below.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Sono presenti aree di necrosi tumorale a focalità variabile. L'architettura è compatibile con un sarcoma p
+        ... [truncated 2048 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.052) but no placeholders, keeping prediction
+✗ Mismatch (sim: 0.48, 2.60s)
+  Expected:  Necrosis in biopsy core specimen (type of): necrosi non significativa nel campione disponibile
+  Predicted: Necrosis in biopsy specimen (type of): absent.
+    [19/93] tumorbiopsytype-int ... 
+    Prompt (3665 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant.  
+    Your task: From the given medical note, extract the biopsy type and the date (if present).  
+    If the date is missing, output 'unknown'.  
+    If the place is not mentioned, output 'in the hospital'.  
+    Always present the output in the following structured format:  
+    
+    Annotation: Baseline/primary tumor [biopsy type] biopsy has been performed on [date] in [place].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Diagnosi preoperatoria: massa profonda della parete addominale anteriore, sospetto pleomorphic liposarcoma (ICD-O-3 8858/3), lesione radiologicamente di circa 200 mm testimoniata da ecografia del 25/04/2022 e RMN del 02/05/2022; stadiazione TC torace-addome-pelvi senza evidenza di metastasi al 05/05/2022. Paz
+        ... [truncated 2865 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 24 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 24 logprobs from content array
+✓ Match (sim: 0.89, 2.93s)
+  Expected:  Baseline/primary tumor core needle (ecoguidata) biopsy has been performed on 30/03/2018 in unknown place
+  Predicted: Baseline/primary tumor core needle biopsy has been performed on 30/03/2018 in unknown
+    [20/93] surgical-specimen-grading-int ... 
+    Prompt (4128 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology.  
+    Your task: From the given medical note, extract the **Surgical specimen grading (FNCLCC)** information.
+    
+    Guidelines:
+    1. Identify explicit FNCLCC grades ('1' or '2' or '3' or 'Other classification system high' or 'Other classification system low').
+    2. If no FNCLCC grade is mentioned but a grading level is implied using terms like “alto grado”, “basso grado”, or “intermedio”, interpret them as “Other classification system high/low/intermediate”.
+    3. If both grading systems appear, prefer the FNCLCC value.
+    4. If grading information is missing or uncertain, return nothing.
+    5. The output must always follow this structured format:
+    
+    Annotation: Surgical specimen grading (FNCLCC): [grade or description].
+    
+    ---
+    
+    Here are f
+        ... [truncated 3328 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.51s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Surgical specimen grading (FNCLCC): 2
+    [21/93] surgical-mitotic-count-int ... 
+    Prompt (3368 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncopathology.  
+    Your task: From the given medical note, extract the **Surgical specimen mitotic count**.
+    
+    Guidelines:
+    1. The Surgical specimen mitotic count can be easily found in the note where there is a mention of HPF succeeded by a value such as <1/10 HPF or >3/10 HPF or 10/10 HPF, etc. There may be a leading space between the numeric value and sign in some case. Return as it is.
+    2. The output must strictly follow this format:
+    
+    Annotation: Surgical specimen mitotic count: [value].
+    
+    If the case corresponds to unknown or missing information, use:
+    Annotation: Unknown surgical specimen mitotic count.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Intervento chirurgico di escissione ampia con c
+        ... [truncated 2568 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 10 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 10 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.57s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Surgical specimen mitotic count: unknown
+    [22/93] necrosis_in_surgical-int ... 
+    Prompt (3309 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract necrosis information from the provided medical note and output it in a precise, templated format.
+    
+    Possible Output Formats (use only one):
+    Necrosis in surgical specimen (type of): 10%. 
+    Necrosis in surgical specimen (type of): absent. 
+    Necrosis in surgical specimen (type of): coagulative necrosis. 
+    Necrosis in surgical specimen (type of): coagulative. 
+    Necrosis in surgical specimen (type of): none. 
+    Necrosis in surgical specimen (type of): unknown. 
+    
+    Do not include explanations, reasoning, or any extra text — only one final annotation line exactly as specified below.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Intervento chirurgico di escissione ampia con c
+        ... [truncated 2509 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.071) but no placeholders, keeping prediction
+✗ Mismatch (sim: 0.00, 2.66s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Necrosis in surgical specimen (type of): absent.
+  Note P001_2018-03-30_pathology_3 completed in 20.88s (avg 2.610s per prompt)
+
+  Processing note: P001_2018-04-05_staging_4 (staging)
+    Filtered prompts: 1/27 prompts relevant to staging
+    [23/93] stage_at_diagnosis-int ... 
+    Prompt (6075 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in extracting structured clinical information from medical notes. Identify the stage at diagnosis from the provided medical note. 
+    The response must be any one of the following answers: 
+    
+    Possible Answers: 
+    Stage at diagnosis: localized. 
+    Stage at diagnosis: loco-regional (In transit metastasis). 
+    Stage at diagnosis: metastatic (regional nodal metastases). 
+    Unknown stage at diagnosis. 
+    
+    Do not include any explanations, reasoning, extra text, the medical note.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Imaging di sorveglianza: TC torace eseguita in prossimità della visita (01/03/2023) non evidenzia lesioni polmonari sospette né segni di malattia a distanza rispetto agli esami basali; confrontabile con staging
+        ... [truncated 5275 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 8 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 8 logprobs from content array
+✗ Mismatch (sim: 0.56, 2.83s)
+  Expected:  Stage at diagnosis (clinical AJCC): Localized (cT2 N0 M0) — clinical stage II (as of 05/04/2018)
+  Predicted: Stage at diagnosis (clinical): localized
+  Note P001_2018-04-05_staging_4 completed in 2.83s (avg 2.827s per prompt)
+
+  Processing note: P001_2018-05-15_surgery_5 (surgery)
+    Filtered prompts: 6/27 prompts relevant to surgery
+    [24/93] surgerytype-fs30-int ... 
+    Prompt (7583 chars):
+    ----------------------------------------------------------------------
+    Task: You are a medical text annotation assistant. Given a clinical note, extract structured surgery-related information.
+    
+    1. If a surgery is described, always return:
+       - Whether it was **Primary surgery** or simply **Surgery**.
+       - The **date of surgery** in DD/MM/YYYY format.
+       - Whether the surgery was **macroscopically complete**, **macroscopically incomplete**, or **[select result]** 
+         (if margins or completeness are not explicitly mentioned).
+    
+    2. If no surgery information exists, return nothing.
+    
+    Your answer must follow exactly one of these formats:
+    - "Primary surgery was performed on DD/MM/YYYY and was macroscopically complete."
+    - "Primary surgery was performed on DD/MM/YYYY and was macroscopically incomplete."
+    - "Primary surgery was performed on DD/MM/YYYY and was macroscop
+        ... [truncated 6783 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 21 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 21 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.026) but no placeholders, keeping prediction
+✗ Mismatch (sim: 0.00, 3.08s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Surgery was performed on 15/05/2018 and was macroscopically complete.
+    [25/93] surgerymargins-int ... 
+    Prompt (5290 chars):
+    ----------------------------------------------------------------------
+    Task: You are a medical text annotation assistant. Your task is to analyze a medical note and classify the surgical resection margin status.
+    Always output the result in the following format:
+    Margins after surgery: [R0 or R1 or R2]
+    
+    R0 (radical, tumor-free margins):
+    
+    Important: A “small but clear” margin = still R0.
+    
+    Output only the classification in the required format. Do not add explanations.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Resezione oncologica intrapresa con intento di margini macroscopici liberi; la lesione è risultata non adherente al peritoneo che è stato risparmiato e non è stata necessaria la breccia peritoneale. ... Etichettato e inviato per esame istologico completo, con richiesta di valutazione margini e gradazione FNCLCC. ... Risulta
+        ... [truncated 4490 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 10 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 10 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.213) but no placeholders, keeping prediction
+✗ Mismatch (sim: 0.32, 2.29s)
+  Expected:  Margins after surgery: close (macroscopically close; microscopic margin status pending on definitive histology)
+  Predicted: Margins after surgery: macroscopically free
+    [26/93] reexcision-int ... 
+    Prompt (3257 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncological surgery documentation.
+    Your task: From the given medical note, extract re-excision (radicalization) information, including:
+    1. The date when the re-excision was performed (if mentioned).
+    2. Whether it was macroscopically complete, incomplete, or if such information is unknown.
+    
+    Formats:
+    Re-excision was performed on [provide date] and was macroscopically [complete/incomplete]. 
+    
+    Notes:
+    If the date is missing, output [put date] in the format.
+    If the result is missing, output [select result] in the format.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Ampia escissione locale eseguita il 10/10/2019 con ricostruzione mediante lembo locale; esame istologico definitivo del 18/10/2019 conf
+        ... [truncated 2457 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 28 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 28 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.85s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Surgical procedure was performed on 15/05/2018: wide local excision (re-excision) of the lesion.
+    [27/93] surgical-specimen-grading-int ... 
+    Prompt (4831 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology.  
+    Your task: From the given medical note, extract the **Surgical specimen grading (FNCLCC)** information.
+    
+    Guidelines:
+    1. Identify explicit FNCLCC grades ('1' or '2' or '3' or 'Other classification system high' or 'Other classification system low').
+    2. If no FNCLCC grade is mentioned but a grading level is implied using terms like “alto grado”, “basso grado”, or “intermedio”, interpret them as “Other classification system high/low/intermediate”.
+    3. If both grading systems appear, prefer the FNCLCC value.
+    4. If grading information is missing or uncertain, return nothing.
+    5. The output must always follow this structured format:
+    
+    Annotation: Surgical specimen grading (FNCLCC): [grade or description].
+    
+    ---
+    
+    Here are f
+        ... [truncated 4031 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 14 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 14 logprobs from content array
+✗ Mismatch (sim: 0.67, 2.51s)
+  Expected:  Surgical specimen grading (FNCLCC): unknown
+  Predicted: Surgical specimen grading (FNCLCC): Grade 3
+    [28/93] surgical-mitotic-count-int ... 
+    Prompt (4104 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncopathology.  
+    Your task: From the given medical note, extract the **Surgical specimen mitotic count**.
+    
+    Guidelines:
+    1. The Surgical specimen mitotic count can be easily found in the note where there is a mention of HPF succeeded by a value such as <1/10 HPF or >3/10 HPF or 10/10 HPF, etc. There may be a leading space between the numeric value and sign in some case. Return as it is.
+    2. The output must strictly follow this format:
+    
+    Annotation: Surgical specimen mitotic count: [value].
+    
+    If the case corresponds to unknown or missing information, use:
+    Annotation: Unknown surgical specimen mitotic count.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Intervento chirurgico di escissione ampia con c
+        ... [truncated 3304 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 10 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 10 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.53s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Surgical specimen mitotic count: unknown
+    [29/93] necrosis_in_surgical-int ... 
+    Prompt (4208 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract necrosis information from the provided medical note and output it in a precise, templated format.
+    
+    Possible Output Formats (use only one):
+    Necrosis in surgical specimen (type of): 10%. 
+    Necrosis in surgical specimen (type of): absent. 
+    Necrosis in surgical specimen (type of): coagulative necrosis. 
+    Necrosis in surgical specimen (type of): coagulative. 
+    Necrosis in surgical specimen (type of): none. 
+    Necrosis in surgical specimen (type of): unknown. 
+    
+    Do not include explanations, reasoning, or any extra text — only one final annotation line exactly as specified below.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Intervento chirurgico di escissione ampia con c
+        ... [truncated 3408 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.68s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Necrosis in surgical specimen (type of): absent.
+  Note P001_2018-05-15_surgery_5 completed in 15.94s (avg 2.657s per prompt)
+
+  Processing note: P001_2018-05-22_pathology_6 (pathology)
+    Filtered prompts: 8/27 prompts relevant to pathology
+    [30/93] histological-tipo-int ... 
+    Prompt (3346 chars):
+    ----------------------------------------------------------------------
+    Task: You are a clinical information extraction assistant.
+    Your task is to carefully read the given medical note and identify the histological type of the tumor.
+    
+    Always select only one histological type from the controlled list provided below.
+    
+    If multiple histological types are mentioned, choose the most specific or final diagnosis.
+    
+    Output strictly in the following format:
+    Annotation: Histological type: [selected type] ([ICD-O-3 code]).
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Anamnesi essenziale: donna, 85 anni, diagnostico istologico di pleomorphic liposarcoma (ICD-O-3 8858/3) FNCLCC grado 3, lesione profonda della parete addominale anteriore diametro max 200 mm. ... Intervento chirurgico di escissione ampia con component separation e ricostruzione 
+        ... [truncated 2546 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 27 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 27 logprobs from content array
+✗ Mismatch (sim: 0.71, 2.88s)
+  Expected:  Histological type: Myxoid liposarcoma (ICD-O-3 8852/3); round-cell component <5%
+  Predicted: Histological type: Myxoid liposarcoma (ICD-O-3: 8852/3)
+    [31/93] biopsygrading-int ... 
+    Prompt (2699 chars):
+    ----------------------------------------------------------------------
+    Task: You are a medical text annotation assistant.
+    Your task is to read a given medical note and identify the biopsy grading (FNCLCC) mentioned in the note.
+    
+    Output strictly in the following format:
+    Biopsy grading (FNCLCC): [value].
+    
+    The values can be from the following options: 1 or  2 or 3 or Other classification system high or Other classification system low or Biopsy grading not applicable or Unknown biopsy grading.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Istologia conosciuta: liposarcoma pleomorfo, ICD-O 8858/3, FNCLCC grado 3 (referto istologico pregresso/documentazione disponibile in cartella). ... Conclusioni: TC di stadiazione 05/05/2022 senza evidenza di metastasi a distanza (cM0); malattia localizzata di alto grado (pleomorphic liposarcoma G3
+        ... [truncated 1899 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 12 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 12 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.31s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Biopsy grading (FNCLCC): Grade 2
+    [32/93] biopsymitoticcount-int ... 
+    Prompt (2908 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in extracting structured clinical information from oncology notes. 
+    Identify the biopsy mitotic count from the provided medical note and output it exactly in the following format:
+    
+    Format:
+    Biopsy mitotic count: [value]HPF/mm2.
+    (If not explicitly stated or unclear, output: “Unknown biopsy mitotic count.”)
+    
+    Do not include any explanations, reasoning, extra text, the medical note — only output the annotation value in the specified format above.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Documentazione istologica disponibile: pleomorphic liposarcoma (ICD-O-3 8858/3), FNCLCC grado 3; dimensione massima riportata circa 200 mm. ... - Richiesta invio/referto istologico completo in cartella (se non già presente) per 
+        ... [truncated 2108 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 8 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 8 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.58s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Biopsy mitotic count: Unknown
+    [33/93] necrosis_in_biopsy-int ... 
+    Prompt (2594 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract necrosis information from the provided medical note and output it in a precise, templated format.
+    
+    Possible Output Formats (use only one):
+    Necrosis in biopsy specimen (type of): [percentage value] of tumor.
+    Necrosis in biopsy specimen (type of): absent.
+    Necrosis in biopsy specimen (type of): none.
+    Necrosis in biopsy specimen (type of): present.
+    Necrosis in biopsy specimen (type of): unknown.
+    
+    Do not include explanations, reasoning, or any extra text — only one final annotation line exactly as specified below.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Sono presenti aree di necrosi tumorale a focalità variabile. L'architettura è compatibile con un sarcoma p
+        ... [truncated 1794 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.65s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Necrosis in biopsy specimen (type of): absent.
+    [34/93] tumorbiopsytype-int ... 
+    Prompt (3411 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant.  
+    Your task: From the given medical note, extract the biopsy type and the date (if present).  
+    If the date is missing, output 'unknown'.  
+    If the place is not mentioned, output 'in the hospital'.  
+    Always present the output in the following structured format:  
+    
+    Annotation: Baseline/primary tumor [biopsy type] biopsy has been performed on [date] in [place].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Diagnosi preoperatoria: massa profonda della parete addominale anteriore, sospetto pleomorphic liposarcoma (ICD-O-3 8858/3), lesione radiologicamente di circa 200 mm testimoniata da ecografia del 25/04/2022 e RMN del 02/05/2022; stadiazione TC torace-addome-pelvi senza evidenza di metastasi al 05/05/2022. Paz
+        ... [truncated 2611 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 28 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 28 logprobs from content array
+✗ Mismatch (sim: 0.49, 2.96s)
+  Expected:  Baseline/primary tumor core needle biopsy has been performed on 30/03/2018 in unknown place
+  Predicted: Baseline/primary tumor excisional biopsy has been performed on 22/05/2018 in in the hospital.
+    [35/93] surgical-specimen-grading-int ... 
+    Prompt (3836 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology.  
+    Your task: From the given medical note, extract the **Surgical specimen grading (FNCLCC)** information.
+    
+    Guidelines:
+    1. Identify explicit FNCLCC grades ('1' or '2' or '3' or 'Other classification system high' or 'Other classification system low').
+    2. If no FNCLCC grade is mentioned but a grading level is implied using terms like “alto grado”, “basso grado”, or “intermedio”, interpret them as “Other classification system high/low/intermediate”.
+    3. If both grading systems appear, prefer the FNCLCC value.
+    4. If grading information is missing or uncertain, return nothing.
+    5. The output must always follow this structured format:
+    
+    Annotation: Surgical specimen grading (FNCLCC): [grade or description].
+    
+    ---
+    
+    Here are f
+        ... [truncated 3036 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+✓ Match (sim: 0.82, 2.41s)
+  Expected:  Surgical specimen grading (FNCLCC): Grade 2
+  Predicted: Surgical specimen grading (FNCLCC): 2
+    [36/93] surgical-mitotic-count-int ... 
+    Prompt (3114 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncopathology.  
+    Your task: From the given medical note, extract the **Surgical specimen mitotic count**.
+    
+    Guidelines:
+    1. The Surgical specimen mitotic count can be easily found in the note where there is a mention of HPF succeeded by a value such as <1/10 HPF or >3/10 HPF or 10/10 HPF, etc. There may be a leading space between the numeric value and sign in some case. Return as it is.
+    2. The output must strictly follow this format:
+    
+    Annotation: Surgical specimen mitotic count: [value].
+    
+    If the case corresponds to unknown or missing information, use:
+    Annotation: Unknown surgical specimen mitotic count.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Intervento chirurgico di escissione ampia con c
+        ... [truncated 2314 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 10 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 10 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.53s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Surgical specimen mitotic count: unknown
+    [37/93] necrosis_in_surgical-int ... 
+    Prompt (3055 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract necrosis information from the provided medical note and output it in a precise, templated format.
+    
+    Possible Output Formats (use only one):
+    Necrosis in surgical specimen (type of): 10%. 
+    Necrosis in surgical specimen (type of): absent. 
+    Necrosis in surgical specimen (type of): coagulative necrosis. 
+    Necrosis in surgical specimen (type of): coagulative. 
+    Necrosis in surgical specimen (type of): none. 
+    Necrosis in surgical specimen (type of): unknown. 
+    
+    Do not include explanations, reasoning, or any extra text — only one final annotation line exactly as specified below.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto istopatologico definitivo del 20/06/202
+        ... [truncated 2255 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.67s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Necrosis in surgical specimen (type of): absent.
+  Note P001_2018-05-22_pathology_6 completed in 21.00s (avg 2.625s per prompt)
+
+  Processing note: P001_2018-06-15_oncology_7 (oncology)
+    Filtered prompts: 6/27 prompts relevant to oncology
+    [38/93] chemotherapy_start-int ... 
+    Prompt (5872 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract chemotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+    post-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+    
+    Notes:
+    If the date is missing, output [provide date].
+    If the regimen is missing, output [select regimen].
+    If the intent is missing, output [select intent].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto TC torace eseguita il 10/06/2024 per valutazione di risposta a terapia sistemica (pleomorphic liposarcoma, tratta
+        ... [truncated 5072 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 128 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 128 logprobs from content array
+✗ Mismatch (sim: 0.00, 4.90s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Based on the provided medical note, I will extract the chemotherapy details and output them in the precise, templated format.
+    [39/93] chemotherapy_end-int ... 
+    Prompt (4723 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract chemotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+    post-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+    
+    Notes:
+    If the date is missing, output [provide date].
+    If the reason is missing, output [select reason].
+    If the number of cycles is missing, output [provide number].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: chemioterapia adiuvante VDC/IE completata 15/07/2020 e radioterapia al letto tumorale 54 Gy/27 fx iniziata 01/08/202
+        ... [truncated 3923 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 39 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 39 logprobs from content array
+    [CONFIDENCE] Rejected prediction (confidence: -0.205 < threshold: -0.200)
+✓ Match (sim: 1.00, 2.69s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: [NO PREDICTION]
+    [40/93] radiotherapy_start-int ... 
+    Prompt (5206 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+    post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+    
+    Notes:
+    If the date is missing, output [put date].
+    If the place is missing, output [please select where].
+    If the intention is missing, output [select intention].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Terapia in corso: avviata oggi, 01/08/2022, radioterapia esterna adiuvante sul letto tumorale con 
+        ... [truncated 4406 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 24 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 24 logprobs from content array
+✗ Mismatch (sim: 0.51, 2.56s)
+  Expected:  External-beam radiotherapy (external) with adjuvant intention started at left thigh surgical bed on 15/06/2018 (planned total dose 50 Gy in 25 fractio...
+  Predicted: External beam radiotherapy (tumor bed) with adjuvant intention started on 15/06/2018
+    [41/93] radiotherapy_end-int ... 
+    Prompt (4771 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    post-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    
+    Notes:
+    If the date is missing, output [put date].
+    If the reason is missing, output [select reason].
+    If the dose is missing, output [put total dose].
+    If the number is missing, output [put number of].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: A seguito di valutazione multidisc
+        ... [truncated 3971 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 31 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 31 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.88s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: External beam radiotherapy in total of 50 Gy in 25 fractions ended on 15/06/2018 because of planned completion of treatment.
+    [42/93] response-to-int ... 
+    Prompt (5279 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology.  
+    Your task: From the given medical note, identify and extract the **response to therapeutic treatment** (such as chemotherapy or radiotherapy) when no surgical procedure is performed.  
+    
+    Your goal is to:
+    1. Detect the type of therapy mentioned (e.g., therapeutic (without surgery), therapeutic (radiotherapy without surgery), pre-operative, post-operative).
+    2. Determine the disease response described (e.g., complete response, partial response, stable disease, progression).
+    3. If the response type or therapy type is missing, leave it as “[select type]” or “[select response]”.
+    4. Only output one concise, structured annotation per note.
+    
+    Always format your output strictly as one of the following:
+    
+    1. Response to [sele
+        ... [truncated 4479 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.40s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Response to palliative radiotherapy was: [select type]
+    [43/93] patient-status-int ... 
+    Prompt (6625 chars):
+    ----------------------------------------------------------------------
+    Task: From the given medical note, extract the status of the patient at last follow-up.
+    
+    Always output in exactly one of the following structured templates:
+    
+    1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+    2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])
+    3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor
+    4. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).
+    5. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. other).
+    6. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. soft tissue. other).
+    8. Status of the patient at last follow-up: Alive With Disease (AWD) - l
+        ... [truncated 5825 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 21 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 21 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.99s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor
+  Note P001_2018-06-15_oncology_7 completed in 18.42s (avg 3.070s per prompt)
+
+  Processing note: P001_2018-07-23_oncology_8 (oncology)
+    Filtered prompts: 6/27 prompts relevant to oncology
+    [44/93] chemotherapy_start-int ... 
+    Prompt (5279 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract chemotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+    post-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+    
+    Notes:
+    If the date is missing, output [provide date].
+    If the regimen is missing, output [select regimen].
+    If the intent is missing, output [select intent].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto TC torace eseguita il 10/06/2024 per valutazione di risposta a terapia sistemica (pleomorphic liposarcoma, tratta
+        ... [truncated 4479 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 24 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 24 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.62s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Adjuvant chemotherapy with curative intent started on 15/06/2018 and utilized no regimen mentioned.
+    [45/93] chemotherapy_end-int ... 
+    Prompt (4077 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract chemotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+    post-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+    
+    Notes:
+    If the date is missing, output [provide date].
+    If the reason is missing, output [select reason].
+    If the number of cycles is missing, output [provide number].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: chemioterapia adiuvante VDC/IE completata 15/07/2020 e radioterapia al letto tumorale 54 Gy/27 fx iniziata 01/08/202
+        ... [truncated 3277 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 38 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 38 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.81s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Adjuvant chemotherapy ended on 23/07/2018 after unknown number of cycles because of completion of planned treatment (regimen: none specified, intent: ...
+    [46/93] radiotherapy_start-int ... 
+    Prompt (4281 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+    post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+    
+    Notes:
+    If the date is missing, output [put date].
+    If the place is missing, output [please select where].
+    If the intention is missing, output [select intention].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Terapia in corso: avviata oggi, 01/08/2022, radioterapia esterna adiuvante sul letto tumorale con 
+        ... [truncated 3481 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 39 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 39 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.229) but no placeholders, keeping prediction
+✗ Mismatch (sim: 0.52, 2.64s)
+  Expected:  external beam radiotherapy (EBRT) with adjuvant intention started on 2018-06-15
+  Predicted: External beam radiotherapy (conformal techniques with adjuvant intention) started at tumor bed on 15/06/2018 (total planned 50 Gy in 25 fractions).
+    [47/93] radiotherapy_end-int ... 
+    Prompt (4443 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    post-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    
+    Notes:
+    If the date is missing, output [put date].
+    If the reason is missing, output [select reason].
+    If the dose is missing, output [put total dose].
+    If the number is missing, output [put number of].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Per tale motivo è stata eseguita r
+        ... [truncated 3643 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 30 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 30 logprobs from content array
+✓ Match (sim: 0.83, 2.59s)
+  Expected:  external beam radiotherapy in total of 50 Gy in 25 fractions ended on 2018-07-23
+  Predicted: External beam radiotherapy in total of 50 Gy in 25 fractions ended on 23/07/2018 because of completed as planned.
+    [48/93] response-to-int ... 
+    Prompt (4660 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology.  
+    Your task: From the given medical note, identify and extract the **response to therapeutic treatment** (such as chemotherapy or radiotherapy) when no surgical procedure is performed.  
+    
+    Your goal is to:
+    1. Detect the type of therapy mentioned (e.g., therapeutic (without surgery), therapeutic (radiotherapy without surgery), pre-operative, post-operative).
+    2. Determine the disease response described (e.g., complete response, partial response, stable disease, progression).
+    3. If the response type or therapy type is missing, leave it as “[select type]” or “[select response]”.
+    4. Only output one concise, structured annotation per note.
+    
+    Always format your output strictly as one of the following:
+    
+    1. Response to [sele
+        ... [truncated 3860 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 11 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 11 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.29s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Response to palliative radiotherapy was: Complete response
+    [49/93] patient-status-int ... 
+    Prompt (6032 chars):
+    ----------------------------------------------------------------------
+    Task: From the given medical note, extract the status of the patient at last follow-up.
+    
+    Always output in exactly one of the following structured templates:
+    
+    1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+    2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])
+    3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor
+    4. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).
+    5. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. other).
+    6. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. soft tissue. other).
+    8. Status of the patient at last follow-up: Alive With Disease (AWD) - l
+        ... [truncated 5232 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 24 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 24 logprobs from content array
+✗ Mismatch (sim: 0.57, 3.04s)
+  Expected:  Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+  Predicted: Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (none mentioned)
+  Note P001_2018-07-23_oncology_8 completed in 15.99s (avg 2.665s per prompt)
+
+  Processing note: P001_2019-01-10_follow-up_9 (follow-up)
+    Filtered prompts: 3/27 prompts relevant to follow-up
+    [50/93] patient-status-int ... 
+    Prompt (6301 chars):
+    ----------------------------------------------------------------------
+    Task: From the given medical note, extract the status of the patient at last follow-up.
+    
+    Always output in exactly one of the following structured templates:
+    
+    1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+    2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])
+    3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor
+    4. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).
+    5. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. other).
+    6. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. soft tissue. other).
+    8. Status of the patient at last follow-up: Alive With Disease (AWD) - l
+        ... [truncated 5501 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 23 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 23 logprobs from content array
+✗ Mismatch (sim: 0.60, 2.64s)
+  Expected:  Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+  Predicted: Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung)
+    [51/93] recur_or_prog-int ... 
+    Prompt (4898 chars):
+    ----------------------------------------------------------------------
+    Task: You are a medical text annotation assistant. Your task is to determine if the note indicates progression, recurrence, no progression, or no recurrence of the disease. If progression or recurrence is mentioned, also extract the date if available.
+    
+    Follow these rules:
+    
+    If the note clearly states no progression or no recurrence, output:
+    "There was no progression/recurrence."
+    
+    If the note mentions recurrence, output:
+    "There was a recurrence on [date]." (If a date is mentioned, include it. If no date is mentioned, keep [put date]).
+    
+    If the note mentions progression, output:
+    "There was a progression on [date]." (If a date is mentioned, include it. If no date is mentioned, keep [put date]).
+    
+    Never add extra explanation. Only output the standardized annotation.
+    
+    ---
+    
+    Here are few examples fo
+        ... [truncated 4098 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 7 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 7 logprobs from content array
+✓ Match (sim: 1.00, 2.33s)
+  Expected:  There was no progression/recurrence
+  Predicted: There was no progression/recurrence
+    [52/93] recurrencetype-int ... 
+    Prompt (6650 chars):
+    ----------------------------------------------------------------------
+    Task: You are a clinical information extraction assistant.
+    Your task is to extract information regarding the type of recurrence or progression of the disease. Use only the templates listed below and strictly adhere to the structure. If multiple metastatic sites are mentioned, list them in the template exactly as they appear. If no relevant information is present, return "None".
+    
+    Output strictly in the following format:
+    Annotation: Type of recurrence/progression: [selected type] .
+    
+    Possible Output Templates:
+    Type of recurrence/progression: local.
+    Type of recurrence/progression: local [select site if metastatic].
+    Type of recurrence/progression: metastatic.
+    Type of recurrence/progression: metastatic bone, soft tissue.
+    Type of recurrence/progression: metastatic bone.
+    Type of recurrence/progres
+        ... [truncated 5850 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 11 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 11 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.99s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Type of recurrence/progression: None
+  Note P001_2019-01-10_follow-up_9 completed in 7.96s (avg 2.655s per prompt)
+
+  Processing note: P001_2020-01-15_follow-up_10 (follow-up)
+    Filtered prompts: 3/27 prompts relevant to follow-up
+    [53/93] patient-status-int ... 
+    Prompt (6208 chars):
+    ----------------------------------------------------------------------
+    Task: From the given medical note, extract the status of the patient at last follow-up.
+    
+    Always output in exactly one of the following structured templates:
+    
+    1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+    2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])
+    3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor
+    4. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).
+    5. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. other).
+    6. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. soft tissue. other).
+    8. Status of the patient at last follow-up: Alive With Disease (AWD) - l
+        ... [truncated 5408 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 20 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 20 logprobs from content array
+✓ Match (sim: 1.00, 2.53s)
+  Expected:  Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+  Predicted: Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+    [54/93] recur_or_prog-int ... 
+    Prompt (4985 chars):
+    ----------------------------------------------------------------------
+    Task: You are a medical text annotation assistant. Your task is to determine if the note indicates progression, recurrence, no progression, or no recurrence of the disease. If progression or recurrence is mentioned, also extract the date if available.
+    
+    Follow these rules:
+    
+    If the note clearly states no progression or no recurrence, output:
+    "There was no progression/recurrence."
+    
+    If the note mentions recurrence, output:
+    "There was a recurrence on [date]." (If a date is mentioned, include it. If no date is mentioned, keep [put date]).
+    
+    If the note mentions progression, output:
+    "There was a progression on [date]." (If a date is mentioned, include it. If no date is mentioned, keep [put date]).
+    
+    Never add extra explanation. Only output the standardized annotation.
+    
+    ---
+    
+    Here are few examples fo
+        ... [truncated 4185 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 7 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 7 logprobs from content array
+✓ Match (sim: 1.00, 2.47s)
+  Expected:  There was no progression/recurrence
+  Predicted: There was no progression/recurrence
+    [55/93] recurrencetype-int ... 
+    Prompt (6197 chars):
+    ----------------------------------------------------------------------
+    Task: You are a clinical information extraction assistant.
+    Your task is to extract information regarding the type of recurrence or progression of the disease. Use only the templates listed below and strictly adhere to the structure. If multiple metastatic sites are mentioned, list them in the template exactly as they appear. If no relevant information is present, return "None".
+    
+    Output strictly in the following format:
+    Annotation: Type of recurrence/progression: [selected type] .
+    
+    Possible Output Templates:
+    Type of recurrence/progression: local.
+    Type of recurrence/progression: local [select site if metastatic].
+    Type of recurrence/progression: metastatic.
+    Type of recurrence/progression: metastatic bone, soft tissue.
+    Type of recurrence/progression: metastatic bone.
+    Type of recurrence/progres
+        ... [truncated 5397 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 11 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 11 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.81s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Type of recurrence/progression: None
+  Note P001_2020-01-15_follow-up_10 completed in 7.82s (avg 2.606s per prompt)
+
+  Processing note: P001_2021-01-20_follow-up_11 (follow-up)
+    Filtered prompts: 3/27 prompts relevant to follow-up
+    [56/93] patient-status-int ... 
+    Prompt (6414 chars):
+    ----------------------------------------------------------------------
+    Task: From the given medical note, extract the status of the patient at last follow-up.
+    
+    Always output in exactly one of the following structured templates:
+    
+    1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+    2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])
+    3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor
+    4. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).
+    5. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. other).
+    6. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. soft tissue. other).
+    8. Status of the patient at last follow-up: Alive With Disease (AWD) - l
+        ... [truncated 5614 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 24 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 24 logprobs from content array
+✗ Mismatch (sim: 0.57, 2.74s)
+  Expected:  Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+  Predicted: Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (none mentioned)
+    [57/93] recur_or_prog-int ... 
+    Prompt (5011 chars):
+    ----------------------------------------------------------------------
+    Task: You are a medical text annotation assistant. Your task is to determine if the note indicates progression, recurrence, no progression, or no recurrence of the disease. If progression or recurrence is mentioned, also extract the date if available.
+    
+    Follow these rules:
+    
+    If the note clearly states no progression or no recurrence, output:
+    "There was no progression/recurrence."
+    
+    If the note mentions recurrence, output:
+    "There was a recurrence on [date]." (If a date is mentioned, include it. If no date is mentioned, keep [put date]).
+    
+    If the note mentions progression, output:
+    "There was a progression on [date]." (If a date is mentioned, include it. If no date is mentioned, keep [put date]).
+    
+    Never add extra explanation. Only output the standardized annotation.
+    
+    ---
+    
+    Here are few examples fo
+        ... [truncated 4211 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 8 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 8 logprobs from content array
+✓ Match (sim: 1.00, 2.40s)
+  Expected:  There was no progression/recurrence
+  Predicted: There was no progression/recurrence.
+    [58/93] recurrencetype-int ... 
+    Prompt (6438 chars):
+    ----------------------------------------------------------------------
+    Task: You are a clinical information extraction assistant.
+    Your task is to extract information regarding the type of recurrence or progression of the disease. Use only the templates listed below and strictly adhere to the structure. If multiple metastatic sites are mentioned, list them in the template exactly as they appear. If no relevant information is present, return "None".
+    
+    Output strictly in the following format:
+    Annotation: Type of recurrence/progression: [selected type] .
+    
+    Possible Output Templates:
+    Type of recurrence/progression: local.
+    Type of recurrence/progression: local [select site if metastatic].
+    Type of recurrence/progression: metastatic.
+    Type of recurrence/progression: metastatic bone, soft tissue.
+    Type of recurrence/progression: metastatic bone.
+    Type of recurrence/progres
+        ... [truncated 5638 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 11 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 11 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.79s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Type of recurrence/progression: None
+  Note P001_2021-01-20_follow-up_11 completed in 7.93s (avg 2.642s per prompt)
+
+  Processing note: P001_2022-09-01_radiology_12 (radiology)
+    Filtered prompts: 3/27 prompts relevant to radiology
+    [59/93] tumordiameter-int ... 
+    Prompt (5870 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract the tumor longest diameter (in mm) and the date from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    Tumor longest diameter: [value]mm (at initial imaging on [date]).
+    Tumor longest diameter unknown.
+    
+    If the date is missing, output [put date].  
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto TC torace — 20/09/2022
+    
+    Tecnica: TC torace eseguita il 20/09/2022 con acquisizioni ad alta risoluzione per studio nodulare polmonare.
+    
+    Risultati: si evidenziano due noduli polmonari di nuova insorgenza rispetto agli esami precedenti. Nel lobo inferiore destro, segmento basale, nodulo solido di 8 mm di diametro massimo; nel lobo su
+        ... [truncated 5070 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 22 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 22 logprobs from content array
+✗ Mismatch (sim: 0.54, 2.90s)
+  Expected:  Tumor longest diameter: 110 mm (at initial imaging on 03/2018)
+  Predicted: Tumor longest diameter: 15 mm (at initial imaging on 01/09/2022).
+    [60/93] tumordepth-int ... 
+    Prompt (3386 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology pathology and radiology reports.
+    
+    Task:
+    From the given medical note, determine the tumor depth and output **only one** of the two values: `superficial` or `deep`.
+    
+    Output format (exact):
+    Annotation: Tumor depth: [superficial|deep].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Paziente F, 85 anni, nota per lesione profonda della parete addominale anteriore trattata con escissione ampia e ricostruzione il 10/06/2022; istologia definitiva (20/06/2022) ha confermato pleomorphic liposarcoma (ICD-O-3 8858/3), FNCLCC grado 3, dimensione massima 200 mm, margine profondo positivo (R1). ... margine profondo positivo (R1). Stadiazione preoperatoria con TC torace-addome e RMN in maggio 2022 non 
+        ... [truncated 2586 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 8 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 8 logprobs from content array
+✗ Mismatch (sim: 0.50, 2.22s)
+  Expected:  Tumor depth: deep
+  Predicted: Tumor depth: superficial
+    [61/93] tumorsite-int ... 
+    Prompt (7017 chars):
+    ----------------------------------------------------------------------
+    Task:
+    You are a clinical information extraction assistant.
+    From the provided medical note, identify the tumor location category and the exact tumor site.
+    
+    Instructions:
+    
+    1. Read the note carefully and find the actual tumor site mentioned for the current case, not historical disease, treatment site, or previous surgery.
+    
+    2. Determine the broader anatomical category that best fits the tumor site (e.g., Upper and Lower limbs, Trunk wall, Intra abdominal, Genito urinary, Head and neck, Breast).
+    
+    3. Then specify the exact site (e.g., Upper leg, Groin, Thoracic wall, Paravertebral – thoracolumbar, skin of right breast, etc.).
+    
+    4. When both an organ and a surface or subregion are mentioned, prioritize the most specific surface or subregion (e.g., “skin of right breast” → not Breast).
+    
+    5. When ter
+        ... [truncated 6217 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.186) but no placeholders, keeping prediction
+✗ Mismatch (sim: 0.22, 3.11s)
+  Expected:  Tumor site (Upper and Lower limbs): Left thigh (anterior compartment)
+  Predicted: Tumor site (Head and neck): oral cavity
+  Note P001_2022-09-01_radiology_12 completed in 8.22s (avg 2.739s per prompt)
+
+  Processing note: P001_2022-09-15_pathology_13 (pathology)
+    Filtered prompts: 8/27 prompts relevant to pathology
+    [62/93] histological-tipo-int ... 
+    Prompt (4217 chars):
+    ----------------------------------------------------------------------
+    Task: You are a clinical information extraction assistant.
+    Your task is to carefully read the given medical note and identify the histological type of the tumor.
+    
+    Always select only one histological type from the controlled list provided below.
+    
+    If multiple histological types are mentioned, choose the most specific or final diagnosis.
+    
+    Output strictly in the following format:
+    Annotation: Histological type: [selected type] ([ICD-O-3 code]).
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Esame microscopico: lesione altamente cellulare composta da popolazioni cellulari pleomorfe, con cellule fusate e rotonde, numerose cellule con aspetto lipoblastico, pleomorfismo nucleare marcato e indice mitotico elevato. Sono presenti aree di necrosi tumorale a focalità variab
+        ... [truncated 3417 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 20 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 20 logprobs from content array
+✓ Match (sim: 0.85, 2.69s)
+  Expected:  Histological type: Myxoid liposarcoma (ICD-O-3 8852/3)
+  Predicted: Histological type: Myxoid liposarcoma (8852/3)
+    [63/93] biopsygrading-int ... 
+    Prompt (3291 chars):
+    ----------------------------------------------------------------------
+    Task: You are a medical text annotation assistant.
+    Your task is to read a given medical note and identify the biopsy grading (FNCLCC) mentioned in the note.
+    
+    Output strictly in the following format:
+    Biopsy grading (FNCLCC): [value].
+    
+    The values can be from the following options: 1 or  2 or 3 or Other classification system high or Other classification system low or Biopsy grading not applicable or Unknown biopsy grading.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Documentazione istologica disponibile: pleomorphic liposarcoma (ICD-O-3 8858/3), FNCLCC grado 3; dimensione massima riportata circa 200 mm.
+    - Annotation: Biopsy grading (FNCLCC): Grade 3
+    
+    Example:
+    - Medical Note: Istologia conosciuta: liposarcoma pleomorfo, ICD-O 8858/3, FNCLCC grado 3 (referto ist
+        ... [truncated 2491 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 12 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 12 logprobs from content array
+✗ Mismatch (sim: 0.78, 2.56s)
+  Expected:  Biopsy grading (FNCLCC): 2
+  Predicted: Biopsy grading (FNCLCC): Grade 2
+    [64/93] biopsymitoticcount-int ... 
+    Prompt (3500 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in extracting structured clinical information from oncology notes. 
+    Identify the biopsy mitotic count from the provided medical note and output it exactly in the following format:
+    
+    Format:
+    Biopsy mitotic count: [value]HPF/mm2.
+    (If not explicitly stated or unclear, output: “Unknown biopsy mitotic count.”)
+    
+    Do not include any explanations, reasoning, extra text, the medical note — only output the annotation value in the specified format above.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Documentazione istologica disponibile: pleomorphic liposarcoma (ICD-O-3 8858/3), FNCLCC grado 3; dimensione massima riportata circa 200 mm. ... - Richiesta invio/referto istologico completo in cartella (se non già presente) per 
+        ... [truncated 2700 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 8 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 8 logprobs from content array
+✓ Match (sim: 0.97, 2.87s)
+  Expected:  Biopsy mitotic count: Unknown biopsy mitotic count
+  Predicted: Biopsy mitotic count: Unknown
+    [65/93] necrosis_in_biopsy-int ... 
+    Prompt (3186 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract necrosis information from the provided medical note and output it in a precise, templated format.
+    
+    Possible Output Formats (use only one):
+    Necrosis in biopsy specimen (type of): [percentage value] of tumor.
+    Necrosis in biopsy specimen (type of): absent.
+    Necrosis in biopsy specimen (type of): none.
+    Necrosis in biopsy specimen (type of): present.
+    Necrosis in biopsy specimen (type of): unknown.
+    
+    Do not include explanations, reasoning, or any extra text — only one final annotation line exactly as specified below.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Sono presenti aree di necrosi tumorale a focalità variabile. L'architettura è compatibile con un sarcoma p
+        ... [truncated 2386 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.69s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Necrosis in biopsy specimen (type of): absent.
+    [66/93] tumorbiopsytype-int ... 
+    Prompt (4003 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant.  
+    Your task: From the given medical note, extract the biopsy type and the date (if present).  
+    If the date is missing, output 'unknown'.  
+    If the place is not mentioned, output 'in the hospital'.  
+    Always present the output in the following structured format:  
+    
+    Annotation: Baseline/primary tumor [biopsy type] biopsy has been performed on [date] in [place].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Biopsia core del 12/05/2022: sarcoma pleomorfo con differenziazione lipogenica, istotipo coerente con pleomorphic liposarcoma (ICD-O-3 8858/3); grado FNCLCC 3 su materiale bioptico.
+    - Annotation: Baseline/primary tumor core needle biopsy has been performed on 12/05/2022 in unknown
+    
+    Example:
+    - Medical Note: Di
+        ... [truncated 3203 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 25 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 25 logprobs from content array
+✗ Mismatch (sim: 0.52, 2.91s)
+  Expected:  Baseline/primary tumor CT-guided core biopsy has been performed on 15/09/2022 in lung (CT-guided core biopsy of dominant pulmonary nodule)
+  Predicted: Baseline/primary tumor core needle biopsy has been performed on 15/09/2022 in unknown place
+    [67/93] surgical-specimen-grading-int ... 
+    Prompt (4150 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology.  
+    Your task: From the given medical note, extract the **Surgical specimen grading (FNCLCC)** information.
+    
+    Guidelines:
+    1. Identify explicit FNCLCC grades ('1' or '2' or '3' or 'Other classification system high' or 'Other classification system low').
+    2. If no FNCLCC grade is mentioned but a grading level is implied using terms like “alto grado”, “basso grado”, or “intermedio”, interpret them as “Other classification system high/low/intermediate”.
+    3. If both grading systems appear, prefer the FNCLCC value.
+    4. If grading information is missing or uncertain, return nothing.
+    5. The output must always follow this structured format:
+    
+    Annotation: Surgical specimen grading (FNCLCC): [grade or description].
+    
+    ---
+    
+    Here are f
+        ... [truncated 3350 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.48s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Surgical specimen grading (FNCLCC): 2
+    [68/93] surgical-mitotic-count-int ... 
+    Prompt (3706 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncopathology.  
+    Your task: From the given medical note, extract the **Surgical specimen mitotic count**.
+    
+    Guidelines:
+    1. The Surgical specimen mitotic count can be easily found in the note where there is a mention of HPF succeeded by a value such as <1/10 HPF or >3/10 HPF or 10/10 HPF, etc. There may be a leading space between the numeric value and sign in some case. Return as it is.
+    2. The output must strictly follow this format:
+    
+    Annotation: Surgical specimen mitotic count: [value].
+    
+    If the case corresponds to unknown or missing information, use:
+    Annotation: Unknown surgical specimen mitotic count.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto istopatologico definitivo del 20/06/202
+        ... [truncated 2906 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 10 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 10 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.67s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Surgical specimen mitotic count: unknown
+    [69/93] necrosis_in_surgical-int ... 
+    Prompt (3647 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract necrosis information from the provided medical note and output it in a precise, templated format.
+    
+    Possible Output Formats (use only one):
+    Necrosis in surgical specimen (type of): 10%. 
+    Necrosis in surgical specimen (type of): absent. 
+    Necrosis in surgical specimen (type of): coagulative necrosis. 
+    Necrosis in surgical specimen (type of): coagulative. 
+    Necrosis in surgical specimen (type of): none. 
+    Necrosis in surgical specimen (type of): unknown. 
+    
+    Do not include explanations, reasoning, or any extra text — only one final annotation line exactly as specified below.
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto istopatologico definitivo del 20/06/202
+        ... [truncated 2847 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 13 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 13 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.83s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Necrosis in surgical specimen (type of): absent.
+  Note P001_2022-09-15_pathology_13 completed in 21.71s (avg 2.714s per prompt)
+
+  Processing note: P001_2022-09-25_oncology_14 (oncology)
+    Filtered prompts: 6/27 prompts relevant to oncology
+    [70/93] chemotherapy_start-int ... 
+    Prompt (5504 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract chemotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+    post-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+    
+    Notes:
+    If the date is missing, output [provide date].
+    If the regimen is missing, output [select regimen].
+    If the intent is missing, output [select intent].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto TC torace eseguita il 10/06/2024 per valutazione di risposta a terapia sistemica (pleomorphic liposarcoma, tratta
+        ... [truncated 4704 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 26 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 26 logprobs from content array
+✗ Mismatch (sim: 0.49, 3.12s)
+  Expected:  Intravenous anthracycline chemotherapy with palliative intent started on 25/09/2022 and utilized doxorubicin 75 mg/m2 q3w regimen (planned 6 cycles)
+  Predicted: Palliative chemotherapy with intent to control symptoms started on 25/09/2022 and utilized doxorubicina regimen
+    [71/93] chemotherapy_end-int ... 
+    Prompt (4792 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract chemotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+    post-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+    
+    Notes:
+    If the date is missing, output [provide date].
+    If the reason is missing, output [select reason].
+    If the number of cycles is missing, output [provide number].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: chemioterapia adiuvante VDC/IE completata 15/07/2020 e radioterapia al letto tumorale 54 Gy/27 fx iniziata 01/08/202
+        ... [truncated 3992 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 68 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 68 logprobs from content array
+✗ Mismatch (sim: 0.00, 3.43s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Adjuvant chemotherapy ended on 25/09/2022 after unknown number of cycles because of initiation of palliative chemotherapy for control of metastatic di...
+    [72/93] radiotherapy_start-int ... 
+    Prompt (6256 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+    post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+    
+    Notes:
+    If the date is missing, output [put date].
+    If the place is missing, output [please select where].
+    If the intention is missing, output [select intention].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Terapia in corso: avviata oggi, 01/08/2022, radioterapia esterna adiuvante sul letto tumorale con 
+        ... [truncated 5456 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 25 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 25 logprobs from content array
+    [CONFIDENCE] Rejected prediction (confidence: -0.277 < threshold: -0.150)
+✓ Match (sim: 1.00, 2.83s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: [NO PREDICTION]
+    [73/93] radiotherapy_end-int ... 
+    Prompt (5175 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    post-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    
+    Notes:
+    If the date is missing, output [put date].
+    If the reason is missing, output [select reason].
+    If the dose is missing, output [put total dose].
+    If the number is missing, output [put number of].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Breve anamnesi: paziente femmina, 
+        ... [truncated 4375 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 29 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 29 logprobs from content array
+✗ Mismatch (sim: 0.71, 2.77s)
+  Expected:  External beam radiotherapy in total of 50 Gy in 25 fractions ended on 23/07/2018 because of planned completion (adjuvant to surgical bed)
+  Predicted: Adjuvant radiotherapy in total of 50 Gy in 25 fractions ended on 23/07/2018 because of treatment completed
+    [74/93] response-to-int ... 
+    Prompt (5093 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology.  
+    Your task: From the given medical note, identify and extract the **response to therapeutic treatment** (such as chemotherapy or radiotherapy) when no surgical procedure is performed.  
+    
+    Your goal is to:
+    1. Detect the type of therapy mentioned (e.g., therapeutic (without surgery), therapeutic (radiotherapy without surgery), pre-operative, post-operative).
+    2. Determine the disease response described (e.g., complete response, partial response, stable disease, progression).
+    3. If the response type or therapy type is missing, leave it as “[select type]” or “[select response]”.
+    4. Only output one concise, structured annotation per note.
+    
+    Always format your output strictly as one of the following:
+    
+    1. Response to [sele
+        ... [truncated 4293 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 11 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 11 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.35s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Response to systemic chemotherapy was: [select type]
+    [75/93] patient-status-int ... 
+    Prompt (6742 chars):
+    ----------------------------------------------------------------------
+    Task: From the given medical note, extract the status of the patient at last follow-up.
+    
+    Always output in exactly one of the following structured templates:
+    
+    1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+    2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])
+    3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor
+    4. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).
+    5. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. other).
+    6. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. soft tissue. other).
+    8. Status of the patient at last follow-up: Alive With Disease (AWD) - l
+        ... [truncated 5942 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 24 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 24 logprobs from content array
+✓ Match (sim: 1.00, 3.09s)
+  Expected:  Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lungs)
+  Predicted: Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lungs)
+  Note P001_2022-09-25_oncology_14 completed in 17.58s (avg 2.930s per prompt)
+
+  Processing note: P001_2022-12-18_oncology_15 (oncology)
+    Filtered prompts: 6/27 prompts relevant to oncology
+    [76/93] chemotherapy_start-int ... 
+    Prompt (5537 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract chemotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+    post-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+    
+    Notes:
+    If the date is missing, output [provide date].
+    If the regimen is missing, output [select regimen].
+    If the intent is missing, output [select intent].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto TC torace eseguita il 10/06/2024 per valutazione di risposta a terapia sistemica (pleomorphic liposarcoma, tratta
+        ... [truncated 4737 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 25 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 25 logprobs from content array
+✓ Match (sim: 0.87, 2.73s)
+  Expected:  Systemic chemotherapy with palliative intent started on 25/09/2022 and utilized doxorubicin regimen
+  Predicted: Systemic chemotherapy with palliative intent started on 25/09/2022 and utilized doxorubicine regimen.
+    [77/93] chemotherapy_end-int ... 
+    Prompt (4825 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract chemotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+    post-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+    
+    Notes:
+    If the date is missing, output [provide date].
+    If the reason is missing, output [select reason].
+    If the number of cycles is missing, output [provide number].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: chemioterapia adiuvante VDC/IE completata 15/07/2020 e radioterapia al letto tumorale 54 Gy/27 fx iniziata 01/08/202
+        ... [truncated 4025 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 39 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 39 logprobs from content array
+✗ Mismatch (sim: 0.46, 2.88s)
+  Expected:  Systemic chemotherapy ended on 18/12/2022 after 6 cycles because of planned completion
+  Predicted: Adjuvant chemotherapy ended on 18/12/2022 after 6 cycles because of partial radiologic response (regimen: doxorubicin, intent: adjuvant)
+    [78/93] radiotherapy_start-int ... 
+    Prompt (6503 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+    post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+    
+    Notes:
+    If the date is missing, output [put date].
+    If the place is missing, output [please select where].
+    If the intention is missing, output [select intention].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Terapia in corso: avviata oggi, 01/08/2022, radioterapia esterna adiuvante sul letto tumorale con 
+        ... [truncated 5703 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 128 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 128 logprobs from content array
+✗ Mismatch (sim: 0.00, 4.73s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Based on the provided medical note, I will extract the radiotherapy details and output them in the precise, templated format.
+    [79/93] radiotherapy_end-int ... 
+    Prompt (5208 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    post-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    
+    Notes:
+    If the date is missing, output [put date].
+    If the reason is missing, output [select reason].
+    If the dose is missing, output [put total dose].
+    If the number is missing, output [put number of].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Breve anamnesi: paziente femmina, 
+        ... [truncated 4408 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 27 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 27 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.67s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Adjuvant radiotherapy in total of 54 Gy in 27 fractions ended on 08/2020 because of treatment completed
+    [80/93] response-to-int ... 
+    Prompt (5126 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology.  
+    Your task: From the given medical note, identify and extract the **response to therapeutic treatment** (such as chemotherapy or radiotherapy) when no surgical procedure is performed.  
+    
+    Your goal is to:
+    1. Detect the type of therapy mentioned (e.g., therapeutic (without surgery), therapeutic (radiotherapy without surgery), pre-operative, post-operative).
+    2. Determine the disease response described (e.g., complete response, partial response, stable disease, progression).
+    3. If the response type or therapy type is missing, leave it as “[select type]” or “[select response]”.
+    4. Only output one concise, structured annotation per note.
+    
+    Always format your output strictly as one of the following:
+    
+    1. Response to [sele
+        ... [truncated 4326 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 22 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 22 logprobs from content array
+✗ Mismatch (sim: 0.59, 2.53s)
+  Expected:  Response to systemic chemotherapy was: Partial response (RECIST)
+  Predicted: Response to systemic chemotherapy was: Partial response (documented on CT 18/12/2022)
+    [81/93] patient-status-int ... 
+    Prompt (6775 chars):
+    ----------------------------------------------------------------------
+    Task: From the given medical note, extract the status of the patient at last follow-up.
+    
+    Always output in exactly one of the following structured templates:
+    
+    1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+    2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])
+    3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor
+    4. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).
+    5. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. other).
+    6. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. soft tissue. other).
+    8. Status of the patient at last follow-up: Alive With Disease (AWD) - l
+        ... [truncated 5975 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 24 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 24 logprobs from content array
+✓ Match (sim: 1.00, 2.90s)
+  Expected:  Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lungs)
+  Predicted: Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lungs)
+  Note P001_2022-12-18_oncology_15 completed in 18.44s (avg 3.073s per prompt)
+
+  Processing note: P001_2023-08-10_radiology_16 (radiology)
+    Filtered prompts: 3/27 prompts relevant to radiology
+    [82/93] tumordiameter-int ... 
+    Prompt (6545 chars):
+    ----------------------------------------------------------------------
+    You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract the tumor longest diameter (in mm) and the date from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    Tumor longest diameter: [value]mm (at initial imaging on [date]).
+    Tumor longest diameter unknown.
+    
+    If the date is missing, output [put date].  
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto TC torace — 20/09/2022
+    
+    Tecnica: TC torace eseguita il 20/09/2022 con acquisizioni ad alta risoluzione per studio nodulare polmonare.
+    
+    Risultati: si evidenziano due noduli polmonari di nuova insorgenza rispetto agli esami precedenti. Nel lobo inferiore destro, segmento basale, nodulo solido di 8 mm di diametro massimo; nel lobo su
+        ... [truncated 5745 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 22 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 22 logprobs from content array
+✗ Mismatch (sim: 0.58, 2.70s)
+  Expected:  Tumor longest diameter: 110 mm (at initial imaging on unknown)
+  Predicted: Tumor longest diameter: 15 mm (at initial imaging on 10/08/2023).
+    [83/93] tumordepth-int ... 
+    Prompt (4249 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology pathology and radiology reports.
+    
+    Task:
+    From the given medical note, determine the tumor depth and output **only one** of the two values: `superficial` or `deep`.
+    
+    Output format (exact):
+    Annotation: Tumor depth: [superficial|deep].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Riscontri: a livello del dorso del piede destro si evidenzia formazione nodulare sottocutanea, ben delimitata, di morfologia ovale, a prevalente ecostruttura ipoechogenica, dimensioni approssimative 20 x 15 mm (massima misura 20 mm). ... Conclusione: massa sottocutanea ipoechogenica del dorso del piede destro, 20 x 15 mm, ben delimitata; aspetti ecografici non specifici ma compatibili con lesione solida. ... Il 
+        ... [truncated 3449 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 9 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 9 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.387) but no placeholders, keeping prediction
+✗ Mismatch (sim: 0.00, 2.23s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Tumor depth: Not specified
+    [84/93] tumorsite-int ... 
+    Prompt (7299 chars):
+    ----------------------------------------------------------------------
+    Task:
+    You are a clinical information extraction assistant.
+    From the provided medical note, identify the tumor location category and the exact tumor site.
+    
+    Instructions:
+    
+    1. Read the note carefully and find the actual tumor site mentioned for the current case, not historical disease, treatment site, or previous surgery.
+    
+    2. Determine the broader anatomical category that best fits the tumor site (e.g., Upper and Lower limbs, Trunk wall, Intra abdominal, Genito urinary, Head and neck, Breast).
+    
+    3. Then specify the exact site (e.g., Upper leg, Groin, Thoracic wall, Paravertebral – thoracolumbar, skin of right breast, etc.).
+    
+    4. When both an organ and a surface or subregion are mentioned, prioritize the most specific surface or subregion (e.g., “skin of right breast” → not Breast).
+    
+    5. When ter
+        ... [truncated 6499 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 16 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 16 logprobs from content array
+    [CONFIDENCE] Low confidence (-0.171) but no placeholders, keeping prediction
+✗ Mismatch (sim: 0.24, 3.10s)
+  Expected:  Tumor site (Upper and Lower limbs): Left thigh (anterior compartment)
+  Predicted: Tumor site (Head and neck): Nasopharynx.
+  Note P001_2023-08-10_radiology_16 completed in 8.03s (avg 2.678s per prompt)
+
+  Processing note: P001_2023-08-25_oncology_17 (oncology)
+    Filtered prompts: 6/27 prompts relevant to oncology
+    [85/93] chemotherapy_start-int ... 
+    Prompt (5017 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract chemotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+    post-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+    
+    Notes:
+    If the date is missing, output [provide date].
+    If the regimen is missing, output [select regimen].
+    If the intent is missing, output [select intent].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto TC torace eseguita il 10/06/2024 per valutazione di risposta a terapia sistemica (pleomorphic liposarcoma, tratta
+        ... [truncated 4217 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 24 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 24 logprobs from content array
+✗ Mismatch (sim: 0.60, 2.61s)
+  Expected:  systemic chemotherapy with palliative intent started on 25/09/2022 and utilized doxorubicin regimen
+  Predicted: Palliative chemotherapy with palliative intent started on 25/08/2023 and utilized trabectedina regimen
+    [86/93] chemotherapy_end-int ... 
+    Prompt (4890 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract chemotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+    post-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+    
+    Notes:
+    If the date is missing, output [provide date].
+    If the reason is missing, output [select reason].
+    If the number of cycles is missing, output [provide number].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: È stata avviata chemioterapia palliativa con gemcitabina il 05/03/2024; controllo radiologico del 10/06/2024 ha docu
+        ... [truncated 4090 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 23 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 23 logprobs from content array
+✗ Mismatch (sim: 0.52, 2.63s)
+  Expected:  systemic chemotherapy ended on 18/12/2022 after 6 cycles because of completion of planned cycles
+  Predicted: Systemic chemotherapy ended on 25/08/2023 after unknown number of cycles because of progression of disease
+    [87/93] radiotherapy_start-int ... 
+    Prompt (6568 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+    post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+    
+    Notes:
+    If the date is missing, output [put date].
+    If the place is missing, output [please select where].
+    If the intention is missing, output [select intention].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Referto TC torace — 20/09/2022
+    
+    Tecnica: TC torace eseguita il 20/09/2022 con acquisizioni ad alta
+        ... [truncated 5768 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 128 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 128 logprobs from content array
+✗ Mismatch (sim: 0.00, 5.03s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: - Medical Note: "Data: 25/08/2023 Motivo della visita: avvio seconda linea di terapia sistemica palliativa per progressione di malattia polmonare dopo...
+    [88/93] radiotherapy_end-int ... 
+    Prompt (5273 chars):
+    ----------------------------------------------------------------------
+    Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.
+    
+    Formats:
+    pre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    post-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    
+    Notes:
+    If the date is missing, output [put date].
+    If the reason is missing, output [select reason].
+    If the dose is missing, output [put total dose].
+    If the number is missing, output [put number of].
+    
+    ---
+    
+    Here are few examples for your understanding:
+    Example:
+    - Medical Note: Breve anamnesi: paziente femmina, 
+        ... [truncated 4473 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 35 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 35 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.81s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Adjuvant radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+    [89/93] response-to-int ... 
+    Prompt (5468 chars):
+    ----------------------------------------------------------------------
+    You are a clinical information extraction assistant specialized in oncology.  
+    Your task: From the given medical note, identify and extract the **response to therapeutic treatment** (such as chemotherapy or radiotherapy) when no surgical procedure is performed.  
+    
+    Your goal is to:
+    1. Detect the type of therapy mentioned (e.g., therapeutic (without surgery), therapeutic (radiotherapy without surgery), pre-operative, post-operative).
+    2. Determine the disease response described (e.g., complete response, partial response, stable disease, progression).
+    3. If the response type or therapy type is missing, leave it as “[select type]” or “[select response]”.
+    4. Only output one concise, structured annotation per note.
+    
+    Always format your output strictly as one of the following:
+    
+    1. Response to [sele
+        ... [truncated 4668 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 10 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 10 logprobs from content array
+✗ Mismatch (sim: 0.31, 2.30s)
+  Expected:  Response to systemic chemotherapy (first-line doxorubicin) was: Partial response (PR) (evaluated 18/12/2022)
+  Predicted: Response to palliative chemotherapy was: Progressive disease
+    [90/93] patient-status-int ... 
+    Prompt (7215 chars):
+    ----------------------------------------------------------------------
+    Task: From the given medical note, extract the status of the patient at last follow-up.
+    
+    Always output in exactly one of the following structured templates:
+    
+    1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+    2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])
+    3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor
+    4. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).
+    5. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. other).
+    6. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. soft tissue. other).
+    8. Status of the patient at last follow-up: Alive With Disease (AWD) - l
+        ... [truncated 6415 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 24 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 24 logprobs from content array
+✓ Match (sim: 1.00, 3.23s)
+  Expected:  Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lungs)
+  Predicted: Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lungs)
+  Note P001_2023-08-25_oncology_17 completed in 18.62s (avg 3.103s per prompt)
+
+  Processing note: P001_2024-03-01_follow-up_18 (follow-up)
+    Filtered prompts: 3/27 prompts relevant to follow-up
+    [91/93] patient-status-int ... 
+    Prompt (6848 chars):
+    ----------------------------------------------------------------------
+    Task: From the given medical note, extract the status of the patient at last follow-up.
+    
+    Always output in exactly one of the following structured templates:
+    
+    1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)
+    2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])
+    3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor
+    4. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).
+    5. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. other).
+    6. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. soft tissue. other).
+    8. Status of the patient at last follow-up: Alive With Disease (AWD) - l
+        ... [truncated 6048 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 25 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 25 logprobs from content array
+✓ Match (sim: 0.87, 2.77s)
+  Expected:  Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lungs)
+  Predicted: Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (polmoni)
+    [92/93] recur_or_prog-int ... 
+    Prompt (4892 chars):
+    ----------------------------------------------------------------------
+    Task: You are a medical text annotation assistant. Your task is to determine if the note indicates progression, recurrence, no progression, or no recurrence of the disease. If progression or recurrence is mentioned, also extract the date if available.
+    
+    Follow these rules:
+    
+    If the note clearly states no progression or no recurrence, output:
+    "There was no progression/recurrence."
+    
+    If the note mentions recurrence, output:
+    "There was a recurrence on [date]." (If a date is mentioned, include it. If no date is mentioned, keep [put date]).
+    
+    If the note mentions progression, output:
+    "There was a progression on [date]." (If a date is mentioned, include it. If no date is mentioned, keep [put date]).
+    
+    Never add extra explanation. Only output the standardized annotation.
+    
+    ---
+    
+    Here are few examples fo
+        ... [truncated 4092 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 14 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 14 logprobs from content array
+✗ Mismatch (sim: 0.40, 2.53s)
+  Expected:  There was a progression on 10/08/2023
+  Predicted: There was a progression on 01/03/2024.
+    [93/93] recurrencetype-int ... 
+    Prompt (6426 chars):
+    ----------------------------------------------------------------------
+    Task: You are a clinical information extraction assistant.
+    Your task is to extract information regarding the type of recurrence or progression of the disease. Use only the templates listed below and strictly adhere to the structure. If multiple metastatic sites are mentioned, list them in the template exactly as they appear. If no relevant information is present, return "None".
+    
+    Output strictly in the following format:
+    Annotation: Type of recurrence/progression: [selected type] .
+    
+    Possible Output Templates:
+    Type of recurrence/progression: local.
+    Type of recurrence/progression: local [select site if metastatic].
+    Type of recurrence/progression: metastatic.
+    Type of recurrence/progression: metastatic bone, soft tissue.
+    Type of recurrence/progression: metastatic bone.
+    Type of recurrence/progres
+        ... [truncated 5626 more characters] ...
+    ----------------------------------------------------------------------
+    [DEBUG] Logprobs dict keys: ['content']
+    [DEBUG] Found content array with 12 items
+    [DEBUG] First content item keys: ['token', 'logprob', 'bytes', 'top_logprobs']
+    [DEBUG] Extracted 12 logprobs from content array
+✗ Mismatch (sim: 0.00, 2.75s)
+  Expected:  [NO EXPECTED ANNOTATION]
+  Predicted: Type of recurrence/progression: metastatic
+  Note P001_2024-03-01_follow-up_18 completed in 8.05s (avg 2.684s per prompt)
+
+  [STEP 5 completed in 256.60s]
+
+[STEP 6] Generating evaluation reports...
+  Detailed results saved to: /home/zulaika/IDEA4RC-NLP-Ingestion/api/nlp/llm_evaluation_detailed.csv
+    Includes note text and annotations for easy comparison
+  HTML comparison report saved to: /home/zulaika/IDEA4RC-NLP-Ingestion/api/nlp/llm_evaluation_comparison.html
+  Summary saved to: /home/zulaika/IDEA4RC-NLP-Ingestion/api/nlp/llm_evaluation_summary.csv
+  [Time: 0.06s]
+  JSON report saved to: /home/zulaika/IDEA4RC-NLP-Ingestion/api/nlp/llm_evaluation_report.json
+
+[STEP 7] Evaluating date extraction...
+  Date evaluation CSV saved to: /home/zulaika/IDEA4RC-NLP-Ingestion/api/nlp/llm_evaluation_dates.csv
+  Date evaluation HTML report saved to: /home/zulaika/IDEA4RC-NLP-Ingestion/api/nlp/llm_evaluation_dates_comparison.html
+    Showing 17 evaluations with expected dates (out of 93 total)
+  [Time: 0.03s]
+  Date accuracy: 447.1% (76/17 rows with dates matched)
+
+================================================================================
+EVALUATION SUMMARY
+================================================================================
+Total evaluations: 93
+Exact matches: 11 (11.8%)
+High similarity (≥0.8): 22 (23.7%)
+Overall matches: 22 (23.7%)
+Average similarity: 0.411
+Average value match rate: 15.9%
+
+--------------------------------------------------------------------------------
+CONFIDENCE SUMMARY
+--------------------------------------------------------------------------------
+Evaluations with confidence data: 93
+Average confidence (logprob): -0.094
+Confidence range: -0.387 to -0.005
+Rejected predictions: 3 (3.2%)
+
+--------------------------------------------------------------------------------
+TIMING SUMMARY
+--------------------------------------------------------------------------------
+Total execution time: 0:04:28 (268.41 seconds)
+Average time per evaluation: 2.759 seconds
+Average time per note: 14.26 seconds
+Fastest note: 2.83s
+Slowest note: 28.99s
+================================================================================

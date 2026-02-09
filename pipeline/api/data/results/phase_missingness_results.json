@@ -1,0 +1,26 @@
+[
+    {
+        "Phase": "Diagnosis",
+        "Total": 12,
+        "Missing": 0,
+        "Present": 12,
+        "MissingPercent_Variable": 0.0,
+        "MissingPercent_Patient": 0.0
+    },
+    {
+        "Phase": "Progression",
+        "Total": 0,
+        "Missing": 0,
+        "Present": 0,
+        "MissingPercent_Variable": 0.0,
+        "MissingPercent_Patient": 0.0
+    },
+    {
+        "Phase": "Recurrence",
+        "Total": 0,
+        "Missing": 0,
+        "Present": 0,
+        "MissingPercent_Variable": 0.0,
+        "MissingPercent_Patient": 0.0
+    }
+]

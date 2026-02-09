@@ -1,0 +1,63 @@
+{
+    "PatientFollowUp": [
+        "Patient"
+    ],
+    "CancerEpisode": [
+        "Patient"
+    ],
+    "Diagnosis": [
+        "CancerEpisode"
+    ],
+    "ClinicalStage": [
+        "Diagnosis"
+    ],
+    "PathologicalStage": [
+        "Diagnosis"
+    ],
+    "EpisodeEvent": [
+        "CancerEpisode"
+    ],
+    "DiseaseExtent": [
+        "EpisodeEvent"
+    ],
+    "GeneticTestExpression": [
+        "EpisodeEvent",
+        "Diagnosis"
+    ],
+    "Surgery": [
+        "EpisodeEvent",
+        "Diagnosis"
+    ],
+    "SystemicTreatment": [
+        "EpisodeEvent",
+        "Diagnosis"
+    ],
+    "Radiotherapy": [
+        "EpisodeEvent",
+        "Diagnosis"
+    ],
+    "RegionalDeepHyperthermia": [
+        "EpisodeEvent",
+        "Diagnosis"
+    ],
+    "IsolatedLimbPerfusion": [
+        "EpisodeEvent",
+        "Diagnosis"
+    ],
+    "DrugsForTreatments": [
+        "SystemicTreatment",
+        "RegionalDeepHyperthemia",
+        "IsolatedLimbPerfusion"
+    ],
+    "OverallTreatmentResponse": [
+        "EpisodeEvent",
+        "Diagnosis"
+    ],
+    "AdverseEvent": [
+        "Surgery",
+        "Radiotherapy",
+        "SystemicTreatment",
+        "RegionalDeepHyperthemia",
+        "IsolatedLimbPerfusion"
+    ]
+}

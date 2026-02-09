@@ -1,0 +1,32 @@
+[
+    {
+        "Entity": "Patient1",
+        "Phase": "Diagnosis",
+        "Present": 2
+    },
+    {
+        "Entity": "CancerEpisode2",
+        "Phase": "Diagnosis",
+        "Present": 2
+    },
+    {
+        "Entity": "Diagnosis3",
+        "Phase": "Diagnosis",
+        "Present": 3
+    },
+    {
+        "Entity": "EpisodeEvent4",
+        "Phase": "Diagnosis",
+        "Present": 2
+    },
+    {
+        "Entity": "Surgery5",
+        "Phase": "Diagnosis",
+        "Present": 2
+    },
+    {
+        "Entity": "Diagnosis6",
+        "Phase": "Diagnosis",
+        "Present": 2
+    }
+]

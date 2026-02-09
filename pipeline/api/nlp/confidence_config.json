@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "default_threshold": -0.15,
+  "prompt_type_thresholds": {
+    "biopsygrading-int": -0.05,
+    "stage_at_diagnosis-int": -0.2,
+    "tumordepth-int": -0.15,
+    "surgerytype-fs30-int": -0.02,
+    "surgical-mitotic-count-int": -0.12,
+    "necrosis_in_surgical-int": -0.05,
+    "recurrencetype-int": -0.1,
+    "chemotherapy_start-int": -0.3,
+    "chemotherapy_end-int": -0.2,
+    "radiotherapy_start-int": -0.15,
+    "radiotherapy_end-int": -0.18,
+    "response-to-int": -0.22,
+    "previous_cancer_treatment-int": -0.2,
+    "necrosis_in_biopsy-int": -0.05,
+    "surgical-specimen-grading-int": -0.08
+  },
+  "logprobs_mode": "raw_logprobs"
+}
+

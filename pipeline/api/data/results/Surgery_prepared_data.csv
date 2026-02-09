@@ -1,0 +1,2 @@
+patient_id,record_id,Surgery.dateOfSurgery,Surgery.episodeEvent,Surgery.surgicalSpecimenMitoticCount,Surgery.surgeryIntention,Surgery.surgeryType,Surgery.diagnosisReference,Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours,Surgery.tumorRupture,Surgery.marginsAfterSurgery
+TEST001,5,2023-07-30,4,,,,,,,

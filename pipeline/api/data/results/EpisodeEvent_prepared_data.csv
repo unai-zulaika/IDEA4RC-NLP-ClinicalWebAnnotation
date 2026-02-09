@@ -1,0 +1,2 @@
+patient_id,record_id,EpisodeEvent.cancerEpisode,EpisodeEvent.diseaseStatus,EpisodeEvent.dateOfEpisode,EpisodeEvent.definedAt
+TEST001,4,2,32947,,

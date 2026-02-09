@@ -1,0 +1,19 @@
+patient_id;original_source;core_variable;date_ref;value;record_id;note_id;prompt_type;types
+P001;NLP_LLM;Patient.birthYear;2018-03-15;1984;1;P001_2018-03-15_consultation_1;ageatdiagnosis-int;float
+P001;NLP_LLM;Diagnosis.deepDepth;2018-03-15;36768911;2;P001_2018-03-15_consultation_1;tumordepth-int;CodeableConcept
+P001;NLP_LLM;Diagnosis.histologySubgroup;2018-03-15;4101123;2;P001_2018-03-15_consultation_1;histological-tipo-int;CodeableConcept
+P001;NLP_LLM;DiseaseExtent.localised;2018-03-15;True;3;P001_2018-03-15_consultation_1;stage_at_diagnosis-int;boolean
+P001;NLP_LLM;Patient.previousMalignantCancerSite;2018-03-15;sarcoma;1;P001_2018-03-15_consultation_1;occurrence_cancer-int;string
+P001;NLP_LLM;Diagnosis.deepDepth;2018-03-22;36768749;2;P001_2018-03-22_radiology_2;tumordepth-int;CodeableConcept
+P001;NLP_LLM;DiseaseExtent.localised;2018-04-05;True;4;P001_2018-04-05_staging_4;stage_at_diagnosis-int;boolean
+P001;NLP_LLM;Surgery.surgeryType;2018-05-15;4301351;5;P001_2018-05-15_surgery_5;surgerytype-fs30-int;CodeableConcept
+P001;NLP_LLM;Surgery.dateOfSurgery;2018-05-15;15/05/2018;5;P001_2018-05-15_surgery_5;surgerytype-fs30-int;date in the ISO format ISO8601  https://en.wikipedia.org/wiki/ISO_8601 
+P001;NLP_LLM;Surgery.marginsAfterSurgery;2018-05-15;1634643;5;P001_2018-05-15_surgery_5;surgerymargins-int;CodeableConcept
+P001;NLP_LLM;Surgery.surgeryType;2018-05-15;4315400;5;P001_2018-05-15_surgery_5;reexcision-int;CodeableConcept
+P001;NLP_LLM;Diagnosis.histologySubgroup;2018-05-22;4101123;6;P001_2018-05-22_pathology_6;histological-tipo-int;CodeableConcept
+P001;NLP_LLM;Radiotherapy.setting;2018-06-15;4119031;7;P001_2018-06-15_oncology_7;radiotherapy_start-int;CodeableConcept
+P001;NLP_LLM;Diagnosis.deepDepth;2022-09-01;36768911;8;P001_2022-09-01_radiology_12;tumordepth-int;CodeableConcept
+P001;NLP_LLM;Diagnosis.histologySubgroup;2022-09-15;4101123;8;P001_2022-09-15_pathology_13;histological-tipo-int;CodeableConcept
+P001;NLP_LLM;SystemicTreatment.chemotherapyInfo;2022-12-18;4133895;9;P001_2022-12-18_oncology_15;response-to-int;CodeableConcept
+P001;NLP_LLM;Diagnosis.deepDepth;2023-08-10;36768911;10;P001_2023-08-10_radiology_16;tumordepth-int;CodeableConcept
+P001;NLP_LLM;EpisodeEvent.diseaseStatus;2024-03-01;32949;11;P001_2024-03-01_follow-up_18;recur_or_prog-int;CodeableConcept

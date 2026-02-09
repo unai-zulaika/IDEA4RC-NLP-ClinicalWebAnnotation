@@ -1,0 +1,36 @@
+{
+  "total_notes_processed": 3,
+  "total_entities_extracted": 3,
+  "entities_per_note": {
+    "avg": 0.0,
+    "min": 0,
+    "max": 0,
+    "median": 0.0
+  },
+  "notes_with_entities": 0,
+  "notes_without_entities": 3,
+  "entity_extraction_rate": 0.0,
+  "core_variables_coverage": {
+    "total_unique_variables": 3,
+    "top_10_variables": {
+      "Patient.sex": 1,
+      "Patient.birthYear": 1,
+      "Patient.countryOfResidence": 1
+    }
+  },
+  "date_extraction": {
+    "total_dates_extracted": 3,
+    "date_extraction_rate": 1.0
+  },
+  "error_rate": {
+    "total_errors": 0,
+    "error_percentage": 0.0
+  },
+  "processing_time": {
+    "total_seconds": 0.0,
+    "avg_per_entity": 0.0
+  },
+  "source_distribution": {
+    "CGM.structured": 3
+  }
+}

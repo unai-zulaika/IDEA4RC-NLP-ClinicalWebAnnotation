@@ -1,0 +1,176 @@
+================================================================================
+PROMPT GENERATOR - Full Prompts with Few-shot Examples
+================================================================================
+Mode: Few-shot (k=2)
+Number of examples to generate: 2
+================================================================================
+
+[STEP 1] Loading data...
+  Loading notes from: /home/zulaika/IDEA4RC-NLP-Ingestion/api/nlp/first_patient_notes.csv
+  Loaded 18 notes
+
+[STEP 2] Loading and adapting prompts...
+  Loaded 27 prompt types
+
+[STEP 3] Loading few-shot examples from JSON...
+  Few-shot data loaded
+
+[STEP 4] Generating 2 example prompts...
+
+  Generating prompt 1/2
+    Note ID: P001_2018-03-15_consultation_1
+    Report Type: consultation
+    Prompt Type: biopsygrading-int
+    Few-shot examples retrieved: 2
+
+  Generating prompt 2/2
+    Note ID: P001_2018-03-22_radiology_2
+    Report Type: radiology
+    Prompt Type: surgerymargins-int
+    Few-shot examples retrieved: 2
+
+================================================================================
+FULL PROMPTS (copy these):
+================================================================================
+
+================================================================================
+FULL PROMPTS (as executed in evaluate_llm_int_prompts.py)
+================================================================================
+
+
+================================================================================
+EXAMPLE 1/2
+================================================================================
+
+Note ID: P001_2018-03-15_consultation_1
+Report Type: consultation
+Prompt Type: biopsygrading-int
+Few-shot Examples: 2
+Prompt Length: 4685 characters
+
+--------------------------------------------------------------------------------
+FULL PROMPT:
+--------------------------------------------------------------------------------
+
+Task: You are a medical text annotation assistant.
+Your task is to read a given medical note and identify the biopsy grading (FNCLCC) mentioned in the note.
+
+Output strictly in the following format:
+Biopsy grading (FNCLCC): [value].
+
+The values can be from the following options: 1 or  2 or 3 or Other classification system high or Other classification system low or Biopsy grading not applicable or Unknown biopsy grading.
+
+---
+
+Here are few examples for your understanding:
+Example:
+- Medical Note: Secondo la documentazione in nostro possesso la lesione è stata classificata istologicamente come myxoid liposarcoma (ICD-O-3 8852/3), grado FNCLCC 2. ... Referto del 15/03/2018: paziente con myxoid liposarcoma della coscia sinistra, FNCLCC 2, massa stimata 11 cm, in buone condizioni generali. Staging radiologico e revisione istologica necessari; discussione multidisciplinare pianificata per definire strategia terapeutica (chirurgia ± radioterapia neoadiuvante).
+- Annotation: Biopsy grading (FNCLCC): 2
+
+Example:
+- Medical Note: Formazione profonda del compartimento anteriore della coscia sinistra, 110 mm, morfologia e caratteristiche di segnale compatibili con lesione a componente mixoide (quadro compatibile con liposarcoma mixoide); margini ben definiti, setti interni. Lesione in stretto rapporto con il pacchetto neurovascolare femorale sinistro ma senza chiari segni di encasement o invasione ossea.
+- Annotation: Biopsy grading (FNCLCC): Grade 2
+
+
+---
+
+Now process the following note in the same way:
+
+### Input:
+- Medical Note: "15 marzo 2018
+
+Motivo della visita:
+Visita presso il centro sarcomi per massa inguinale della coscia sinistra.
+
+Anamnesi e quadro clinico:
+Paziente femmina 34 anni, riferisce da circa 6 mesi comparsa di una tumefazione in accrescimento della regione anteriore della coscia sinistra, inizialmente di piccole dimensioni e progressivamente aumentata. Lesione caratterizzata come indolore, consistente, senza segni di flogosi locale; assenza di febbre, perdita di peso o altre manifestazioni sistemiche. Secondo la documentazione in nostro possesso la lesione è stata classificata istologicamente come myxoid liposarcoma (ICD-O-3 8852/3), grado FNCLCC 2.
+
+Esame obiettivo:
+Alla ispezione e palpazione si apprezza in regione anteriore della coscia sinistra massa solida stazionaria, del diametro clinico stimato in circa 110 mm (11 cm), non calda, non eritematosa, non dolorabile alla pressione. Non evidenti ulcerazioni cutanee. Funzione motoria degli arti inferiori conservata, sensibilità intatta, pedio palpabile bilateralmente. Stato generale buono; attività quotidiane mantenute.
+
+Valutazione:
+Sarcoma dei tessuti molli della coscia sinistra, istotipo myxoid liposarcoma, FNCLCC 2, massa di grandi dimensioni (>10 cm) localizzata nel compartimento anteriore. Necessaria stadiazione completa e valutazione multidisciplinare per definire sequenza terapeutica (considerare ruolo della radioterapia neoadiuvante in funzione dell'estensione e dei rapporti con strutture nobili).
+
+Piano terapeutico e indagini programmate:
+- RMN con mdc della coscia sinistra per valutare estensione intramuscolare, rapporto con femore e neuro-vascolar bundle; eseguirla preferibilmente entro 2 settimane (programmata in base a disponibilità).  
+- TC torace senza e con contrasto per staging polmonare (ricerca metastasi polmonari) da effettuarsi contestualmente alla RMN; considerare anche TC torace-thoraco addomino-pelvica se indicato.  
+- Revisione del materiale istologico/biopsico presso la nostra anatomia patologica per conferma diagnostica e grading (documentazione inviata). Se non disponibile, eseguire core-biopsy ecoguidata/TC-guidata.  
+- Discussione preliminare in MDT sarcoma non appena disponibili RMN/TC e referto istologico confermato; obiettivi: definire indicazione a chirurgia conservativa con margini ampi versus neoadiuvante radioterapia per preservare funzione e ottenere resezione oncologicamente adeguata.  
+- Counseling preoperatorio e informazione su possibili opzioni terapeutiche, rischi e sequenza trattamento; valutare preservazione della fertilità in caso di trattamenti sistemici o radioterapici prolungati.  
+- Follow-up clinico in ambulatorio sarcoma dopo acquisizione esami di imaging e confronto in tumor board; contatto telefonico fissato per appuntamento successivo.
+
+Conclusioni:
+Referto del 15/03/2018: paziente con myxoid liposarcoma della coscia sinistra, FNCLCC 2, massa stimata 11 cm, in buone condizioni generali. Staging radiologico e revisione istologica necessari; discussione multidisciplinare pianificata per definire strategia terapeutica (chirurgia ± radioterapia neoadiuvante)."
+
+### Response:
+Annotation:
+
+
+================================================================================
+EXAMPLE 2/2
+================================================================================
+
+Note ID: P001_2018-03-22_radiology_2
+Report Type: radiology
+Prompt Type: surgerymargins-int
+Few-shot Examples: 2
+Prompt Length: 3426 characters
+
+--------------------------------------------------------------------------------
+FULL PROMPT:
+--------------------------------------------------------------------------------
+
+Task: You are a medical text annotation assistant. Your task is to analyze a medical note and classify the surgical resection margin status.
+Always output the result in the following format:
+Margins after surgery: [R0 or R1 or R2]
+
+R0 (radical, tumor-free margins):
+
+Important: A “small but clear” margin = still R0.
+
+Output only the classification in the required format. Do not add explanations.
+
+---
+
+Here are few examples for your understanding:
+Example:
+- Medical Note: Indicazioni e pianificazione: esame istologico definitivo necessario per confermare istotipo (atteso liposarcoma mixoide, ICD-O-3 8852/3) e grado FNCLCC definitivo; valutazione dei margini microscopici al referto istologico (margini macroscopicamente prossimi/“close” come previsto). Si propone discussione in MDT multidisciplinare a referto patologico disponibile per valutare indicazione a radioterapia adiuvante in caso di margini stretti o presenza di componente round-cell significativa. ... Dettagli pezzo operatorio: massa unica, dimensione massima riferita intraoperatoriamente e sul pezzo circa 110 mm; campione inviato integralmente ad anatomia patologica per esame istologico definitivo e valutazione dei margini.
+- Annotation: Margins after surgery: close (macroscopically close; microscopic margin status pending on definitive histology)
+
+Example:
+- Medical Note: Margini di resezione: margine chirurgico microscopicamente negativo (R0); margine più vicino 1 mm.
+- Annotation: Margins after surgery: microscopically negative (R0); closest margin 1 mm
+
+
+---
+
+Now process the following note in the same way:
+
+### Input:
+- Medical Note: "Esame: RMN coscia sinistra
+Data: 22/03/2018
+
+Motivo dell’esame: massa in accrescimento nell’emitorace anteriore della coscia sinistra, riferita da circa 6 mesi.
+
+Tecnica: RMN della coscia sinistra eseguita il 22/03/2018 con sequenze ponderate T1, T2 e STIR nelle varie piani. Sequenze dinamiche/contrasto non documentate nella richiesta.
+
+Risultati:
+- Nel compartimento anteriore della coscia sinistra si identifica una formazione profonda, ben delimitata, di interessamento intramuscolare, di dimensioni massime 110 mm in asse maggiore.
+- Lesione eterogenea con predominante componente a segnale mioide: iperintensa nelle sequenze T2/STIR e a segnale intermedio/basso in T1, con setti interni visibili e aree di differente intensità di segnale compatibili con componente mixoide.
+- Nei piani esaminati la massa si pone in contatto aderente con il pacchetto neurovascolare femorale anteriore sinistro, senza evidenza di avvolgimento o caratteri di invasione vascolare macroscopica (abutting, non encasement).
+- Non si mostrano evidenze di infiltrazione corticale ossea o di contiguità con il femore.
+- Non lesioni linfonodali loco-regionali evidenti nelle sequenze acquisite.
+
+Conclusione:
+Formazione profonda del compartimento anteriore della coscia sinistra, 110 mm, morfologia e caratteristiche di segnale compatibili con lesione a componente mixoide (quadro compatibile con liposarcoma mixoide); margini ben definiti, setti interni. Lesione in stretto rapporto con il pacchetto neurovascolare femorale sinistro ma senza chiari segni di encasement o invasione ossea. Si consiglia stadiazione torace (TC torace) per valutazione metastatica e discussione multidisciplinare per pianificazione terapeutica e chirurgica, tenendo conto del rapporto con strutture neurovascolari."
+
+### Response:
+Annotation:
+
+
+================================================================================
+
+File location: /tmp/tmpc8e0fvd9.txt
+File will be deleted in 5 seconds...
+
+File /tmp/tmpc8e0fvd9.txt has been deleted.

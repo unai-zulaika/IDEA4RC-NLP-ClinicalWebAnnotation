@@ -1,0 +1,3889 @@
+{
+  "211": {
+    "sentence_id": 211,
+    "sentence_name": "Isolated limb perfusion",
+    "sentence_content": "Isolated limb perfusion was performed on [put date] using [list drugs]",
+    "parameters": [
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "IsolatedLimbPerfusion.startDate"
+      },
+      {
+        "parameter_name": "list drugs",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "212": {
+    "sentence_id": 212,
+    "sentence_name": "Other systemic therapy",
+    "sentence_content": "Other systemic therapy was applied [select where]: [please specify]",
+    "parameters": [
+      {
+        "parameter_name": "please specify",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": "SystemicTreatment.systemictreatmentHospital"
+      }
+    ]
+  },
+  "223": {
+    "sentence_id": 223,
+    "sentence_name": "Last contact date",
+    "sentence_content": "Last contact date with the patient: [put date]",
+    "parameters": [
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "PatientFollowUp.lastContact"
+      }
+    ]
+  },
+  "224": {
+    "sentence_id": 224,
+    "sentence_name": "Patient lost to follow-up",
+    "sentence_content": "Patient has been lost to follow-up",
+    "parameters": [
+      {
+        "parameter_name": "",
+        "parameter_type": "DEFAULT",
+        "value": 4163894,
+        "possible_values": [
+          4163894
+        ],
+        "associated_variable": "PatientFollowUp.statusOfPatientAtLastFollowUp"
+      }
+    ]
+  },
+  "240": {
+    "sentence_id": 240,
+    "sentence_name": "Second primary cancer",
+    "sentence_content": "Second primary cancer diagnosed on [put date] in [provide site information] with histology: [provide information about histology]",
+    "parameters": [
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "CancerEpisode.cancerStartDate"
+      },
+      {
+        "parameter_name": "provide site information",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": ""
+      },
+      {
+        "parameter_name": "provide information about histology",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "241": {
+    "sentence_id": 241,
+    "sentence_name": "Progression/recurrence date",
+    "sentence_content": "There was a [select event type] on [put date]",
+    "parameters": [
+      {
+        "parameter_name": "select event type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "recurrence": "2000100002"
+          },
+          {
+            "progression": "32949"
+          }
+        ],
+        "associated_variable": "EpisodeEvent.diseaseStatus"
+      },
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "EpisodeEvent.dateOfEpisode"
+      }
+    ]
+  },
+  "242": {
+    "sentence_id": 242,
+    "sentence_name": "Type of recurrence/progression",
+    "sentence_content": "Type of recurrence/progression: [select type] [select site if metastatic]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "local": "32942"
+          },
+          {
+            "metastatic": ""
+          }
+        ],
+        "associated_variable": ""
+      },
+      {
+        "parameter_name": "select site if metastatic",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "lung": "36770283"
+          },
+          {
+            "liver": "36770544"
+          },
+          {
+            "brain": "36768862"
+          },
+          {
+            "bone": "36769301"
+          },
+          {
+            "soft tissue": "35225724"
+          },
+          {
+            "other": "4077953"
+          },
+          {
+            "unknown": "4129922"
+          }
+        ],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "243": {
+    "sentence_id": 243,
+    "sentence_name": "Progression/recurrence did not happen",
+    "sentence_content": "There was no progression/recurrence",
+    "parameters": []
+  },
+  "56": {
+    "sentence_id": 56,
+    "sentence_name": "Patient's gender",
+    "sentence_content": "Patient's gender [pick gender]",
+    "parameters": [
+      {
+        "parameter_name": "pick gender",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "male": "8507"
+          },
+          {
+            "female": "8532"
+          },
+          {
+            "other": "4077953"
+          }
+        ],
+        "associated_variable": "Patient.sex"
+      }
+    ]
+  },
+  "57": {
+    "sentence_id": 57,
+    "sentence_name": "Patient's gender - unknown",
+    "sentence_content": "No information about patient gender",
+    "parameters": []
+  },
+  "58": {
+    "sentence_id": 58,
+    "sentence_name": "Charlson Comorbidity index",
+    "sentence_content": "Charlson Comorbidity index [put value] points (evaluated at [put date])",
+    "parameters": [
+      {
+        "parameter_name": "put value",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Patient.charlsonComorbidityIndex"
+      },
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "59": {
+    "sentence_id": 59,
+    "sentence_name": "Charlson Comorbidity index - unknown",
+    "sentence_content": "Charlson Comorbidity index has not been evaluated",
+    "parameters": []
+  },
+  "60": {
+    "sentence_id": 60,
+    "sentence_name": "BMI",
+    "sentence_content": "Patient's BMI [put value] (evaluated on [put date])",
+    "parameters": [
+      {
+        "parameter_name": "put value",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Patient.bmi"
+      },
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "UNK"
+      }
+    ]
+  },
+  "61": {
+    "sentence_id": 61,
+    "sentence_name": "Weight and height",
+    "sentence_content": "Patient's weight [put weight]kg and height[put height]cm (evaluated on [put date])",
+    "parameters": [
+      {
+        "parameter_name": "put weight",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": ""
+      },
+      {
+        "parameter_name": "put height",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": ""
+      },
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "62": {
+    "sentence_id": 62,
+    "sentence_name": "BMI/weight/height - unknown",
+    "sentence_content": "Patient's BMI/weight/height is unknown",
+    "parameters": []
+  },
+  "63": {
+    "sentence_id": 63,
+    "sentence_name": "Genetic syndromes present",
+    "sentence_content": "Patient with genetic syndromes: [select]",
+    "parameters": [
+      {
+        "parameter_name": "select",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "Olliers disease": "4145177"
+          },
+          {
+            "Maffucci syndrome": "4187683"
+          },
+          {
+            "Li\u2013Fraumeni syndrome": "4323645"
+          },
+          {
+            "McCune\u2013Albright syndrome": "37117262"
+          },
+          {
+            "Multiple osteochondromas": "37396802"
+          },
+          {
+            "Neurofibromatosis type\u00a01": "377252"
+          },
+          {
+            "Rothmund\u2013Thomson syndrome": "4286355"
+          },
+          {
+            "Werner syndrome": "4197821"
+          },
+          {
+            "Retinoblastoma": "4158977"
+          },
+          {
+            "Paget disease": "75910"
+          }
+        ],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "64": {
+    "sentence_id": 64,
+    "sentence_name": "No genetic syndromes",
+    "sentence_content": "Patient without genetic syndromes",
+    "parameters": []
+  },
+  "65": {
+    "sentence_id": 65,
+    "sentence_name": "Unknown genetic status",
+    "sentence_content": "Unknown patient's genetic syndrome status",
+    "parameters": []
+  },
+  "66": {
+    "sentence_id": 66,
+    "sentence_name": "Other cancer occurred",
+    "sentence_content": "Occurrence of other cancer [please provide details]",
+    "parameters": [
+      {
+        "parameter_name": "please provide details",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": "Patient.previousMalignantCancerSite"
+      }
+    ]
+  },
+  "67": {
+    "sentence_id": 67,
+    "sentence_name": "No occurrence of other cancer",
+    "sentence_content": "No previous or concurrent cancers",
+    "parameters": []
+  },
+  "68": {
+    "sentence_id": 68,
+    "sentence_name": "No information about other cancers",
+    "sentence_content": "No information about occurrence of other cancers",
+    "parameters": []
+  },
+  "69": {
+    "sentence_id": 69,
+    "sentence_name": "There were previous treatments",
+    "sentence_content": "Previous cancer treatment: [select from list]",
+    "parameters": [
+      {
+        "parameter_name": "select from list",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "chemotherapy": "4273629"
+          },
+          {
+            "radiation": "4170755"
+          },
+          {
+            "surgery": "4121697"
+          },
+          {
+            "other": "4077953"
+          }
+        ],
+        "associated_variable": "Patient.previousCancerTreatment"
+      }
+    ]
+  },
+  "70": {
+    "sentence_id": 70,
+    "sentence_name": "No previous treatments",
+    "sentence_content": "No previous cancer treatments",
+    "parameters": []
+  },
+  "71": {
+    "sentence_id": 71,
+    "sentence_name": "No information about previous treatments",
+    "sentence_content": "No information about previous cancer treatments",
+    "parameters": []
+  },
+  "72": {
+    "sentence_id": 72,
+    "sentence_name": "Biopsy performed",
+    "sentence_content": "Baseline/primary tumor [pick biopsy type] biopsy has been performed on [put date] in [select place]",
+    "parameters": [
+      {
+        "parameter_name": "pick biopsy type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "FNA": "4171863"
+          },
+          {
+            "core-trucut": "4321878"
+          },
+          {
+            "incisional": "4321986"
+          },
+          {
+            "excisional": "4228202"
+          },
+          {
+            "unplanned excision (tumor rupture)": "4279903"
+          },
+          {
+            "unplanned excision (no tumor rupture)": "4279903"
+          }
+        ],
+        "associated_variable": "Diagnosis.typeOfBiopsy"
+      },
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "Diagnosis.dateOfBiopsy"
+      },
+      {
+        "parameter_name": "select place",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": "Diagnosis.biopsyDoneBy"
+      }
+    ]
+  },
+  "73": {
+    "sentence_id": 73,
+    "sentence_name": "No information about biopsy",
+    "sentence_content": "Lack of information about biopsy",
+    "parameters": []
+  },
+  "74": {
+    "sentence_id": 74,
+    "sentence_name": "Age at diagnosis",
+    "sentence_content": "Age at diagnosis [put age] years",
+    "parameters": [
+      {
+        "parameter_name": "put age",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Patient.birthYear"
+      }
+    ]
+  },
+  "75": {
+    "sentence_id": 75,
+    "sentence_name": "Age at diagnosis unknown",
+    "sentence_content": "Unknown age at the diagnosis",
+    "parameters": []
+  },
+  "76": {
+    "sentence_id": 76,
+    "sentence_name": "It is RIS",
+    "sentence_content": "Radiotherapy induced sarcoma after RT performed on [put date]",
+    "parameters": [
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "77": {
+    "sentence_id": 77,
+    "sentence_name": "Unknown if RIS",
+    "sentence_content": "Unknown if radiotherapy induced sarcoma",
+    "parameters": []
+  },
+  "78": {
+    "sentence_id": 78,
+    "sentence_name": "Upper and Lower limbs",
+    "sentence_content": "Tumor site (Upper and Lower limbs): [select site]",
+    "parameters": [
+      {
+        "parameter_name": "select site",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "Hand": "4310976"
+          },
+          {
+            "Wrist": "4220073"
+          },
+          {
+            "Forearm": "4032953"
+          },
+          {
+            "Elbow/Antecubital fossa": "4027910"
+          },
+          {
+            "Upper arm": "4165266"
+          },
+          {
+            "Foot": "4211098"
+          },
+          {
+            "Ankle": "4142359"
+          },
+          {
+            "Leg": "4107527"
+          },
+          {
+            "Knee/popliteal fossa": "4217806"
+          },
+          {
+            "Upper leg": "4090445"
+          },
+          {
+            "Deltoid": "4291935"
+          },
+          {
+            "Supraclavicular": "4088464"
+          },
+          {
+            "Periscapular": "2000100022"
+          },
+          {
+            "Trapezius": "4136969"
+          },
+          {
+            "Groin": "2000100023"
+          },
+          {
+            "Buttock": "4263335"
+          },
+          {
+            "Pectoral": "4096078"
+          },
+          {
+            "Axilla": "4157836"
+          }
+        ],
+        "associated_variable": "Diagnosis.subsite"
+      }
+    ]
+  },
+  "79": {
+    "sentence_id": 79,
+    "sentence_name": "Trunk wall",
+    "sentence_content": "Tumor site (Trunk wall): [select site]",
+    "parameters": [
+      {
+        "parameter_name": "select site",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "Thoracic Wall": "4088614"
+          },
+          {
+            "Abdominal Wall": "4244412"
+          },
+          {
+            "Paravertebral \u2013 thoracolumbar": "4289613"
+          },
+          {
+            "Paravertebral \u2013 cervical": "4046743"
+          }
+        ],
+        "associated_variable": "Diagnosis.subsite"
+      }
+    ]
+  },
+  "80": {
+    "sentence_id": 80,
+    "sentence_name": "Intra abdominal",
+    "sentence_content": "Tumor site (Intra abdominal): [select site]",
+    "parameters": [
+      {
+        "parameter_name": "select site",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "Retroperitoneum": "36770706"
+          },
+          {
+            "Pelvis": "36768752"
+          },
+          {
+            "Esophagus": "4075991"
+          },
+          {
+            "Stomach": "4288283"
+          },
+          {
+            "Duodenum": "4302112"
+          },
+          {
+            "Jejunum/Ileus": "4065077"
+          },
+          {
+            "Colon": "4215634"
+          },
+          {
+            "Rectum": "4144541"
+          },
+          {
+            "Mesentery": "4233095"
+          }
+        ],
+        "associated_variable": "Diagnosis.subsite"
+      }
+    ]
+  },
+  "81": {
+    "sentence_id": 81,
+    "sentence_name": "Intra thoracic",
+    "sentence_content": "Tumor site (Intra thoracic): [select site]",
+    "parameters": [
+      {
+        "parameter_name": "select site",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "Lung": "36770283"
+          },
+          {
+            "Heart": "4217142"
+          },
+          {
+            "Pleura": "4150673"
+          },
+          {
+            "Mediastinum": "4088610"
+          }
+        ],
+        "associated_variable": "Diagnosis.subsite"
+      }
+    ]
+  },
+  "82": {
+    "sentence_id": 82,
+    "sentence_name": "Genito urinary",
+    "sentence_content": "Tumor site (Genito urinary): [select site]",
+    "parameters": [
+      {
+        "parameter_name": "select site",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "Adrenal glands": "4051774"
+          },
+          {
+            "Kidney": "4271678"
+          },
+          {
+            "Urether": "4078617"
+          },
+          {
+            "Bladder": "4232481"
+          },
+          {
+            "Prostate": "4165732"
+          },
+          {
+            "Seminal Vescicle": "4277442"
+          },
+          {
+            "Spermatic Cord": "4172591"
+          },
+          {
+            "Testis": "4238088"
+          },
+          {
+            "Penis": "4077311"
+          },
+          {
+            "Utero": "4149192"
+          },
+          {
+            "Ovary": "4049448"
+          },
+          {
+            "Fallopian tube": "4151444"
+          },
+          {
+            "Vagina": "4296022"
+          },
+          {
+            "Vulva": "4166066"
+          }
+        ],
+        "associated_variable": "Diagnosis.subsite"
+      }
+    ]
+  },
+  "83": {
+    "sentence_id": 83,
+    "sentence_name": "Head and neck",
+    "sentence_content": "Tumor site: head and neck",
+    "parameters": []
+  },
+  "84": {
+    "sentence_id": 84,
+    "sentence_name": "Breast",
+    "sentence_content": "Tumor site: breast",
+    "parameters": []
+  },
+  "85": {
+    "sentence_id": 85,
+    "sentence_name": "Other",
+    "sentence_content": "Tumor site (Other): [please specify]",
+    "parameters": [
+      {
+        "parameter_name": "please specify",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "86": {
+    "sentence_id": 86,
+    "sentence_name": "Unknown",
+    "sentence_content": "Tumor site unknown",
+    "parameters": []
+  },
+  "89": {
+    "sentence_id": 89,
+    "sentence_name": "Tumor size - longest diameter",
+    "sentence_content": "Tumor longest diameter: [put value]mm (at initial imaging on [put date])",
+    "parameters": [
+      {
+        "parameter_name": "put value",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Diagnosis.tumorSize"
+      },
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "90": {
+    "sentence_id": 90,
+    "sentence_name": "Tumor size - unknown",
+    "sentence_content": "Tumor longest diameter unknown",
+    "parameters": []
+  },
+  "91": {
+    "sentence_id": 91,
+    "sentence_name": "Localized",
+    "sentence_content": "Stage at diagnosis: localized",
+    "parameters": []
+  },
+  "92": {
+    "sentence_id": 92,
+    "sentence_name": "Loco-regional",
+    "sentence_content": "Stage at diagnosis: loco-regional ([select type])",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "In transit metastasis": "36769249"
+          },
+          {
+            "multifocal": "36769933"
+          }
+        ],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "95": {
+    "sentence_id": 95,
+    "sentence_name": "Stage unknown",
+    "sentence_content": "Unknown stage at diagnosis",
+    "parameters": []
+  },
+  "96": {
+    "sentence_id": 96,
+    "sentence_name": "Depth known",
+    "sentence_content": "Tumor depth: [select value]",
+    "parameters": [
+      {
+        "parameter_name": "select value",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "superficial": "36768911"
+          },
+          {
+            "deep": "36768749"
+          }
+        ],
+        "associated_variable": "Diagnosis.deepDepth"
+      }
+    ]
+  },
+  "97": {
+    "sentence_id": 97,
+    "sentence_name": "Depth unknown",
+    "sentence_content": "Tumor depth unknown",
+    "parameters": []
+  },
+  "98": {
+    "sentence_id": 98,
+    "sentence_name": "Histology unknown",
+    "sentence_content": "Unknown tumor histology",
+    "parameters": []
+  },
+  "99": {
+    "sentence_id": 99,
+    "sentence_name": "Ectomesenchymoma",
+    "sentence_content": "Histological type: Ectomesenchymoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8921/3": "4029024"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "193": {
+    "sentence_id": 193,
+    "sentence_name": "Surgery performed",
+    "sentence_content": "[select surgery type] was performed on [provide date] and was macroscopically [select result]",
+    "parameters": [
+      {
+        "parameter_name": "select surgery type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "Primary surgery": "4301351"
+          },
+          {
+            "Re-excision": "4315400"
+          }
+        ],
+        "associated_variable": "Surgery.surgeryType"
+      },
+      {
+        "parameter_name": "provide date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "Surgery.dateOfSurgery"
+      },
+      {
+        "parameter_name": "select result",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "complete": "1634643"
+          },
+          {
+            "incomplete": "1634484"
+          }
+        ],
+        "associated_variable": "Surgery.marginsAfterSurgery"
+      }
+    ]
+  },
+  "194": {
+    "sentence_id": 194,
+    "sentence_name": "Surgery not performed",
+    "sentence_content": "Surgery was not performed",
+    "parameters": []
+  },
+  "195": {
+    "sentence_id": 195,
+    "sentence_name": "Unknown if surgery performed",
+    "sentence_content": "Unknown if surgery was performed",
+    "parameters": []
+  },
+  "207": {
+    "sentence_id": 207,
+    "sentence_name": "Chemotherapy start",
+    "sentence_content": "[select type] chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.chemotherapyInfo"
+      },
+      {
+        "parameter_name": "select intent",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "curative": "4162591"
+          },
+          {
+            "palliative": "4179711"
+          },
+          {
+            "life expectancy prolongation": ""
+          }
+        ],
+        "associated_variable": ""
+      },
+      {
+        "parameter_name": "provide date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "SystemicTreatment.startDateSystemicTreatment"
+      },
+      {
+        "parameter_name": "select regimen",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "Doxorubicin + Ifosfamide": "35806965"
+          },
+          {
+            "Epirubicin + Ifosfamide": "35806948"
+          },
+          {
+            "Vincristine + Doxorubicin + Ifosfamide": "2000100060"
+          },
+          {
+            "Vincristine + Actinomycin D + Ifosfamide": "35805452"
+          },
+          {
+            "Gemcitabine + Docetaxel": "35803577"
+          },
+          {
+            "Doxorubicin + Dacarbazine": "35806964"
+          },
+          {
+            "Methotrexate + Doxorubicin + Cisplatin": "2000100061"
+          },
+          {
+            "Methotrexate + Doxorubicin + Ifosfamide": "2000100062"
+          },
+          {
+            "Doxorubicin + Cisplatin + Ifosfamide": "2000100063"
+          },
+          {
+            "Doxorubicin + Cisplatin": "35804819"
+          },
+          {
+            "Methotrexate + Vinorelbine": "2000100064"
+          },
+          {
+            "Ifosfamide + Etoposide": "35805454"
+          },
+          {
+            "Vincristine + Doxorubicin + Cyclophosphamide": "2000100065"
+          },
+          {
+            "Cyclophosphamide + Etoposide": "35806476"
+          },
+          {
+            "Doxorubicin + Ifosfamide + Dacarbazine": "2000100066"
+          },
+          {
+            "Gemcitabine + Dacarbazine": "35806969"
+          },
+          {
+            "Cyclophosphamide + Topotecan": "35805453"
+          },
+          {
+            "Irinotecan + Vincristine": "2000100067"
+          },
+          {
+            "Irinotecan + Temozolomide": "35805455"
+          },
+          {
+            "Busulphan + Melphalan": "35804000"
+          },
+          {
+            "TNF + Melphalan": "2000100068"
+          },
+          {
+            "Cyclophosphamide + Vinorelbine": "2000100069"
+          },
+          {
+            "Vincristine + Ifosfamide + Doxorubicin + Etoposide": "35805451"
+          },
+          {
+            "patopanib": "35805690"
+          },
+          {
+            "regorafenib": "35804569"
+          },
+          {
+            "HD Ifosfamide": "2000100070"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.regimen"
+      }
+    ]
+  },
+  "208": {
+    "sentence_id": 208,
+    "sentence_name": "Intraoperative chemotherapy",
+    "sentence_content": "Intraoperative chemotherapy was applied on [provide date]",
+    "parameters": [
+      {
+        "parameter_name": "provide date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "209": {
+    "sentence_id": 209,
+    "sentence_name": "Chemotherapy end",
+    "sentence_content": "[select type] chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.chemotherapyInfo"
+      },
+      {
+        "parameter_name": "provide date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "SystemicTreatment.endDateSystemicTreatment"
+      },
+      {
+        "parameter_name": "provide number",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "SystemicTreatment.numberOfCycles/Administrations"
+      },
+      {
+        "parameter_name": "select reason",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "completion": "44788181"
+          },
+          {
+            "toxicity": "4162594 "
+          },
+          {
+            "patient intolerance": "4240582"
+          },
+          {
+            "death": "4306655"
+          },
+          {
+            "other": "4077953"
+          },
+          {
+            "unknown": "4129922"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.reasonForEndOfTreatment"
+      }
+    ]
+  },
+  "210": {
+    "sentence_id": 210,
+    "sentence_name": "Chemotherapy response",
+    "sentence_content": "Response to [select type] chemotherapy was: [select response type]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.chemotherapyInfo"
+      },
+      {
+        "parameter_name": "select response type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "complete response": "32946"
+          },
+          {
+            "partial response": "32947"
+          },
+          {
+            "stable disease": "32948"
+          },
+          {
+            "progression": "32949"
+          },
+          {
+            "unknown": "4129922"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.treatmentResponse"
+      }
+    ]
+  },
+  "213": {
+    "sentence_id": 213,
+    "sentence_name": "Radiotherapy start",
+    "sentence_content": "[select type] radiotherapy ([select method]) with [select intention] intention started [please select where] on [put date]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "intra-operative": ""
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (radiotherapy without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "Radiotherapy.setting"
+      },
+      {
+        "parameter_name": "select method",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "conventional": "607996"
+          },
+          {
+            "particle based": "4024005"
+          }
+        ],
+        "associated_variable": "Radiotherapy.beamQuality"
+      },
+      {
+        "parameter_name": "select intention",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "curative": "4162591"
+          },
+          {
+            "palliative": "4179711"
+          },
+          {
+            "prolongation of life": ""
+          }
+        ],
+        "associated_variable": "Radiotherapy.intent"
+      },
+      {
+        "parameter_name": "please select where",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "at the hosptial": "at the hospital"
+          },
+          {
+            "outside of the hospital": "another hospital"
+          }
+        ],
+        "associated_variable": "Radiotherapy.radiotherapyHospital"
+      },
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "Radiotherapy.startDate"
+      }
+    ]
+  },
+  "214": {
+    "sentence_id": 214,
+    "sentence_name": "Radiotherapy end",
+    "sentence_content": "[select type] radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "intra-operative": ""
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (radiotherapy without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "Radiotherapy.intent"
+      },
+      {
+        "parameter_name": "put total dose",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Radiotherapy.totalDoseGy"
+      },
+      {
+        "parameter_name": "put number of",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Radiotherapy.numberOfFractions"
+      },
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "Radiotherapy.endDate"
+      },
+      {
+        "parameter_name": "select reason",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "completion": "44788181"
+          },
+          {
+            "toxicity": "4161588"
+          },
+          {
+            "patient intolerance": "4105297"
+          },
+          {
+            "death": "4306655"
+          },
+          {
+            "other": "UNK"
+          },
+          {
+            "unknown": "UNK"
+          }
+        ],
+        "associated_variable": "Radiotherapy.treatmentResponse"
+      }
+    ]
+  },
+  "215": {
+    "sentence_id": 215,
+    "sentence_name": "Radiotherapy not done",
+    "sentence_content": "Radiotherapy was not performed",
+    "parameters": []
+  },
+  "216": {
+    "sentence_id": 216,
+    "sentence_name": "Unknown if radiotherapy was done",
+    "sentence_content": "Unknown if radiotherapy was applied",
+    "parameters": []
+  },
+  "217": {
+    "sentence_id": 217,
+    "sentence_name": "Radiotherapy site",
+    "sentence_content": "Radiotherapy was applied to: [select site] [provide list of sites if metastasis]",
+    "parameters": [
+      {
+        "parameter_name": "select site",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "tumor site": ""
+          },
+          {
+            "lymph nodes": "36769269"
+          },
+          {
+            "metastatic site": ""
+          }
+        ],
+        "associated_variable": ""
+      },
+      {
+        "parameter_name": "provide list of sites if metastasis",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "218": {
+    "sentence_id": 218,
+    "sentence_name": "Radiotherapy response",
+    "sentence_content": "Response to [select type] radiotherapy was: [select response type]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "intra-operative": ""
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (radiotherapy without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "Radiotherapy.intent"
+      },
+      {
+        "parameter_name": "select response type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "complete\u00a0 response": "32946"
+          },
+          {
+            "partial response": "32947"
+          },
+          {
+            "stable disease": "32948"
+          },
+          {
+            "progression": "32949"
+          },
+          {
+            "unknown": "4129922"
+          }
+        ],
+        "associated_variable": "Radiotherapy.treatmentResponse"
+      }
+    ]
+  },
+  "219": {
+    "sentence_id": 219,
+    "sentence_name": "Regional deep hyperthermia applied",
+    "sentence_content": "Regional deep hyperthermia [select combination] using [list drugs] started [select where] on [put start date] and ended on [put end date]",
+    "parameters": [
+      {
+        "parameter_name": "select combination",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "alone": ""
+          },
+          {
+            "in combination with chemotherapy": ""
+          },
+          {
+            "in combination with radiotherapy": ""
+          },
+          {
+            "in combination with ILP": ""
+          }
+        ],
+        "associated_variable": "Radiotherapy_regionalDeepHyperthemia"
+      },
+      {
+        "parameter_name": "list drugs",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": ""
+      },
+      {
+        "parameter_name": "select where",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": "RegionalDeepHyperthemia_regionaldeephyperthemiaDoneAthospital"
+      },
+      {
+        "parameter_name": "put start date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "RegionalDeepHyperthemia.startDate"
+      },
+      {
+        "parameter_name": "put end date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "RegionalDeepHyperthemia.endDate"
+      }
+    ]
+  },
+  "220": {
+    "sentence_id": 220,
+    "sentence_name": "Regional deep hyperthermia not applied",
+    "sentence_content": "Regional deep hyperthermia was not performed",
+    "parameters": []
+  },
+  "221": {
+    "sentence_id": 221,
+    "sentence_name": "Unknown if regional deep hyperthermia applied",
+    "sentence_content": "Unknown if regional deep hyperthermia was applied",
+    "parameters": []
+  },
+  "222": {
+    "sentence_id": 222,
+    "sentence_name": "Response to regional deep hyperthermia",
+    "sentence_content": "Response to regional deep hyperthermia was: [select response type]",
+    "parameters": [
+      {
+        "parameter_name": "select response type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "complete\u00a0 response": "32946"
+          },
+          {
+            "partial response": "32947"
+          },
+          {
+            "stable disease": "32948"
+          },
+          {
+            "progression": "32949"
+          },
+          {
+            "unknown": "4129922"
+          }
+        ],
+        "associated_variable": "RegionalDeepHyperthemia.treatmentResponse"
+      }
+    ]
+  },
+  "225": {
+    "sentence_id": 225,
+    "sentence_name": "Dead of Disease (DOD)",
+    "sentence_content": "Status of the patient at last follow-up: Dead of Disease (DOD)",
+    "parameters": []
+  },
+  "226": {
+    "sentence_id": 226,
+    "sentence_name": "Dead of Other Cause (DOC)",
+    "sentence_content": "Status of the patient at last follow-up: Dead of Other Cause (DOC)",
+    "parameters": []
+  },
+  "227": {
+    "sentence_id": 227,
+    "sentence_name": "Dead of Unknown Cause (DUC)",
+    "sentence_content": "Status of the patient at last follow-up: Dead of Unknown Cause (DUC)",
+    "parameters": []
+  },
+  "228": {
+    "sentence_id": 228,
+    "sentence_name": "Alive, No Evidence of Disease (NED)",
+    "sentence_content": "Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)",
+    "parameters": []
+  },
+  "229": {
+    "sentence_id": 229,
+    "sentence_name": "Alive With Disease (AWD) - local",
+    "sentence_content": "Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor",
+    "parameters": []
+  },
+  "230": {
+    "sentence_id": 230,
+    "sentence_name": "Alive With Disease (AWD) - lymph nodes",
+    "sentence_content": "Status of the patient at last follow-up: Alive With Disease (AWD) - regional lymph nodes involvement",
+    "parameters": []
+  },
+  "231": {
+    "sentence_id": 231,
+    "sentence_name": "Alive With Disease (AWD) - metastatic",
+    "sentence_content": "Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])",
+    "parameters": [
+      {
+        "parameter_name": "please select sites",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "lung": "36770283"
+          },
+          {
+            "liver": "36770544"
+          },
+          {
+            "brain": "36768862"
+          },
+          {
+            "bone": "36769301"
+          },
+          {
+            "soft tissue": "35225724"
+          },
+          {
+            "other": "4077953"
+          },
+          {
+            "unknown": "4129922"
+          }
+        ],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "232": {
+    "sentence_id": 232,
+    "sentence_name": "Unknown status",
+    "sentence_content": "Unknown patient status at last follow-up",
+    "parameters": []
+  },
+  "256": {
+    "sentence_id": 256,
+    "sentence_name": "Other systemic therapy",
+    "sentence_content": "Other systemic therapy was applied [select where]: [please specify]",
+    "parameters": [
+      {
+        "parameter_name": "select where",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "at the hosptial": ""
+          },
+          {
+            "outside of the hospital": ""
+          }
+        ],
+        "associated_variable": ""
+      },
+      {
+        "parameter_name": "please specify",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "87": {
+    "sentence_id": 87,
+    "sentence_name": "Intra abdominal vessels",
+    "sentence_content": "Tumor site (Intra abdominal vessels): [select vessel]",
+    "parameters": [
+      {
+        "parameter_name": "select vessel",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "inferior vena cava": "4271699"
+          },
+          {
+            "aorta": "4004831"
+          },
+          {
+            "iliac vessels": "4193451"
+          },
+          {
+            "renal vessels": "4154880"
+          },
+          {
+            "gonadal vessels": "4157844"
+          },
+          {
+            "mesenteric vessels": "4314264"
+          },
+          {
+            "others": ""
+          }
+        ],
+        "associated_variable": "Diagnosis.subsite"
+      }
+    ]
+  },
+  "88": {
+    "sentence_id": 88,
+    "sentence_name": "Intra thoracic great vessels",
+    "sentence_content": "Tumor site (Intra thoracic great vessels): [select vessel]",
+    "parameters": [
+      {
+        "parameter_name": "select vessel",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "superior vena cava": "4167648"
+          },
+          {
+            "aorta": "4004831"
+          },
+          {
+            "pulmonary vessels": "4035327"
+          },
+          {
+            "subclavian vessels": "4272388"
+          },
+          {
+            "others": ""
+          }
+        ],
+        "associated_variable": "Diagnosis.subsite"
+      }
+    ]
+  },
+  "93": {
+    "sentence_id": 93,
+    "sentence_name": "Regional node metastases",
+    "sentence_content": "Stage at diagnosis: metastatic (regional nodal metastases)",
+    "parameters": []
+  },
+  "94": {
+    "sentence_id": 94,
+    "sentence_name": "Distant metastases",
+    "sentence_content": "Stage at diagnosis: distant metastases ([select organs])",
+    "parameters": [
+      {
+        "parameter_name": "select organs",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "lung": "36770283"
+          },
+          {
+            "liver": "36770544"
+          },
+          {
+            "brain": "36768862"
+          },
+          {
+            "bone": "36769301"
+          },
+          {
+            "soft tissue": "35225724"
+          },
+          {
+            "other": "4077953"
+          },
+          {
+            "unknown": "4129922"
+          }
+        ],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "100": {
+    "sentence_id": 100,
+    "sentence_name": "Atypical lipomatous tumour/ Liposarcoma, well-differentiated, NOS",
+    "sentence_content": "Histological type: Atypical lipomatous tumour/ Liposarcoma, well-differentiated, NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8850/1": "4021372"
+          },
+          {
+            "8851/3": "4102790"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "101": {
+    "sentence_id": 101,
+    "sentence_name": "Dedifferentiated liposarcoma",
+    "sentence_content": "Histological type: Dedifferentiated liposarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8858/3": "4284833"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "102": {
+    "sentence_id": 102,
+    "sentence_name": "Myxoid liposarcoma",
+    "sentence_content": "Histological type: Myxoid liposarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8852/3": "4101123"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "103": {
+    "sentence_id": 103,
+    "sentence_name": "Pleomorphic liposarcoma",
+    "sentence_content": "Histological type: Pleomorphic liposarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8854/3": "4010104"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "104": {
+    "sentence_id": 104,
+    "sentence_name": "Myxoid pleomorphic liposarcoma",
+    "sentence_content": "Histological type: Myxoid pleomorphic liposarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8859/3": "1243142"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "105": {
+    "sentence_id": 105,
+    "sentence_name": "Palmar/plantar-type fibromatosis",
+    "sentence_content": "Histological type: Palmar/plantar-type fibromatosis ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8813/1": "45766452"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "106": {
+    "sentence_id": 106,
+    "sentence_name": "Desmoid-type fibromatosis",
+    "sentence_content": "Histological type: Desmoid-type fibromatosis ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8821/1": "45766452"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "107": {
+    "sentence_id": 107,
+    "sentence_name": "Lipofibromatosis",
+    "sentence_content": "Histological type: Lipofibromatosis ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8851/1": "45766468"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "108": {
+    "sentence_id": 108,
+    "sentence_name": "Giant cell fibroblastoma",
+    "sentence_content": "Histological type: Giant cell fibroblastoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8834/1": "4030132"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "109": {
+    "sentence_id": 109,
+    "sentence_name": "Dermatofibrosarcoma protuberans NOS",
+    "sentence_content": "Histological type: Dermatofibrosarcoma protuberans NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8832/1": "4295283"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "110": {
+    "sentence_id": 110,
+    "sentence_name": "Solitary fibrous tumour, benign; NOS; malignant",
+    "sentence_content": "Histological type: Solitary fibrous tumour, benign; NOS; malignant ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8815/0": "37116995"
+          },
+          {
+            "8815/1": "37116996"
+          },
+          {
+            "8815/3": "37116997"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "111": {
+    "sentence_id": 111,
+    "sentence_name": "Inflammatory myofibroblastic tumour",
+    "sentence_content": "Histological type: Inflammatory myofibroblastic tumour ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8825/1": "4021373"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "112": {
+    "sentence_id": 112,
+    "sentence_name": "Low-grade myofibroblastic sarcoma",
+    "sentence_content": "Histological type: Low-grade myofibroblastic sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8825/3": "45766454"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "113": {
+    "sentence_id": 113,
+    "sentence_name": "Superficial CD34-positive fibroblastic tumour",
+    "sentence_content": "Histological type: Superficial CD34-positive fibroblastic tumour ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8810/1": "4029679"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "114": {
+    "sentence_id": 114,
+    "sentence_name": "Myxoinflammatory fibroblastic sarcoma",
+    "sentence_content": "Histological type: Myxoinflammatory fibroblastic sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8811/1": "45766450"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "115": {
+    "sentence_id": 115,
+    "sentence_name": "Infantile fibrosarcoma",
+    "sentence_content": "Histological type: Infantile fibrosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8814/3": "4202374"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "116": {
+    "sentence_id": 116,
+    "sentence_name": "Adult fibrosarcoma",
+    "sentence_content": "Histological type: Adult fibrosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8810/3": "4202374"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "117": {
+    "sentence_id": 117,
+    "sentence_name": "Myxofibrosarcoma",
+    "sentence_content": "Histological type: Myxofibrosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8811/3": "45771359"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "118": {
+    "sentence_id": 118,
+    "sentence_name": "Low-grade fibromyxoid sarcoma",
+    "sentence_content": "Histological type: Low-grade fibromyxoid sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8840/3": "4151677"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "119": {
+    "sentence_id": 119,
+    "sentence_name": "Sclerosing epithelioid fibrosarcoma",
+    "sentence_content": "Histological type: Sclerosing epithelioid fibrosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8840/3": "4151677"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "120": {
+    "sentence_id": 120,
+    "sentence_name": "Plexiform fibrohistiocytic tumour",
+    "sentence_content": "Histological type: Plexiform fibrohistiocytic tumour ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8835/1": "4029525"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "121": {
+    "sentence_id": 121,
+    "sentence_name": "Giant cell tumour of soft parts NOS",
+    "sentence_content": "Histological type: Giant cell tumour of soft parts NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9251/1": "4218898"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "122": {
+    "sentence_id": 122,
+    "sentence_name": "Tenosynovial giant cell tumor",
+    "sentence_content": "Histological type: Tenosynovial giant cell tumor ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9252/0": "4030140"
+          },
+          {
+            "9252/1": "45766525"
+          },
+          {
+            "9252/3": "4029655"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "123": {
+    "sentence_id": 123,
+    "sentence_name": "Epithelioid haemangioendothelioma NOS",
+    "sentence_content": "Histological type: Epithelioid haemangioendothelioma NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9133/3": "4207381"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "124": {
+    "sentence_id": 124,
+    "sentence_name": "Angiosarcoma",
+    "sentence_content": "Histological type: Angiosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9120/3": "3661612"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "125": {
+    "sentence_id": 125,
+    "sentence_name": "Kaposiform haemangioendothelioma",
+    "sentence_content": "Histological type: Kaposiform haemangioendothelioma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9130/1": "4281384"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "126": {
+    "sentence_id": 126,
+    "sentence_name": "Retiform haemangioendothelioma",
+    "sentence_content": "Histological type: Retiform haemangioendothelioma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9136/1": "4030139"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "127": {
+    "sentence_id": 127,
+    "sentence_name": "Papillary intralymphatic angioendothelioma",
+    "sentence_content": "Histological type: Papillary intralymphatic angioendothelioma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9135/1": "4030138"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "128": {
+    "sentence_id": 128,
+    "sentence_name": "Composite haemangioendothelioma",
+    "sentence_content": "Histological type: Composite haemangioendothelioma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9136/1": "4030139"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "129": {
+    "sentence_id": 129,
+    "sentence_name": "Pseudomyogenic (epithelioid sarcoma\u2013like) haemangioendothelioma",
+    "sentence_content": "Histological type: Pseudomyogenic (epithelioid sarcoma\u2013like) haemangioendothelioma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9138/1": "45766492"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "130": {
+    "sentence_id": 130,
+    "sentence_name": "Glomus tumour NOS",
+    "sentence_content": "Histological type: Glomus tumour NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8711/0": "4014760"
+          },
+          {
+            "8711/3": "4028856"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "131": {
+    "sentence_id": 131,
+    "sentence_name": "Smooth muscle tumour of uncertain malignant potential",
+    "sentence_content": "Histological type: Smooth muscle tumour of uncertain malignant potential ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8897/1": "4327493"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "132": {
+    "sentence_id": 132,
+    "sentence_name": "Epithelioid smooth muscle tumor of uncertain malignant potential",
+    "sentence_content": "Histological type: Epithelioid smooth muscle tumor of uncertain malignant potential ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8891/1": "4173148"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "133": {
+    "sentence_id": 133,
+    "sentence_name": "Myxoid smooth muscle tumour of uncertain mailgnant potential-Spindle smooth muscle tumor of uncertain malignant potential",
+    "sentence_content": "Histological type: Myxoid smooth muscle tumour of uncertain mailgnant potential-Spindle smooth muscle tumor of uncertain malignant potential ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8896/1": "600675"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "134": {
+    "sentence_id": 134,
+    "sentence_name": "Metastasizing leiomyoma",
+    "sentence_content": "Histological type: Metastasizing leiomyoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8898/1": "4029023"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "135": {
+    "sentence_id": 135,
+    "sentence_name": "Leiomyosarcoma NOS",
+    "sentence_content": "Histological type: Leiomyosarcoma NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8890/3": "37151903"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "136": {
+    "sentence_id": 136,
+    "sentence_name": "Epithelioid  leiomyosarcoma",
+    "sentence_content": "Histological type: Epithelioid  leiomyosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8891/3": "4173148"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "137": {
+    "sentence_id": 137,
+    "sentence_name": "Myxoid leiomyosarcoma",
+    "sentence_content": "Histological type: Myxoid leiomyosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8896/3": "4059632"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "138": {
+    "sentence_id": 138,
+    "sentence_name": "Metastasizing leiomyoma",
+    "sentence_content": "Histological type: Metastasizing leiomyoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8898/1": "4029023"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "139": {
+    "sentence_id": 139,
+    "sentence_name": "Embryonal rhabdomyosarcoma NOS",
+    "sentence_content": "Histological type: Embryonal rhabdomyosarcoma NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8910/3": "4031038"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "140": {
+    "sentence_id": 140,
+    "sentence_name": "Alveolar rhabdomyosarcoma",
+    "sentence_content": "Histological type: Alveolar rhabdomyosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8920/3": "4272931"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "141": {
+    "sentence_id": 141,
+    "sentence_name": "Pleomorphic rhabdomyosarcoma NOS",
+    "sentence_content": "Histological type: Pleomorphic rhabdomyosarcoma NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8901/3": "4298312"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "142": {
+    "sentence_id": 142,
+    "sentence_name": "Spindle cell / sclerosing rhabdomyosarcoma",
+    "sentence_content": "Histological type: Spindle cell / sclerosing rhabdomyosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8912/3": "4029528"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "143": {
+    "sentence_id": 143,
+    "sentence_name": "Extraskeletal osteosarcoma",
+    "sentence_content": "Histological type: Extraskeletal osteosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9180/3": "37152049"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "144": {
+    "sentence_id": 144,
+    "sentence_name": "Malignant peripheral nerve sheath tumour NOS",
+    "sentence_content": "Histological type: Malignant peripheral nerve sheath tumour NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9540/3": "4062426"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "145": {
+    "sentence_id": 145,
+    "sentence_name": "Malignant melanotic nerve sheath tumour",
+    "sentence_content": "Histological type: Malignant melanotic nerve sheath tumour ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9540/3": "4062426"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "146": {
+    "sentence_id": 146,
+    "sentence_name": "Granular cell tumour NOS",
+    "sentence_content": "Histological type: Granular cell tumour NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9580/0": "4005360"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "147": {
+    "sentence_id": 147,
+    "sentence_name": "Granular cell tumour, malignant",
+    "sentence_content": "Histological type: Granular cell tumour, malignant ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9580/3": "4027842"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "148": {
+    "sentence_id": 148,
+    "sentence_name": "Atypical fibroxanthoma",
+    "sentence_content": "Histological type: Atypical fibroxanthoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8830/1": "4096931"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "149": {
+    "sentence_id": 149,
+    "sentence_name": "Angiomatoid fibrous histiocytoma",
+    "sentence_content": "Histological type: Angiomatoid fibrous histiocytoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8836/1": "4029526"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "150": {
+    "sentence_id": 150,
+    "sentence_name": "Pleomorphic hyalinizing angiectatic tumour",
+    "sentence_content": "Histological type: Pleomorphic hyalinizing angiectatic tumour ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8802/1": "45766448"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "151": {
+    "sentence_id": 151,
+    "sentence_name": "Haemosiderotic fibrolipomatous tumour",
+    "sentence_content": "Histological type: Haemosiderotic fibrolipomatous tumour ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8811/1": "45766450"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "152": {
+    "sentence_id": 152,
+    "sentence_name": "NTRK-rearranged spindle cell neoplasms",
+    "sentence_content": "Histological type: NTRK-rearranged spindle cell neoplasms",
+    "parameters": []
+  },
+  "153": {
+    "sentence_id": 153,
+    "sentence_name": "Synovial sarcoma NOS",
+    "sentence_content": "Histological type: Synovial sarcoma NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9040/3": "4268491"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "154": {
+    "sentence_id": 154,
+    "sentence_name": "Epithelioid sarcoma",
+    "sentence_content": "Histological type: Epithelioid sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8804/3": "4244886"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "155": {
+    "sentence_id": 155,
+    "sentence_name": "Alveolar soft part sarcoma",
+    "sentence_content": "Histological type: Alveolar soft part sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9581/3": "4339208"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "156": {
+    "sentence_id": 156,
+    "sentence_name": "Clear cell sarcoma NOS",
+    "sentence_content": "Histological type: Clear cell sarcoma NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9044/3": "4155072"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "157": {
+    "sentence_id": 157,
+    "sentence_name": "Extra-skeletal myxoid chondrosarcoma",
+    "sentence_content": "Histological type: Extra-skeletal myxoid chondrosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9231/3": "4328092"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "158": {
+    "sentence_id": 158,
+    "sentence_name": "Desmoplastic small round cell tumour",
+    "sentence_content": "Histological type: Desmoplastic small round cell tumour ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8806/3": "4029522"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "159": {
+    "sentence_id": 159,
+    "sentence_name": "Extra-renal rhabdoid tumour NOS",
+    "sentence_content": "Histological type: Extra-renal rhabdoid tumour NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8963/3": "4307938"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "160": {
+    "sentence_id": 160,
+    "sentence_name": "PEComas",
+    "sentence_content": "Histological type: PEComas ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8714/0": "45771358"
+          },
+          {
+            "8714/1": "4304780"
+          },
+          {
+            "8714/3": "45766447"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "161": {
+    "sentence_id": 161,
+    "sentence_name": "Intimal sarcoma",
+    "sentence_content": "Histological type: Intimal sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9137/3": "45766495"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "162": {
+    "sentence_id": 162,
+    "sentence_name": "Undifferentiated sarcoma",
+    "sentence_content": "Histological type: Undifferentiated sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8805/3": "4029021"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "163": {
+    "sentence_id": 163,
+    "sentence_name": "Myoepithelioma",
+    "sentence_content": "Histological type: Myoepithelioma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8982/0": "4239519"
+          },
+          {
+            "8982/3": "4029680"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "164": {
+    "sentence_id": 164,
+    "sentence_name": "Ossifying fibromyxoid tumour",
+    "sentence_content": "Histological type: Ossifying fibromyxoid tumour ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8842/0": "4028565"
+          },
+          {
+            "8842/1": "4028565"
+          },
+          {
+            "8842/3": "45766467"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "165": {
+    "sentence_id": 165,
+    "sentence_name": "Phosphaturic mesenchymal tumour, malignant",
+    "sentence_content": "Histological type: Phosphaturic mesenchymal tumour, malignant ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8990/0": "4242559"
+          },
+          {
+            "8990/1": "4195947"
+          },
+          {
+            "8990/3": "4233081"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "166": {
+    "sentence_id": 166,
+    "sentence_name": "Aggressive angiomyxoma",
+    "sentence_content": "Histological type: Aggressive angiomyxoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8841/0": "4239956"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "167": {
+    "sentence_id": 167,
+    "sentence_name": "Angiomatoid fibrous histiocytoma",
+    "sentence_content": "Histological type: Angiomatoid fibrous histiocytoma",
+    "parameters": []
+  },
+  "168": {
+    "sentence_id": 168,
+    "sentence_name": "NTRK-rearranged spindle cell neoplasm (emerging)",
+    "sentence_content": "Histological type: NTRK-rearranged spindle cell neoplasm (emerging)",
+    "parameters": []
+  },
+  "169": {
+    "sentence_id": 169,
+    "sentence_name": "Ewing sarcoma",
+    "sentence_content": "Histological type: Ewing sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9364/3": "45766528"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "170": {
+    "sentence_id": 170,
+    "sentence_name": "Round cell sarcoma with\u00a0EWSR1\u2013non-ETS fusions",
+    "sentence_content": "Histological type: Round cell sarcoma with\u00a0EWSR1\u2013non-ETS fusions ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9366/3": "37155974"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "171": {
+    "sentence_id": 171,
+    "sentence_name": "CIC-rearranged sarcoma",
+    "sentence_content": "Histological type: CIC-rearranged sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9367/3": "37152438"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "172": {
+    "sentence_id": 172,
+    "sentence_name": "Sarcoma with\u00a0BCOR\u00a0genetic alterations",
+    "sentence_content": "Histological type: Sarcoma with\u00a0BCOR\u00a0genetic alterations ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9368/3": "37152440"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "173": {
+    "sentence_id": 173,
+    "sentence_name": "Endometrial stromal sarcoma, high grade",
+    "sentence_content": "Histological type: Endometrial stromal sarcoma, high grade ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8930/3": "37152181"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "174": {
+    "sentence_id": 174,
+    "sentence_name": "Endometrial stromal sarcoma, low grade",
+    "sentence_content": "Histological type: Endometrial stromal sarcoma, low grade ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8931/3": "4028557"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "175": {
+    "sentence_id": 175,
+    "sentence_name": "Uterine tumour resembling ovarian sex cord tumour",
+    "sentence_content": "Histological type: Uterine tumour resembling ovarian sex cord tumour ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8590/1": "37151856"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "176": {
+    "sentence_id": 176,
+    "sentence_name": "Phyllodes tumour, benign",
+    "sentence_content": "Histological type: Phyllodes tumour, benign ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9020/0": "4040991"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "177": {
+    "sentence_id": 177,
+    "sentence_name": "Phyllodes tumour NOS",
+    "sentence_content": "Histological type: Phyllodes tumour NOS ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9020/1": "4323562"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "178": {
+    "sentence_id": 178,
+    "sentence_name": "Phyllodes tumour, borderline",
+    "sentence_content": "Histological type: Phyllodes tumour, borderline ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9020/1": "4323562"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "179": {
+    "sentence_id": 179,
+    "sentence_name": "Phyllodes tumour, malignant",
+    "sentence_content": "Histological type: Phyllodes tumour, malignant ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9020/3": "4337106"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "180": {
+    "sentence_id": 180,
+    "sentence_name": "Follicular dendritic cell sarcoma",
+    "sentence_content": "Histological type: Follicular dendritic cell sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9758/3": "4028710"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "181": {
+    "sentence_id": 181,
+    "sentence_name": "Histiocytic sarcoma",
+    "sentence_content": "Histological type: Histiocytic sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9755/3": "4029172"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "182": {
+    "sentence_id": 182,
+    "sentence_name": "Interdigitating dendritic cell sarcoma",
+    "sentence_content": "Histological type: Interdigitating dendritic cell sarcoma",
+    "parameters": []
+  },
+  "183": {
+    "sentence_id": 183,
+    "sentence_name": "Langherans cell sarcoma",
+    "sentence_content": "Histological type: Langherans cell sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9756/3": "4029173"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "184": {
+    "sentence_id": 184,
+    "sentence_name": "Fibroblastic reticular cell tumour",
+    "sentence_content": "Histological type: Fibroblastic reticular cell tumour ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9759/3": "42872917"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "185": {
+    "sentence_id": 185,
+    "sentence_name": "Biphenotypic sinonasal sarcoma",
+    "sentence_content": "Histological type: Biphenotypic sinonasal sarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "9045/3": "42511585"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "186": {
+    "sentence_id": 186,
+    "sentence_name": "Adenosarcoma; please clarify if adenosarcoma with sarcomatous overgrowth",
+    "sentence_content": "Histological type: Adenosarcoma ([select ICD-O-3 code])",
+    "parameters": [
+      {
+        "parameter_name": "select ICD-O-3 code",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "8933/3": "4135215"
+          }
+        ],
+        "associated_variable": "Diagnosis.histologySubgroup"
+      }
+    ]
+  },
+  "187": {
+    "sentence_id": 187,
+    "sentence_name": "Mitotic count value (HPF)",
+    "sentence_content": "Biopsy mitotic count: [mitoses count]/[number of HPFs]HPF",
+    "parameters": [
+      {
+        "parameter_name": "mitoses count",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Diagnosis.biopsyMitoticCount"
+      },
+      {
+        "parameter_name": "number of HPFs",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Diagnosis.biopsyMitoticCount"
+      }
+    ]
+  },
+  "188": {
+    "sentence_id": 188,
+    "sentence_name": "Mitotic count value (mm2)",
+    "sentence_content": "Biopsy mitotic count: [mitoses count]/[area]mm2",
+    "parameters": [
+      {
+        "parameter_name": "mitoses count",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Diagnosis.biopsyMitoticCount"
+      },
+      {
+        "parameter_name": "area",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Diagnosis.biopsyMitoticCount"
+      }
+    ]
+  },
+  "189": {
+    "sentence_id": 189,
+    "sentence_name": "Mitotic count unknown",
+    "sentence_content": "Unknown biopsy mitotic count",
+    "parameters": []
+  },
+  "190": {
+    "sentence_id": 190,
+    "sentence_name": "Biopsy grading value",
+    "sentence_content": "Biopsy grading (FNCLCC): [select grade]",
+    "parameters": [
+      {
+        "parameter_name": "select grade",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "1": "1634371"
+          },
+          {
+            "2": "1634752"
+          },
+          {
+            "3": "1633749"
+          },
+          {
+            "Other classification system high": "1635587"
+          },
+          {
+            "Other classification system low": "1634085"
+          }
+        ],
+        "associated_variable": "Diagnosis.biopsyGrading"
+      }
+    ]
+  },
+  "191": {
+    "sentence_id": 191,
+    "sentence_name": "Biopsy grading unknown",
+    "sentence_content": "Unknown biopsy grading",
+    "parameters": []
+  },
+  "192": {
+    "sentence_id": 192,
+    "sentence_name": "Biopsy grading not applicable",
+    "sentence_content": "Biopsy grading not applicable",
+    "parameters": []
+  },
+  "196": {
+    "sentence_id": 196,
+    "sentence_name": "Margins after surgery",
+    "sentence_content": "Margins after surgery: [select value]",
+    "parameters": [
+      {
+        "parameter_name": "select value",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "R0": "1634643"
+          },
+          {
+            "R1": "1633801"
+          },
+          {
+            "R2": "1634484"
+          }
+        ],
+        "associated_variable": "Surgery.marginsAfterSurgery"
+      }
+    ]
+  },
+  "197": {
+    "sentence_id": 197,
+    "sentence_name": "Margins after surgery unknown",
+    "sentence_content": "Unknown surgical margins",
+    "parameters": []
+  },
+  "198": {
+    "sentence_id": 198,
+    "sentence_name": "Tumor rupture",
+    "sentence_content": "Tumor ruptured",
+    "parameters": []
+  },
+  "199": {
+    "sentence_id": 199,
+    "sentence_name": "No tumor rupture",
+    "sentence_content": "Tumor did not rupture",
+    "parameters": []
+  },
+  "200": {
+    "sentence_id": 200,
+    "sentence_name": "Unknown if there was tumor rupture",
+    "sentence_content": "Unknown if there was tumor rupture",
+    "parameters": []
+  },
+  "244": {
+    "sentence_id": 244,
+    "sentence_name": "Surgery performed",
+    "sentence_content": "Surgery was performed on [provide date] and was macroscopically [select result]",
+    "parameters": [
+      {
+        "parameter_name": "provide date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "Surgery.dateOfSurgery"
+      },
+      {
+        "parameter_name": "select result",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "complete": "1634643"
+          },
+          {
+            "incomplete": "1634484"
+          }
+        ],
+        "associated_variable": "Surgery.marginsAfterSurgery"
+      }
+    ]
+  },
+  "245": {
+    "sentence_id": 245,
+    "sentence_name": "Surgery not performed",
+    "sentence_content": "Surgery was not performed",
+    "parameters": []
+  },
+  "246": {
+    "sentence_id": 246,
+    "sentence_name": "Unknown if surgery performed",
+    "sentence_content": "Unknown if surgery was performed",
+    "parameters": []
+  },
+  "252": {
+    "sentence_id": 252,
+    "sentence_name": "Chemotherapy start",
+    "sentence_content": "[select type] chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.chemotherapyInfo"
+      },
+      {
+        "parameter_name": "select intent",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "curative": "4162591"
+          },
+          {
+            "palliative": "4179711"
+          },
+          {
+            "life expectancy prolongation": ""
+          }
+        ],
+        "associated_variable": "SystemicTreatment.intent"
+      },
+      {
+        "parameter_name": "provide date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "SystemicTreatment.startDate"
+      },
+      {
+        "parameter_name": "select regimen",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "Doxorubicin + Ifosfamide": "35806965"
+          },
+          {
+            "Epirubicin + Ifosfamide": "35806948"
+          },
+          {
+            "Vincristine + Doxorubicin + Ifosfamide": "2000100060"
+          },
+          {
+            "Vincristine + Actinomycin D + Ifosfamide": "35805452"
+          },
+          {
+            "Gemcitabine + Docetaxel": "35803577"
+          },
+          {
+            "Doxorubicin + Dacarbazine": "35806964"
+          },
+          {
+            "Methotrexate + Doxorubicin + Cisplatin": "2000100061"
+          },
+          {
+            "Methotrexate + Doxorubicin + Ifosfamide": "2000100062"
+          },
+          {
+            "Doxorubicin + Cisplatin + Ifosfamide": "2000100063"
+          },
+          {
+            "Doxorubicin + Cisplatin": "35804819"
+          },
+          {
+            "Methotrexate + Vinorelbine": "2000100064"
+          },
+          {
+            "Ifosfamide + Etoposide": "35805454"
+          },
+          {
+            "Vincristine + Doxorubicin + Cyclophosphamide": "2000100065"
+          },
+          {
+            "Cyclophosphamide + Etoposide": "35806476"
+          },
+          {
+            "Doxorubicin + Ifosfamide + Dacarbazine": "2000100066"
+          },
+          {
+            "Gemcitabine + Dacarbazine": "35806969"
+          },
+          {
+            "Cyclophosphamide + Topotecan": "35805453"
+          },
+          {
+            "Irinotecan + Vincristine": "2000100067"
+          },
+          {
+            "Irinotecan + Temozolomide": "35805455"
+          },
+          {
+            "Busulphan + Melphalan": "35804000"
+          },
+          {
+            "TNF + Melphalan": "2000100068"
+          },
+          {
+            "Cyclophosphamide + Vinorelbine": "2000100069"
+          },
+          {
+            "Vincristine + Ifosfamide + Doxorubicin + Etoposide": "35805451"
+          },
+          {
+            "patopanib": "35805690"
+          },
+          {
+            "regorafenib": "35804569"
+          },
+          {
+            "HD Ifosfamide": "2000100070"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.regimen"
+      }
+    ]
+  },
+  "253": {
+    "sentence_id": 253,
+    "sentence_name": "Intraoperative chemotherapy",
+    "sentence_content": "Intraoperative chemotherapy was applied on [provide date]",
+    "parameters": [
+      {
+        "parameter_name": "provide date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": ""
+      }
+    ]
+  },
+  "254": {
+    "sentence_id": 254,
+    "sentence_name": "Chemotherapy end",
+    "sentence_content": "[select type] chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.chemotherapyInfo"
+      },
+      {
+        "parameter_name": "provide date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": ""
+      },
+      {
+        "parameter_name": "provide number",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "SystemicTreatment.endDateSystemicTreatment"
+      },
+      {
+        "parameter_name": "select reason",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "completion": "44788181"
+          },
+          {
+            "toxicity": "4161588"
+          },
+          {
+            "patient intolerance": "4105297"
+          },
+          {
+            "death": "4306655"
+          },
+          {
+            "other": "UNK"
+          },
+          {
+            "unknown": "UNK"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.reasonForEndOfTreatment"
+      }
+    ]
+  },
+  "255": {
+    "sentence_id": 255,
+    "sentence_name": "Chemotherapy response",
+    "sentence_content": "Response to [select type] chemotherapy was: [select response type]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.chemotherapyInfo"
+      },
+      {
+        "parameter_name": "select response type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "complete response": "32946"
+          },
+          {
+            "partial response": "32947"
+          },
+          {
+            "stable disease": "32948"
+          },
+          {
+            "progression": "32949"
+          },
+          {
+            "unknown": "4129922"
+          }
+        ],
+        "associated_variable": "SystemicTreatment.treatmentResponse"
+      }
+    ]
+  },
+  "257": {
+    "sentence_id": 257,
+    "sentence_name": "Radiotherapy start",
+    "sentence_content": "[select type] radiotherapy ([select method]) with [select intention] intention started [please select where] on [put date]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "intra-operative": ""
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (radiotherapy without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "Radiotherapy.setting"
+      },
+      {
+        "parameter_name": "select method",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "conventional": ""
+          },
+          {
+            "particle based": ""
+          }
+        ],
+        "associated_variable": ""
+      },
+      {
+        "parameter_name": "select intention",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "curative": "4162591"
+          },
+          {
+            "palliative": "4179711"
+          },
+          {
+            "prolongation of life": ""
+          }
+        ],
+        "associated_variable": "Radiotherapy.intent"
+      },
+      {
+        "parameter_name": "please select where",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": "Radiotherapy.radiotherapyHospital"
+      },
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "Radiotherapy.startDate"
+      }
+    ]
+  },
+  "258": {
+    "sentence_id": 258,
+    "sentence_name": "Radiotherapy end",
+    "sentence_content": "[select type] radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4059384"
+          },
+          {
+            "intra-operative": "UNK"
+          },
+          {
+            "post-operative": "4058775"
+          },
+          {
+            "therapeutic (radiotherapy without surgery)": "UNK"
+          }
+        ],
+        "associated_variable": "Radiotherapy.setting"
+      },
+      {
+        "parameter_name": "put total dose",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Radiotherapy.totalDoseGy"
+      },
+      {
+        "parameter_name": "put number of",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Radiotherapy.numberOfFractions"
+      },
+      {
+        "parameter_name": "put date",
+        "parameter_type": "DATE",
+        "possible_values": [],
+        "associated_variable": "Radiotherapy.endDate"
+      },
+      {
+        "parameter_name": "select reason",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "completion": "44788181"
+          },
+          {
+            "toxicity": "4161588"
+          },
+          {
+            "patient intolerance": "4105297"
+          },
+          {
+            "death": "4306655"
+          },
+          {
+            "other": "UNK"
+          },
+          {
+            "unknown": "UNK"
+          }
+        ],
+        "associated_variable": "Radiotherapy_rtTreatmentCompletedAsPlanned"
+      }
+    ]
+  },
+  "259": {
+    "sentence_id": 259,
+    "sentence_name": "Radiotherapy not done",
+    "sentence_content": "Radiotherapy was not performed",
+    "parameters": []
+  },
+  "260": {
+    "sentence_id": 260,
+    "sentence_name": "Unknown if radiotherapy was done",
+    "sentence_content": "Unknown if radiotherapy was applied",
+    "parameters": []
+  },
+  "261": {
+    "sentence_id": 261,
+    "sentence_name": "Radiotherapy site",
+    "sentence_content": "Radiotherapy was applied to: [select site] [provide list of sites if metastasis]",
+    "parameters": [
+      {
+        "parameter_name": "select site",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "tumor site": ""
+          },
+          {
+            "lymph nodes": "36769269"
+          },
+          {
+            "metastatic site": ""
+          }
+        ],
+        "associated_variable": "Radiotherapy.setting"
+      },
+      {
+        "parameter_name": "provide list of sites if metastasis",
+        "parameter_type": "TEXT",
+        "possible_values": [],
+        "associated_variable": "Radiotherapy.treatmentSiteDistantMetastasis"
+      }
+    ]
+  },
+  "262": {
+    "sentence_id": 262,
+    "sentence_name": "Radiotherapy response",
+    "sentence_content": "Response to [select type] radiotherapy was: [select response type]",
+    "parameters": [
+      {
+        "parameter_name": "select type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "pre-operative": "4119031"
+          },
+          {
+            "intra-operative": ""
+          },
+          {
+            "post-operative": "4118656"
+          },
+          {
+            "therapeutic (radiotherapy without surgery)": "4133895"
+          }
+        ],
+        "associated_variable": "Radiotherapy.setting"
+      },
+      {
+        "parameter_name": "select response type",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "complete\u00a0 response": "32946"
+          },
+          {
+            "partial response": "32947"
+          },
+          {
+            "stable disease": "32948"
+          },
+          {
+            "progression": "32949"
+          },
+          {
+            "unknown": "4129922"
+          }
+        ],
+        "associated_variable": "Radiotherapy.treatmentResponse"
+      }
+    ]
+  },
+  "201": {
+    "sentence_id": 201,
+    "sentence_name": "Mitotic count value (HPF)",
+    "sentence_content": "Surgical specimen mitotic count: [mitoses count]/[number of HPFs]HPF",
+    "parameters": [
+      {
+        "parameter_name": "mitoses count",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Diagnosis_biopsyMitoticCount"
+      },
+      {
+        "parameter_name": "number of HPFs",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Diagnosis.biopsyMitoticCount"
+      }
+    ]
+  },
+  "202": {
+    "sentence_id": 202,
+    "sentence_name": "Mitotic count value (mm2)",
+    "sentence_content": "Surgical specimen mitotic count: [mitoses count]/[area]mm2",
+    "parameters": [
+      {
+        "parameter_name": "mitoses count",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Diagnosis.biopsyMitoticCount"
+      },
+      {
+        "parameter_name": "area",
+        "parameter_type": "NUMBER",
+        "possible_values": [],
+        "associated_variable": "Diagnosis.biopsyMitoticCount"
+      }
+    ]
+  },
+  "203": {
+    "sentence_id": 203,
+    "sentence_name": "Mitotic count unknown",
+    "sentence_content": "Unknown surgical specimen mitotic count",
+    "parameters": []
+  },
+  "204": {
+    "sentence_id": 204,
+    "sentence_name": "Grading value",
+    "sentence_content": "Surgical specimen grading (FNCLCC): [select grade]",
+    "parameters": [
+      {
+        "parameter_name": "select grade",
+        "parameter_type": "ENUM",
+        "possible_values": [
+          {
+            "1": "1634371"
+          },
+          {
+            "2": "1634752"
+          },
+          {
+            "3": "1633749"
+          },
+          {
+            "Other classification system high": "1635587"
+          },
+          {
+            "Other classification system low": "1634085"
+          }
+        ],
+        "associated_variable": "Diagnosis.biopsyGrading"
+      }
+    ]
+  },
+  "205": {
+    "sentence_id": 205,
+    "sentence_name": "Grading unknown",
+    "sentence_content": "Unknown surgical specimen grading",
+    "parameters": []
+  },
+  "206": {
+    "sentence_id": 206,
+    "sentence_name": "Grading not applicable",
+    "sentence_content": "Surgical specimen grading not applicable",
+    "parameters": []
+  },
+  "248": {
+    "sentence_id": 248,
+    "sentence_name": "Margins after surgery unknown",
+    "sentence_content": "Unknown surgical margins",
+    "parameters": []
+  },
+  "249": {
+    "sentence_id": 249,
+    "sentence_name": "Tumor rupture",
+    "sentence_content": "Tumor ruptured",
+    "parameters": []
+  },
+  "250": {
+    "sentence_id": 250,
+    "sentence_name": "No tumor rupture",
+    "sentence_content": "Tumor did not rupture",
+    "parameters": []
+  },
+  "251": {
+    "sentence_id": 251,
+    "sentence_name": "Unknown if there was tumor rupture",
+    "sentence_content": "Unknown if there was tumor rupture",
+    "parameters": []
+  }
+}

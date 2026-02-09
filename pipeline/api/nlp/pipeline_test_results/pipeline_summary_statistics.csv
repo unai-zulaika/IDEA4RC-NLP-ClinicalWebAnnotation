@@ -1,0 +1,2 @@
+total_notes_processed;total_entities_extracted;entities_per_note_avg;entities_per_note_min;entities_per_note_max;entities_per_note_median;notes_with_entities;notes_without_entities;entity_extraction_rate;total_unique_variables;total_dates_extracted;date_extraction_rate;total_errors;error_percentage
+18;18;1.6363636363636365;1;5;1.0;11;7;0.6111;11;18;1.0;0;0.0

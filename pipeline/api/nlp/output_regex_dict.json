@@ -1,0 +1,9 @@
+{
+    "Patient.bmi": "Patient's BMI is (\\d+\\.?\\d*)",
+    "Patient.diagnosis": "The diagnosis was ([a-zA-Z]+)",
+    "Patient.medication": "The prescribed medication is ([a-zA-Z]+)",
+    "Patient.birthYear": "Age at diagnosis (.+?) years",
+    "Patient.charlsonComorbidityIndex": "Charlson Comorbidity index (.+?)",
+    "Surgery.marginsAfterSurgery": "Margins after surgery: (\\d+\\.?\\d*)",
+    "Patient.sex": "Patient's gender (.+?)"
+}

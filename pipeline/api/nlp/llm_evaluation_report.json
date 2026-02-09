@@ -1,0 +1,845 @@
+{
+  "overall_statistics": {
+    "total": 93,
+    "exact_matches": 11,
+    "exact_match_rate": 0.1183,
+    "high_similarity_matches": 22,
+    "high_similarity_rate": 0.2366,
+    "overall_matches": 22,
+    "overall_match_rate": 0.2366,
+    "avg_similarity": 0.411,
+    "avg_value_match_rate": 0.1586
+  },
+  "timing_statistics": {
+    "total_time_seconds": 268.41,
+    "total_time_formatted": "0:04:28",
+    "average_time_per_evaluation_seconds": 2.759,
+    "total_evaluations": 93,
+    "total_notes": 18,
+    "notes_timings": [
+      {
+        "note_id": "P001_2018-03-15_consultation_1",
+        "total_time_seconds": 28.99,
+        "num_prompts": 11,
+        "avg_time_per_prompt_seconds": 2.635,
+        "prompt_timings": [
+          1.3670530319213867,
+          2.8341708183288574,
+          3.1123220920562744,
+          2.444610595703125,
+          2.539858341217041,
+          3.2941527366638184,
+          2.4722139835357666,
+          2.884093999862671,
+          2.5922975540161133,
+          2.8657267093658447,
+          2.5825889110565186
+        ]
+      },
+      {
+        "note_id": "P001_2018-03-22_radiology_2",
+        "total_time_seconds": 8.19,
+        "num_prompts": 3,
+        "avg_time_per_prompt_seconds": 2.731,
+        "prompt_timings": [
+          2.7405152320861816,
+          2.4950509071350098,
+          2.957543134689331
+        ]
+      },
+      {
+        "note_id": "P001_2018-03-30_pathology_3",
+        "total_time_seconds": 20.88,
+        "num_prompts": 8,
+        "avg_time_per_prompt_seconds": 2.61,
+        "prompt_timings": [
+          2.6622726917266846,
+          2.284406900405884,
+          2.6662445068359375,
+          2.5962071418762207,
+          2.9342129230499268,
+          2.509831190109253,
+          2.565220594406128,
+          2.662762403488159
+        ]
+      },
+      {
+        "note_id": "P001_2018-04-05_staging_4",
+        "total_time_seconds": 2.83,
+        "num_prompts": 1,
+        "avg_time_per_prompt_seconds": 2.827,
+        "prompt_timings": [
+          2.827173948287964
+        ]
+      },
+      {
+        "note_id": "P001_2018-05-15_surgery_5",
+        "total_time_seconds": 15.94,
+        "num_prompts": 6,
+        "avg_time_per_prompt_seconds": 2.657,
+        "prompt_timings": [
+          3.078840494155884,
+          2.289923906326294,
+          2.8514034748077393,
+          2.5055601596832275,
+          2.532304525375366,
+          2.681234359741211
+        ]
+      },
+      {
+        "note_id": "P001_2018-05-22_pathology_6",
+        "total_time_seconds": 21.0,
+        "num_prompts": 8,
+        "avg_time_per_prompt_seconds": 2.625,
+        "prompt_timings": [
+          2.878525495529175,
+          2.3113834857940674,
+          2.5806455612182617,
+          2.6543025970458984,
+          2.963724136352539,
+          2.4131908416748047,
+          2.5268805027008057,
+          2.6731650829315186
+        ]
+      },
+      {
+        "note_id": "P001_2018-06-15_oncology_7",
+        "total_time_seconds": 18.42,
+        "num_prompts": 6,
+        "avg_time_per_prompt_seconds": 3.07,
+        "prompt_timings": [
+          4.897768974304199,
+          2.68609619140625,
+          2.560338020324707,
+          2.881742000579834,
+          2.401198148727417,
+          2.992689847946167
+        ]
+      },
+      {
+        "note_id": "P001_2018-07-23_oncology_8",
+        "total_time_seconds": 15.99,
+        "num_prompts": 6,
+        "avg_time_per_prompt_seconds": 2.665,
+        "prompt_timings": [
+          2.6167008876800537,
+          2.813724994659424,
+          2.6376097202301025,
+          2.5890567302703857,
+          2.294893503189087,
+          3.035961866378784
+        ]
+      },
+      {
+        "note_id": "P001_2019-01-10_follow-up_9",
+        "total_time_seconds": 7.96,
+        "num_prompts": 3,
+        "avg_time_per_prompt_seconds": 2.655,
+        "prompt_timings": [
+          2.6389424800872803,
+          2.3314099311828613,
+          2.9934964179992676
+        ]
+      },
+      {
+        "note_id": "P001_2020-01-15_follow-up_10",
+        "total_time_seconds": 7.82,
+        "num_prompts": 3,
+        "avg_time_per_prompt_seconds": 2.606,
+        "prompt_timings": [
+          2.5315983295440674,
+          2.4701833724975586,
+          2.814826488494873
+        ]
+      },
+      {
+        "note_id": "P001_2021-01-20_follow-up_11",
+        "total_time_seconds": 7.93,
+        "num_prompts": 3,
+        "avg_time_per_prompt_seconds": 2.642,
+        "prompt_timings": [
+          2.7356653213500977,
+          2.400918960571289,
+          2.7894842624664307
+        ]
+      },
+      {
+        "note_id": "P001_2022-09-01_radiology_12",
+        "total_time_seconds": 8.22,
+        "num_prompts": 3,
+        "avg_time_per_prompt_seconds": 2.739,
+        "prompt_timings": [
+          2.895564079284668,
+          2.216449737548828,
+          3.1058597564697266
+        ]
+      },
+      {
+        "note_id": "P001_2022-09-15_pathology_13",
+        "total_time_seconds": 21.71,
+        "num_prompts": 8,
+        "avg_time_per_prompt_seconds": 2.714,
+        "prompt_timings": [
+          2.6946308612823486,
+          2.564399003982544,
+          2.868140459060669,
+          2.685784101486206,
+          2.9134624004364014,
+          2.4805586338043213,
+          2.6711599826812744,
+          2.8300790786743164
+        ]
+      },
+      {
+        "note_id": "P001_2022-09-25_oncology_14",
+        "total_time_seconds": 17.58,
+        "num_prompts": 6,
+        "avg_time_per_prompt_seconds": 2.93,
+        "prompt_timings": [
+          3.1175436973571777,
+          3.4297423362731934,
+          2.8271310329437256,
+          2.7704734802246094,
+          2.351787567138672,
+          3.08591365814209
+        ]
+      },
+      {
+        "note_id": "P001_2022-12-18_oncology_15",
+        "total_time_seconds": 18.44,
+        "num_prompts": 6,
+        "avg_time_per_prompt_seconds": 3.073,
+        "prompt_timings": [
+          2.725642681121826,
+          2.880420446395874,
+          4.7283408641815186,
+          2.6729836463928223,
+          2.531222105026245,
+          2.9005837440490723
+        ]
+      },
+      {
+        "note_id": "P001_2023-08-10_radiology_16",
+        "total_time_seconds": 8.03,
+        "num_prompts": 3,
+        "avg_time_per_prompt_seconds": 2.678,
+        "prompt_timings": [
+          2.7023096084594727,
+          2.23408579826355,
+          3.096907377243042
+        ]
+      },
+      {
+        "note_id": "P001_2023-08-25_oncology_17",
+        "total_time_seconds": 18.62,
+        "num_prompts": 6,
+        "avg_time_per_prompt_seconds": 3.103,
+        "prompt_timings": [
+          2.6145238876342773,
+          2.633937120437622,
+          5.028915643692017,
+          2.807237386703491,
+          2.297091245651245,
+          3.2339749336242676
+        ]
+      },
+      {
+        "note_id": "P001_2024-03-01_follow-up_18",
+        "total_time_seconds": 8.05,
+        "num_prompts": 3,
+        "avg_time_per_prompt_seconds": 2.684,
+        "prompt_timings": [
+          2.7684242725372314,
+          2.531597137451172,
+          2.750406503677368
+        ]
+      }
+    ]
+  },
+  "per_prompt_type": {
+    "biopsygrading-int": {
+      "total": 4,
+      "exact_matches": 1,
+      "exact_match_rate": 0.25,
+      "high_similarity_matches": 1,
+      "high_similarity_rate": 0.25,
+      "overall_matches": 1,
+      "overall_match_rate": 0.25,
+      "avg_similarity": 0.6382,
+      "avg_value_match_rate": 0.25
+    },
+    "surgerymargins-int": {
+      "total": 1,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.3226,
+      "avg_value_match_rate": 0.0
+    },
+    "tumordepth-int": {
+      "total": 4,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.4227,
+      "avg_value_match_rate": 0.0
+    },
+    "biopsymitoticcount-int": {
+      "total": 3,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 1,
+      "high_similarity_rate": 0.3333,
+      "overall_matches": 1,
+      "overall_match_rate": 0.3333,
+      "avg_similarity": 0.4936,
+      "avg_value_match_rate": 0.0
+    },
+    "gender-int": {
+      "total": 1,
+      "exact_matches": 1,
+      "exact_match_rate": 1.0,
+      "high_similarity_matches": 1,
+      "high_similarity_rate": 1.0,
+      "overall_matches": 1,
+      "overall_match_rate": 1.0,
+      "avg_similarity": 1.0,
+      "avg_value_match_rate": NaN
+    },
+    "reexcision-int": {
+      "total": 1,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.0,
+      "avg_value_match_rate": 0.0
+    },
+    "necrosis_in_biopsy-int": {
+      "total": 3,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.159,
+      "avg_value_match_rate": 0.0
+    },
+    "previous_cancer_treatment-int": {
+      "total": 1,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.0,
+      "avg_value_match_rate": 0.0
+    },
+    "chemotherapy_start-int": {
+      "total": 5,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 1,
+      "high_similarity_rate": 0.2,
+      "overall_matches": 1,
+      "overall_match_rate": 0.2,
+      "avg_similarity": 0.3917,
+      "avg_value_match_rate": NaN
+    },
+    "surgerytype-fs30-int": {
+      "total": 1,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.0,
+      "avg_value_match_rate": 0.0
+    },
+    "radiotherapy_start-int": {
+      "total": 5,
+      "exact_matches": 1,
+      "exact_match_rate": 0.2,
+      "high_similarity_matches": 1,
+      "high_similarity_rate": 0.2,
+      "overall_matches": 1,
+      "overall_match_rate": 0.2,
+      "avg_similarity": 0.4056,
+      "avg_value_match_rate": NaN
+    },
+    "recurrencetype-int": {
+      "total": 4,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.0,
+      "avg_value_match_rate": 0.0
+    },
+    "radiotherapy_end-int": {
+      "total": 5,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 1,
+      "high_similarity_rate": 0.2,
+      "overall_matches": 1,
+      "overall_match_rate": 0.2,
+      "avg_similarity": 0.3091,
+      "avg_value_match_rate": 0.3
+    },
+    "tumorbiopsytype-int": {
+      "total": 4,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 1,
+      "high_similarity_rate": 0.25,
+      "overall_matches": 1,
+      "overall_match_rate": 0.25,
+      "avg_similarity": 0.4744,
+      "avg_value_match_rate": NaN
+    },
+    "necrosis_in_surgical-int": {
+      "total": 4,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.0,
+      "avg_value_match_rate": 0.0
+    },
+    "tumordiameter-int": {
+      "total": 4,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 2,
+      "high_similarity_rate": 0.5,
+      "overall_matches": 2,
+      "overall_match_rate": 0.5,
+      "avg_similarity": 0.7414,
+      "avg_value_match_rate": 0.25
+    },
+    "patient-status-int": {
+      "total": 9,
+      "exact_matches": 4,
+      "exact_match_rate": 0.4444,
+      "high_similarity_matches": 5,
+      "high_similarity_rate": 0.5556,
+      "overall_matches": 5,
+      "overall_match_rate": 0.5556,
+      "avg_similarity": 0.7333,
+      "avg_value_match_rate": 0.4444
+    },
+    "response-to-int": {
+      "total": 5,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.1803,
+      "avg_value_match_rate": 0.0
+    },
+    "stage_at_diagnosis-int": {
+      "total": 2,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.4727,
+      "avg_value_match_rate": 0.0
+    },
+    "chemotherapy_end-int": {
+      "total": 5,
+      "exact_matches": 1,
+      "exact_match_rate": 0.2,
+      "high_similarity_matches": 1,
+      "high_similarity_rate": 0.2,
+      "overall_matches": 1,
+      "overall_match_rate": 0.2,
+      "avg_similarity": 0.3968,
+      "avg_value_match_rate": NaN
+    },
+    "occurrence_cancer-int": {
+      "total": 1,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.0,
+      "avg_value_match_rate": NaN
+    },
+    "surgical-specimen-grading-int": {
+      "total": 4,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 1,
+      "high_similarity_rate": 0.25,
+      "overall_matches": 1,
+      "overall_match_rate": 0.25,
+      "avg_similarity": 0.3719,
+      "avg_value_match_rate": 0.0
+    },
+    "ageatdiagnosis-int": {
+      "total": 1,
+      "exact_matches": 1,
+      "exact_match_rate": 1.0,
+      "high_similarity_matches": 1,
+      "high_similarity_rate": 1.0,
+      "overall_matches": 1,
+      "overall_match_rate": 1.0,
+      "avg_similarity": 1.0,
+      "avg_value_match_rate": 1.0
+    },
+    "recur_or_prog-int": {
+      "total": 4,
+      "exact_matches": 2,
+      "exact_match_rate": 0.5,
+      "high_similarity_matches": 3,
+      "high_similarity_rate": 0.75,
+      "overall_matches": 3,
+      "overall_match_rate": 0.75,
+      "avg_similarity": 0.8508,
+      "avg_value_match_rate": NaN
+    },
+    "histological-tipo-int": {
+      "total": 4,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 2,
+      "high_similarity_rate": 0.5,
+      "overall_matches": 2,
+      "overall_match_rate": 0.5,
+      "avg_similarity": 0.7457,
+      "avg_value_match_rate": 0.0
+    },
+    "surgical-mitotic-count-int": {
+      "total": 4,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.0,
+      "avg_value_match_rate": 0.0
+    },
+    "tumorsite-int": {
+      "total": 4,
+      "exact_matches": 0,
+      "exact_match_rate": 0.0,
+      "high_similarity_matches": 0,
+      "high_similarity_rate": 0.0,
+      "overall_matches": 0,
+      "overall_match_rate": 0.0,
+      "avg_similarity": 0.249,
+      "avg_value_match_rate": 0.0
+    }
+  },
+  "confidence_statistics": {
+    "total_with_confidence": 93,
+    "average_confidence": -0.0944,
+    "min_confidence": -0.387,
+    "max_confidence": -0.0046,
+    "rejected_count": 3,
+    "rejection_rate": 0.0323
+  },
+  "confidence_config": {
+    "enabled": true,
+    "default_threshold": -0.15,
+    "prompt_type_thresholds": {
+      "biopsygrading-int": -0.05,
+      "stage_at_diagnosis-int": -0.2,
+      "tumordepth-int": -0.15,
+      "surgerytype-fs30-int": -0.02,
+      "surgical-mitotic-count-int": -0.12,
+      "necrosis_in_surgical-int": -0.05,
+      "recurrencetype-int": -0.1,
+      "chemotherapy_start-int": -0.3,
+      "chemotherapy_end-int": -0.2,
+      "radiotherapy_start-int": -0.15,
+      "radiotherapy_end-int": -0.18,
+      "response-to-int": -0.22,
+      "previous_cancer_treatment-int": -0.2,
+      "necrosis_in_biopsy-int": -0.05,
+      "surgical-specimen-grading-int": -0.08
+    }
+  },
+  "total_evaluations": 93,
+  "total_notes": 18,
+  "total_prompt_types": 27,
+  "date_evaluation": {
+    "total_evaluations": 93,
+    "rows_with_expected_dates": 17,
+    "rows_with_predicted_dates": 24,
+    "rows_with_exact_match": 76,
+    "overall_date_accuracy": 4.4706,
+    "overall_avg_precision": 0.1075,
+    "overall_avg_recall": 0.1075,
+    "overall_avg_f1": 0.1075,
+    "per_prompt_type": {
+      "gender-int": {
+        "total_evaluations": 1,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 1,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "ageatdiagnosis-int": {
+        "total_evaluations": 1,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 1,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "tumorsite-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 4,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "tumordiameter-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 2,
+        "rows_with_exact_match": 1,
+        "date_accuracy": 0.5,
+        "avg_precision": 0.25,
+        "avg_recall": 0.25,
+        "avg_f1": 0.25
+      },
+      "tumordepth-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 4,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "histological-tipo-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 4,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "biopsygrading-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 4,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "tumorbiopsytype-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 3,
+        "rows_with_exact_match": 3,
+        "date_accuracy": 1.0,
+        "avg_precision": 0.5,
+        "avg_recall": 0.5,
+        "avg_f1": 0.5
+      },
+      "stage_at_diagnosis-int": {
+        "total_evaluations": 2,
+        "rows_with_expected_dates": 1,
+        "rows_with_exact_match": 1,
+        "date_accuracy": 1.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "previous_cancer_treatment-int": {
+        "total_evaluations": 1,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 1,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "occurrence_cancer-int": {
+        "total_evaluations": 1,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 1,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "biopsymitoticcount-int": {
+        "total_evaluations": 3,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 3,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "necrosis_in_biopsy-int": {
+        "total_evaluations": 3,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 3,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "surgical-specimen-grading-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 4,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "surgical-mitotic-count-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 4,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "necrosis_in_surgical-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 4,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "surgerytype-fs30-int": {
+        "total_evaluations": 1,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 0,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "surgerymargins-int": {
+        "total_evaluations": 1,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 1,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "reexcision-int": {
+        "total_evaluations": 1,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 0,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "chemotherapy_start-int": {
+        "total_evaluations": 5,
+        "rows_with_expected_dates": 3,
+        "rows_with_exact_match": 3,
+        "date_accuracy": 1.0,
+        "avg_precision": 0.4,
+        "avg_recall": 0.4,
+        "avg_f1": 0.4
+      },
+      "chemotherapy_end-int": {
+        "total_evaluations": 5,
+        "rows_with_expected_dates": 2,
+        "rows_with_exact_match": 2,
+        "date_accuracy": 1.0,
+        "avg_precision": 0.2,
+        "avg_recall": 0.2,
+        "avg_f1": 0.2
+      },
+      "radiotherapy_start-int": {
+        "total_evaluations": 5,
+        "rows_with_expected_dates": 2,
+        "rows_with_exact_match": 4,
+        "date_accuracy": 2.0,
+        "avg_precision": 0.4,
+        "avg_recall": 0.4,
+        "avg_f1": 0.4
+      },
+      "radiotherapy_end-int": {
+        "total_evaluations": 5,
+        "rows_with_expected_dates": 2,
+        "rows_with_exact_match": 4,
+        "date_accuracy": 2.0,
+        "avg_precision": 0.4,
+        "avg_recall": 0.4,
+        "avg_f1": 0.4
+      },
+      "response-to-int": {
+        "total_evaluations": 5,
+        "rows_with_expected_dates": 1,
+        "rows_with_exact_match": 3,
+        "date_accuracy": 3.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "patient-status-int": {
+        "total_evaluations": 9,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 9,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "recur_or_prog-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 1,
+        "rows_with_exact_match": 3,
+        "date_accuracy": 3.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      },
+      "recurrencetype-int": {
+        "total_evaluations": 4,
+        "rows_with_expected_dates": 0,
+        "rows_with_exact_match": 4,
+        "date_accuracy": 0.0,
+        "avg_precision": 0.0,
+        "avg_recall": 0.0,
+        "avg_f1": 0.0
+      }
+    }
+  }
+}

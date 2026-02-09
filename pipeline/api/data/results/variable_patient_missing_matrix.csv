@@ -1,0 +1,70 @@
+Variable,Importance,First phase,MissingPercent,TEST001
+MissingPercentPerPatient,,,,57.63
+Total High at diagnosis,High,,56.1,56.1
+Total High at progression,High,,0.0,0.0
+Total High at recurrence,High,,0.0,0.0
+Total Medium at diagnosis,Medium,,100.0,100.0
+Total Medium at progression,Medium,,0.0,0.0
+Total Medium at recurrence,Medium,,0.0,0.0
+Total Low at diagnosis,Low,,53.33,53.33
+Total Low at progression,Low,,0.0,0.0
+Total Low at recurrence,Low,,0.0,0.0
+Patient.sex,High,Diagnosis,0.0,
+Patient.race,Low,Diagnosis,100.0,Missing
+Patient.birthYear,High,Diagnosis,0.0,
+Patient.countryOfResidence,Low,Diagnosis,100.0,Missing
+Patient.smoking,Low,Diagnosis,100.0,Missing
+Patient.cigarettesPackYearsSmokedDuringLife,Low,Diagnosis,100.0,Missing
+Patient.alcohol,Low,Diagnosis,100.0,Missing
+Patient.charlsonComorbidityIndex,Medium,Diagnosis,100.0,Missing
+Patient.noGeneticSyndrome,High,Diagnosis,100.0,Missing
+Patient.olliersDisease,High,Diagnosis,100.0,Missing
+Patient.maffuciSyndrome,High,Diagnosis,100.0,Missing
+Patient.liFraumeniSyndrome,High,Diagnosis,100.0,Missing
+Patient.mccuneAlbrightSyndrome,High,Diagnosis,100.0,Missing
+Patient.multipleOsteochondromas,High,Diagnosis,100.0,Missing
+Patient.neurofibromatosisType1,High,Diagnosis,100.0,Missing
+Patient.rothmundThomsonSyndrome,High,Diagnosis,100.0,Missing
+Patient.wernerSyndrome,High,Diagnosis,100.0,Missing
+Patient.retinoblastoma,High,Diagnosis,100.0,Missing
+Patient.pagetDisease,High,Diagnosis,100.0,Missing
+Patient.otherGeneticSyndrome,High,Diagnosis,100.0,Missing
+Patient.previousMalignantCancerSite,Medium,Diagnosis,100.0,Missing
+Patient.previousCancerTreatment,Medium,Diagnosis,100.0,Missing
+CancerEpisode.patient,High,Diagnosis,0.0,
+CancerEpisode.cancerStartDate,High,Diagnosis,0.0,
+Diagnosis.cancerepisode,High,Diagnosis,0.0,
+Diagnosis.dateOfDiagnosis,High,Diagnosis,0.0,
+Diagnosis.typeOfBiopsy,High,Diagnosis,0.0,
+Diagnosis.biopsyDoneBy,Low,Diagnosis,0.0,
+Diagnosis.ageAtDiagnosis,High,Diagnosis,0.0,
+Diagnosis.radiotherapyInducedSarcoma,Low,Diagnosis,0.0,
+Diagnosis.biopsyGrading,Low,Diagnosis,0.0,
+Diagnosis.histologyGroup,Low,Diagnosis,0.0,
+Diagnosis.site,Low,Diagnosis,0.0,
+Diagnosis.histologySubgroup,High,Diagnosis,0.0,
+Diagnosis.subsite,High,Diagnosis,0.0,
+Diagnosis.diagnosisCode,High,Diagnosis,0.0,
+Diagnosis.tumorSize,High,Diagnosis,0.0,
+Diagnosis.superficialDepth,High,Diagnosis,0.0,
+Diagnosis.deepDepth,High,Diagnosis,0.0,
+Diagnosis.biopsyMitoticCount,Low,Diagnosis,0.0,
+Diagnosis.mitoticIndex,Low,Diagnosis,0.0,
+EpisodeEvent.cancerEpisode,High,Diagnosis,0.0,
+EpisodeEvent.diseaseStatus,High,Diagnosis,0.0,
+EpisodeEvent.definedAt,Low,Diagnosis,100.0,Missing
+EpisodeEvent.dateOfEpisode,High,Diagnosis,100.0,Missing
+Surgery.diagnosisReference,High,Diagnosis,100.0,Missing
+Surgery.episodeEvent,High,Diagnosis,0.0,
+Surgery.surgeryType,High,Diagnosis,100.0,Missing
+Surgery.dateOfSurgery,High,Diagnosis,0.0,
+Surgery.surgeryIntention,Low,Diagnosis,100.0,Missing
+Surgery.marginsAfterSurgery,High,Diagnosis,100.0,Missing
+Surgery.tumorRupture,High,Diagnosis,100.0,Missing
+Surgery.surgicalSpecimenMitoticCount,Low,Diagnosis,100.0,Missing
+Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours,High,Diagnosis,100.0,Missing
+PatientFollowUp.patient,High,,100.0,Missing
+PatientFollowUp.statusOfPatientAtLastFollowUp,High,,100.0,Missing
+PatientFollowUp.statusOfDiseaseAtLastFollowUp,High,,100.0,Missing
+PatientFollowUp.patientFollowUpDate,High,,100.0,Missing
+PatientFollowUp.lastContact,High,,100.0,Missing

@@ -1,0 +1,310 @@
+{
+    "run_id": {
+        "run_name": null,
+        "run_time": "2026-02-03T14:03:06.581858+00:00"
+    },
+    "run_results": {
+        "ValidationResultIdentifier::default/__none__/20260203T140306.581858Z/DrugsForTreatments_validator_checkpoint-f{entity_name}_data_asset": {
+            "validation_result": {
+                "success": false,
+                "results": [
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "DrugsForTreatments.systemicTreatment",
+                                "ignore_row_if": "never",
+                                "batch_id": "DrugsForTreatments_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 2,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "DrugsForTreatments.otherLocalTreatment",
+                                "ignore_row_if": "never",
+                                "batch_id": "DrugsForTreatments_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 2,
+                            "unexpected_count": 2,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null,
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 2
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "DrugsForTreatments.otherLocalTreatment": null,
+                                    "patient_id": "3",
+                                    "record_id": "10"
+                                },
+                                {
+                                    "DrugsForTreatments.otherLocalTreatment": null,
+                                    "patient_id": "3",
+                                    "record_id": "11"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null,
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "DrugsForTreatments.otherLocalTreatment": null,
+                                    "patient_id": "3",
+                                    "record_id": "10"
+                                },
+                                {
+                                    "DrugsForTreatments.otherLocalTreatment": null,
+                                    "patient_id": "3",
+                                    "record_id": "11"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": false,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "DrugsForTreatments.isolatedLimbPerfusion",
+                                "ignore_row_if": "never",
+                                "batch_id": "DrugsForTreatments_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 2,
+                            "unexpected_count": 2,
+                            "unexpected_percent": 100.0,
+                            "partial_unexpected_list": [
+                                null,
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 2
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "DrugsForTreatments.isolatedLimbPerfusion": null,
+                                    "patient_id": "3",
+                                    "record_id": "10"
+                                },
+                                {
+                                    "DrugsForTreatments.isolatedLimbPerfusion": null,
+                                    "patient_id": "3",
+                                    "record_id": "11"
+                                }
+                            ],
+                            "unexpected_list": [
+                                null,
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "DrugsForTreatments.isolatedLimbPerfusion": null,
+                                    "patient_id": "3",
+                                    "record_id": "10"
+                                },
+                                {
+                                    "DrugsForTreatments.isolatedLimbPerfusion": null,
+                                    "patient_id": "3",
+                                    "record_id": "11"
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    },
+                    {
+                        "success": true,
+                        "expectation_config": {
+                            "expectation_type": "expect_column_values_to_not_be_null",
+                            "kwargs": {
+                                "column": "DrugsForTreatments.drug",
+                                "ignore_row_if": "never",
+                                "batch_id": "DrugsForTreatments_validator_checkpoint-f{entity_name}_data_asset"
+                            },
+                            "meta": {
+                                "dimensions": [
+                                    "Completeness"
+                                ]
+                            }
+                        },
+                        "result": {
+                            "element_count": 2,
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                        },
+                        "meta": {},
+                        "exception_info": {
+                            "raised_exception": false,
+                            "exception_traceback": null,
+                            "exception_message": null
+                        }
+                    }
+                ],
+                "evaluation_parameters": {},
+                "statistics": {
+                    "evaluated_expectations": 4,
+                    "successful_expectations": 2,
+                    "unsuccessful_expectations": 2,
+                    "success_percent": 50.0
+                },
+                "meta": {
+                    "great_expectations_version": "0.18.15",
+                    "expectation_suite_name": "default",
+                    "run_id": {
+                        "run_name": null,
+                        "run_time": "2026-02-03T14:03:06.581858+00:00"
+                    },
+                    "batch_spec": {
+                        "batch_data": "PandasDataFrame"
+                    },
+                    "batch_markers": {
+                        "ge_load_time": "20260203T140306.583684Z",
+                        "pandas_data_fingerprint": "b5bbacfaadf0ae504cef7e1257cd71d9"
+                    },
+                    "active_batch_definition": {
+                        "datasource_name": "DrugsForTreatments_validator_checkpoint",
+                        "data_connector_name": "fluent",
+                        "data_asset_name": "f{entity_name}_data_asset",
+                        "batch_identifiers": {}
+                    },
+                    "validation_time": "20260203T140306.587086Z",
+                    "checkpoint_name": "DrugsForTreatments_checkpoint",
+                    "validation_id": null,
+                    "checkpoint_id": null
+                }
+            },
+            "actions_results": {
+                "store_validation_result": {
+                    "class": "StoreValidationResultAction"
+                },
+                "store_evaluation_params": {
+                    "class": "StoreEvaluationParametersAction"
+                },
+                "update_data_docs": {
+                    "class": "UpdateDataDocsAction"
+                }
+            }
+        }
+    },
+    "checkpoint_config": {
+        "expectation_suite_name": "default",
+        "template_name": null,
+        "module_name": "great_expectations.checkpoint",
+        "ge_cloud_id": null,
+        "config_version": 1.0,
+        "slack_webhook": null,
+        "validations": [],
+        "action_list": [
+            {
+                "name": "store_validation_result",
+                "action": {
+                    "class_name": "StoreValidationResultAction"
+                }
+            },
+            {
+                "name": "store_evaluation_params",
+                "action": {
+                    "class_name": "StoreEvaluationParametersAction"
+                }
+            },
+            {
+                "name": "update_data_docs",
+                "action": {
+                    "class_name": "UpdateDataDocsAction"
+                }
+            }
+        ],
+        "evaluation_parameters": {},
+        "notify_on": null,
+        "name": "DrugsForTreatments_checkpoint",
+        "notify_with": null,
+        "run_name_template": null,
+        "expectation_suite_ge_cloud_id": null,
+        "default_validation_id": null,
+        "site_names": null,
+        "profilers": [],
+        "runtime_configuration": {
+            "result_format": {
+                "result_format": "COMPLETE",
+                "unexpected_index_column_names": [
+                    "patient_id",
+                    "record_id"
+                ],
+                "return_unexpected_index_query": true
+            }
+        },
+        "batch_request": {
+            "datasource_name": "DrugsForTreatments_validator_checkpoint",
+            "data_asset_name": "f{entity_name}_data_asset"
+        },
+        "class_name": "Checkpoint"
+    },
+    "success": false
+}

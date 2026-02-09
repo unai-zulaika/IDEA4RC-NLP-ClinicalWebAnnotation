@@ -1,0 +1,43 @@
+{
+  "total_notes_processed": 18,
+  "total_entities_extracted": 18,
+  "entities_per_note": {
+    "avg": 1.6363636363636365,
+    "min": 1,
+    "max": 5,
+    "median": 1.0
+  },
+  "notes_with_entities": 11,
+  "notes_without_entities": 7,
+  "entity_extraction_rate": 0.6111,
+  "core_variables_coverage": {
+    "total_unique_variables": 11,
+    "top_10_variables": {
+      "Diagnosis.deepDepth": 4,
+      "Diagnosis.histologySubgroup": 3,
+      "DiseaseExtent.localised": 2,
+      "Surgery.surgeryType": 2,
+      "Patient.birthYear": 1,
+      "Patient.previousMalignantCancerSite": 1,
+      "Surgery.dateOfSurgery": 1,
+      "Surgery.marginsAfterSurgery": 1,
+      "Radiotherapy.setting": 1,
+      "SystemicTreatment.chemotherapyInfo": 1
+    }
+  },
+  "date_extraction": {
+    "total_dates_extracted": 18,
+    "date_extraction_rate": 1.0
+  },
+  "error_rate": {
+    "total_errors": 0,
+    "error_percentage": 0.0
+  },
+  "processing_time": {
+    "total_seconds": 0.0,
+    "avg_per_entity": 0.0
+  },
+  "source_distribution": {
+    "NLP_LLM": 18
+  }
+}

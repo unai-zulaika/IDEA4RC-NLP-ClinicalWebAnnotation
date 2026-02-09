@@ -1,0 +1,18 @@
+nlp-ingestion:
+  namespace: datamesh
+  status-web:
+    name: status-web
+    image: ghcr.io/idea4rc/etl:1.0
+    port: 8501
+
+  api:
+    name: api
+    image: ghcr.io/unai-zulaika/idea4rc-nlp-ingestion-api:0.1
+    port: 8000
+  
+  results-ui:
+    name: results-ui
+    image: ghcr.io/idea4rc/results-ui:0.1
+    port: 5173
+
+  

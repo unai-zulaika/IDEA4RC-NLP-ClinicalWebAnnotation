@@ -1,0 +1,7 @@
+apiVersion: v2
+name: nlp-ingestion
+description: The IDEA4RC NLP Ingestion Service processes and stores the data from the NLP pipeline.
+
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

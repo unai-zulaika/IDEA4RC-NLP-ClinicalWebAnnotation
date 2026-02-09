@@ -1,0 +1,7 @@
+prompt_type,note_text,annotation
+gender-int,"Patient is a 65-year-old male presenting with chest pain.","Patient's gender male."
+biopsygrading-int,"The biopsy shows a high-grade sarcoma with FNCLCC grade 3.","Biopsy grading (FNCLCC): 3."
+surgerymargins-int,"Surgical resection was performed with clear margins (R0).","Margins after surgery: R0."
+tumordepth-int,"The tumor extends deep into the muscle tissue.","Tumor depth: deep."
+ageatdiagnosis-int,"Patient is a 45-year-old female diagnosed in 2020.","Age at diagnosis: 45 years."
+

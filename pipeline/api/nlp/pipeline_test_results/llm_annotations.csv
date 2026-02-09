@@ -1,0 +1,346 @@
+prompt_type;annotation;p_id;date;note_id;report_type;raw_output;extracted_dates
+gender-int;Patient's gender: femmina.;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;Patient's gender: femmina.;[]
+ageatdiagnosis-int;Age at diagnosis 34 years.;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;Age at diagnosis 34 years.;[]
+tumorsite-int;Tumor site (Upper and Lower limbs): Anterior compartment of the left thigh.;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;Annotation: Tumor site (Upper and Lower limbs): Anterior compartment of the left thigh.;[]
+tumordiameter-int;### Annotation:;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;"### Annotation:
+
+Tumor longest diameter: 110 mm (at initial imaging on 15 marzo 2018).
+Tumor longest diameter unknown.
+
+If the date is missing, output [put date].";[]
+tumordepth-int;Tumor depth: superficial.;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;Annotation: Tumor depth: superficial.;[]
+histological-tipo-int;Histological type: myxoid liposarcoma (8852/3).;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;Annotation: Histological type: myxoid liposarcoma (8852/3).;[]
+biopsygrading-int;Biopsy grading (FNCLCC): 2.;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;Biopsy grading (FNCLCC): 2.;[]
+tumorbiopsytype-int;Baseline/primary tumor core-biopsy has been performed on unknown in the hospital.;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;Annotation: Baseline/primary tumor core-biopsy has been performed on unknown in the hospital.;[]
+stage_at_diagnosis-int;Stage at diagnosis: localized.;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;Stage at diagnosis: localized.;[]
+previous_cancer_treatment-int;No previous cancer treatments.;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;Annotation: No previous cancer treatments.;[]
+occurrence_cancer-int;Occurrence of other cancer sarcoma.;P001;2018-03-15;P001_2018-03-15_consultation_1;consultation;Annotation: Occurrence of other cancer sarcoma.;[]
+tumordiameter-int;Tumor longest diameter: 110mm (at initial imaging on 22/03/2018).;P001;2018-03-22;P001_2018-03-22_radiology_2;radiology;Annotation: Tumor longest diameter: 110mm (at initial imaging on 22/03/2018).;['22/03/2018', '22/03/2018']
+tumordepth-int;Tumor depth: deep.;P001;2018-03-22;P001_2018-03-22_radiology_2;radiology;Annotation: Tumor depth: deep.;[]
+tumorsite-int;Tumor site (Upper and Lower limbs): Anterior compartment of left thigh.;P001;2018-03-22;P001_2018-03-22_radiology_2;radiology;Annotation: Tumor site (Upper and Lower limbs): Anterior compartment of left thigh.;[]
+histological-tipo-int;Histological type: Liposarcoma mixoide (8852/3).;P001;2018-03-30;P001_2018-03-30_pathology_3;pathology;Annotation: Histological type: Liposarcoma mixoide (8852/3).;[]
+biopsygrading-int;Biopsy grading (FNCLCC): 2 (intermedio).;P001;2018-03-30;P001_2018-03-30_pathology_3;pathology;Biopsy grading (FNCLCC): 2 (intermedio).;[]
+biopsymitoticcount-int;Biopsy mitotic count: Unknown.;P001;2018-03-30;P001_2018-03-30_pathology_3;pathology;Biopsy mitotic count: Unknown.;[]
+necrosis_in_biopsy-int;Necrosis in biopsy specimen (type of): absent.;P001;2018-03-30;P001_2018-03-30_pathology_3;pathology;Necrosis in biopsy specimen (type of): absent.;[]
+tumorbiopsytype-int;Baseline/primary tumor core biopsy has been performed on 30/03/2018 in the hospital.;P001;2018-03-30;P001_2018-03-30_pathology_3;pathology;"Annotation: Baseline/primary tumor core biopsy has been performed on 30/03/2018 in the hospital.
+
+---
+
+Note: The biopsy type is ""core biopsy"" and the date is present in the note. The place is not explicitly mentioned, so it is assumed to be ""in the hospital"".";['30/03/2018', '30/03/2018']
+surgical-specimen-grading-int;Surgical specimen grading (FNCLCC): 2 (intermedio).;P001;2018-03-30;P001_2018-03-30_pathology_3;pathology;Annotation: Surgical specimen grading (FNCLCC): 2 (intermedio).;[]
+surgical-mitotic-count-int;Unknown surgical specimen mitotic count.;P001;2018-03-30;P001_2018-03-30_pathology_3;pathology;Annotation: Unknown surgical specimen mitotic count.;[]
+necrosis_in_surgical-int;Necrosis in surgical specimen (type of): none.;P001;2018-03-30;P001_2018-03-30_pathology_3;pathology;Necrosis in surgical specimen (type of): none.;[]
+stage_at_diagnosis-int;Stage at diagnosis: localized.;P001;2018-04-05;P001_2018-04-05_staging_4;staging;Stage at diagnosis: localized.;[]
+surgerytype-fs30-int;Primary surgery was performed on 15/05/2018 and was macroscopically [select result].;P001;2018-05-15;P001_2018-05-15_surgery_5;surgery;Primary surgery was performed on 15/05/2018 and was macroscopically [select result].;['15/05/2018', '15/05/2018']
+surgerymargins-int;Margins after surgery: R0;P001;2018-05-15;P001_2018-05-15_surgery_5;surgery;Margins after surgery: R0;[]
+reexcision-int;Re-excision was performed on [put date] and was macroscopically [select result].;P001;2018-05-15;P001_2018-05-15_surgery_5;surgery;Re-excision was performed on [put date] and was macroscopically [select result].;[]
+surgical-specimen-grading-int;Surgical specimen grading (FNCLCC): Other classification system high.;P001;2018-05-15;P001_2018-05-15_surgery_5;surgery;"Annotation: Surgical specimen grading (FNCLCC): Other classification system high.
+
+Reasoning: The note mentions ""esame istologico definitivo necessario per confermare istotipo (atteso liposarcoma mixoide, ICD-O-3 8852/3) e grado FNCLCC definitivo"". However, the FNCLCC grade is not explicitly mentioned. The note also mentions ""valutazione dei margini microscopici al referto istologico (margini macroscopicamente prossimi/“close” come previsto)"", which implies a high grading level, but it's not a direct mention of the FNCLCC grade.";[]
+surgical-mitotic-count-int;Unknown surgical specimen mitotic count.;P001;2018-05-15;P001_2018-05-15_surgery_5;surgery;Annotation: Unknown surgical specimen mitotic count.;[]
+necrosis_in_surgical-int;Necrosis in surgical specimen (type of): absent.;P001;2018-05-15;P001_2018-05-15_surgery_5;surgery;Necrosis in surgical specimen (type of): absent.;[]
+histological-tipo-int;Histological type: Myxoid liposarcoma (8852/3).;P001;2018-05-22;P001_2018-05-22_pathology_6;pathology;Annotation: Histological type: Myxoid liposarcoma (8852/3).;[]
+biopsygrading-int;Biopsy grading (FNCLCC): FNCLCC grado 2.;P001;2018-05-22;P001_2018-05-22_pathology_6;pathology;Biopsy grading (FNCLCC): FNCLCC grado 2.;[]
+biopsymitoticcount-int;Biopsy mitotic count: Unknown.;P001;2018-05-22;P001_2018-05-22_pathology_6;pathology;Biopsy mitotic count: Unknown.;[]
+necrosis_in_biopsy-int;Necrosis in biopsy specimen (type of): none.;P001;2018-05-22;P001_2018-05-22_pathology_6;pathology;Necrosis in biopsy specimen (type of): none.;[]
+tumorbiopsytype-int;Baseline/primary tumor surgical resection biopsy has been performed on 15/05/2018 in the hospital.;P001;2018-05-22;P001_2018-05-22_pathology_6;pathology;Annotation: Baseline/primary tumor surgical resection biopsy has been performed on 15/05/2018 in the hospital.;['15/05/2018', '15/05/2018']
+surgical-specimen-grading-int;Surgical specimen grading (FNCLCC): 2.;P001;2018-05-22;P001_2018-05-22_pathology_6;pathology;Annotation: Surgical specimen grading (FNCLCC): 2.;[]
+surgical-mitotic-count-int;Unknown surgical specimen mitotic count.;P001;2018-05-22;P001_2018-05-22_pathology_6;pathology;Annotation: Unknown surgical specimen mitotic count.;[]
+necrosis_in_surgical-int;Necrosis in surgical specimen (type of): absent.;P001;2018-05-22;P001_2018-05-22_pathology_6;pathology;Necrosis in surgical specimen (type of): absent.;[]
+chemotherapy_start-int;### Annotation:;P001;2018-06-15;P001_2018-06-15_oncology_7;oncology;"### Annotation:
+
+pre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+
+post-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+
+### Details:
+
+- pre-operative chemotherapy: Not applicable (radioterapia adiuvante)
+- post-operative chemotherapy: Not applicable (radioterapia adiuvante)
+
+Note: The patient received radiation therapy (radioterapia adiuvante) as an adjuvant treatment, but no chemotherapy was mentioned in the note.";[]
+chemotherapy_end-int;### Annotation:;P001;2018-06-15;P001_2018-06-15_oncology_7;oncology;"### Annotation:
+
+pre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+
+post-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+
+### Details:
+
+- pre-operative chemotherapy: Not applicable (radioterapia adiuvante mentioned, not chemotherapy)
+- post-operative chemotherapy: Not mentioned
+
+### Note:
+The patient underwent radioterapia adiuvante (external radiation therapy) as an adjuvant treatment for liposarcoma mixoide. Chemotherapy is not mentioned in the provided medical note.";[]
+radiotherapy_start-int;pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date].;P001;2018-06-15;P001_2018-06-15_oncology_7;oncology;"pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+
+Since the provided note does not mention pre-operative radiotherapy, the pre-operative radiotherapy section remains unchanged.
+
+post-operative radiotherapy (conventional) with adiuvante intention started letto operatorio della coscia sinistra on 15/06/2018.";[]
+radiotherapy_end-int;### Annotation:;P001;2018-06-15;P001_2018-06-15_oncology_7;oncology;"### Annotation:
+
+pre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+
+post-operative radiotherapy in total of 50 Gy in 25 fractions ended on 15/06/2018 because of [select reason].
+
+Note: The reason for post-operative radiotherapy is not explicitly stated in the note, but it is implied to be ""to reduce the risk of local recurrence given the narrow margin of 1 mm despite R0 resection"".";[]
+response-to-int;Response to adjuvant radiotherapy was: [select response type];P001;2018-06-15;P001_2018-06-15_oncology_7;oncology;"Response to adjuvant radiotherapy was: [select response type]
+
+Note: The note describes the initiation of adjuvant radiotherapy for a patient with liposarcoma mixoide, but does not mention the response to the treatment.";[]
+patient-status-int;Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor.;P001;2018-06-15;P001_2018-06-15_oncology_7;oncology;Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor.;[]
+chemotherapy_start-int;### Annotation:;P001;2018-07-23;P001_2018-07-23_oncology_8;oncology;"### Annotation:
+
+No pre-operative or post-operative chemotherapy details were mentioned in the provided medical note.";[]
+chemotherapy_end-int;### Annotation:;P001;2018-07-23;P001_2018-07-23_oncology_8;oncology;"### Annotation:
+
+Pre-operative chemotherapy details are not mentioned in the provided medical note.
+
+Post-operative chemotherapy details are not mentioned in the provided medical note.
+
+However, the note does mention ""radioterapia adiuvante"" (adjuvant radiotherapy) which was started on 15/06/2018 and completed on 23/07/2018.";[]
+radiotherapy_start-int;### Annotation:;P001;2018-07-23;P001_2018-07-23_oncology_8;oncology;"### Annotation:
+
+pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+
+### Details:
+
+- pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date].
+  - intention: [select intention] (Note: The note does not explicitly mention the intention of pre-operative radiotherapy, but it is implied as adjuvant therapy)
+  - started: [please select where] (Note: The note mentions ""radioterapia complementare iniziata"" which translates to ""adjuvant radiotherapy started"", implying it was started at the hospital or clinic)
+  - on: [put date] (Note: The date is mentioned as 15/06/2018)
+
+- post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date].
+  - intention: [select intention] (Note: The note does not explicitly mention the intention of post-operative radiotherapy, but it is implied as adjuvant therapy)
+  - started: [please";[]
+radiotherapy_end-int;### Annotation:;P001;2018-07-23;P001_2018-07-23_oncology_8;oncology;"### Annotation:
+
+pre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+post-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+
+### Extracted Radiotherapy Details:
+
+pre-operative radiotherapy in total of 50Gy in 25 fractions ended on 23/07/2018 because of [select reason].
+post-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+
+### Note:
+The note does not mention post-operative radiotherapy details. It only mentions pre-operative radiotherapy.";[]
+response-to-int;Response to adjuvant radiotherapy was: [select response type];P001;2018-07-23;P001_2018-07-23_oncology_8;oncology;"Response to adjuvant radiotherapy was: [select response type]
+
+Note: The note describes the completion of radiotherapy with good overall tolerance, but does not explicitly mention the disease response (e.g., complete response, partial response, stable disease, progression).";[]
+patient-status-int;Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor.;P001;2018-07-23;P001_2018-07-23_oncology_8;oncology;Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor.;[]
+patient-status-int;Status of the patient at last follow-up: Alive;P001;2019-01-10;P001_2019-01-10_follow-up_9;follow-up;Status of the patient at last follow-up: Alive, No Evidence of Disease (NED);[]
+patient-status-int;No Evidence of Disease (NED);P001;2019-01-10;P001_2019-01-10_follow-up_9;follow-up;Status of the patient at last follow-up: Alive, No Evidence of Disease (NED);[]
+recur_or_prog-int;There was no progression/recurrence.;P001;2019-01-10;P001_2019-01-10_follow-up_9;follow-up;Annotation: There was no progression/recurrence.;[]
+recurrencetype-int;Type of recurrence/progression: None.;P001;2019-01-10;P001_2019-01-10_follow-up_9;follow-up;Annotation: Type of recurrence/progression: None.;[]
+patient-status-int;Status of the patient at last follow-up: Alive;P001;2020-01-15;P001_2020-01-15_follow-up_10;follow-up;Status of the patient at last follow-up: Alive, No Evidence of Disease (NED);[]
+patient-status-int;No Evidence of Disease (NED);P001;2020-01-15;P001_2020-01-15_follow-up_10;follow-up;Status of the patient at last follow-up: Alive, No Evidence of Disease (NED);[]
+recur_or_prog-int;There was no progression/recurrence.;P001;2020-01-15;P001_2020-01-15_follow-up_10;follow-up;Annotation: There was no progression/recurrence.;[]
+recurrencetype-int;Type of recurrence/progression: None.;P001;2020-01-15;P001_2020-01-15_follow-up_10;follow-up;Annotation: Type of recurrence/progression: None.;[]
+patient-status-int;Status of the patient at last follow-up: Alive;P001;2021-01-20;P001_2021-01-20_follow-up_11;follow-up;Status of the patient at last follow-up: Alive, No Evidence of Disease (NED);[]
+patient-status-int;No Evidence of Disease (NED);P001;2021-01-20;P001_2021-01-20_follow-up_11;follow-up;Status of the patient at last follow-up: Alive, No Evidence of Disease (NED);[]
+recur_or_prog-int;There was no progression/recurrence.;P001;2021-01-20;P001_2021-01-20_follow-up_11;follow-up;Annotation: There was no progression/recurrence.;[]
+recurrencetype-int;Type of recurrence/progression: None.;P001;2021-01-20;P001_2021-01-20_follow-up_11;follow-up;Annotation: Type of recurrence/progression: None.;[]
+tumordiameter-int;Tumor longest diameter: 15mm (at initial imaging on 01/09/2022).;P001;2022-09-01;P001_2022-09-01_radiology_12;radiology;Annotation: Tumor longest diameter: 15mm (at initial imaging on 01/09/2022).;['01/09/2022', '01/09/2022']
+tumordepth-int;Tumor depth: superficial.;P001;2022-09-01;P001_2022-09-01_radiology_12;radiology;Annotation: Tumor depth: superficial.;[]
+tumorsite-int;Tumor site (Upper and Lower limbs): Left thigh.;P001;2022-09-01;P001_2022-09-01_radiology_12;radiology;"Annotation: Tumor site (Upper and Lower limbs): Left thigh.
+
+Explanation: The note mentions a previous history of liposarcoma mixoide of the left thigh, but the current case is about multiple nodularities in the lungs, which are suspected to be metastatic locations. The category is Upper and Lower limbs due to the initial tumor location, but the current focus is on the lung metastases.";[]
+histological-tipo-int;Histological type: Myxoid liposarcoma (8852/3).;P001;2022-09-15;P001_2022-09-15_pathology_13;pathology;Annotation: Histological type: Myxoid liposarcoma (8852/3).;[]
+biopsygrading-int;Biopsy grading (FNCLCC): 2.;P001;2022-09-15;P001_2022-09-15_pathology_13;pathology;Biopsy grading (FNCLCC): 2.;[]
+biopsymitoticcount-int;Biopsy mitotic count: Unknown.;P001;2022-09-15;P001_2022-09-15_pathology_13;pathology;Biopsy mitotic count: Unknown.;[]
+necrosis_in_biopsy-int;Necrosis in biopsy specimen (type of): absent.;P001;2022-09-15;P001_2022-09-15_pathology_13;pathology;Necrosis in biopsy specimen (type of): absent.;[]
+tumorbiopsytype-int;Baseline/primary tumor core biopsy has been performed on 15/09/2022 in the hospital.;P001;2022-09-15;P001_2022-09-15_pathology_13;pathology;Annotation: Baseline/primary tumor core biopsy has been performed on 15/09/2022 in the hospital.;['15/09/2022', '15/09/2022']
+surgical-specimen-grading-int;Surgical specimen grading (FNCLCC): 2.;P001;2022-09-15;P001_2022-09-15_pathology_13;pathology;Annotation: Surgical specimen grading (FNCLCC): 2.;[]
+surgical-mitotic-count-int;Unknown surgical specimen mitotic count.;P001;2022-09-15;P001_2022-09-15_pathology_13;pathology;Annotation: Unknown surgical specimen mitotic count.;[]
+necrosis_in_surgical-int;Necrosis in surgical specimen (type of): absent.;P001;2022-09-15;P001_2022-09-15_pathology_13;pathology;Necrosis in surgical specimen (type of): absent.;[]
+chemotherapy_start-int;### Annotation:;P001;2022-09-25;P001_2022-09-25_oncology_14;oncology;"### Annotation:
+
+pre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+
+post-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+
+### Details:
+
+- pre-operative chemotherapy: Not applicable (no pre-operative chemotherapy mentioned)
+- post-operative chemotherapy: Not applicable (no post-operative chemotherapy mentioned)
+- pre-operative chemotherapy intent: Not mentioned
+- pre-operative chemotherapy date: Not mentioned
+- pre-operative chemotherapy regimen: Not mentioned
+- post-operative chemotherapy intent: Not mentioned
+- post-operative chemotherapy date: Not mentioned
+- post-operative chemotherapy regimen: Not mentioned
+
+### Note:
+The provided medical note describes the initiation of palliative chemotherapy with doxorubicina for a patient with metastatic myxoid liposarcoma. The note does not mention pre-operative or post-operative chemotherapy.";[]
+chemotherapy_end-int;### Annotation:;P001;2022-09-25;P001_2022-09-25_oncology_14;oncology;"### Annotation:
+
+pre-operative chemotherapy details are not applicable as the note describes the initiation of palliative chemotherapy.
+
+post-operative chemotherapy details are not applicable as the note describes the initiation of palliative chemotherapy.
+
+However, the note does mention the patient's previous treatments:
+
+- Surgery: ""resezione ampia eseguita il 15/05/2018""
+- Radiotherapy: ""Radioterapia adiuvante alla loggia chirurgica completata il 23/07/2018 (50 Gy in 25 frazioni)""
+
+The note does not provide information on the number of cycles or the reason for ending previous treatments.";[]
+radiotherapy_start-int;### Annotation:;P001;2022-09-25;P001_2022-09-25_oncology_14;oncology;"### Annotation:
+
+pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+
+### Details:
+
+- pre-operative radiotherapy (conventional) with adjuvant intention started at the surgical site on 23/07/2018.
+- post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. (No post-operative radiotherapy mentioned in the note, so this section remains blank)";[]
+radiotherapy_end-int;### Annotation:;P001;2022-09-25;P001_2022-09-25_oncology_14;oncology;"### Annotation:
+
+pre-operative radiotherapy in total of 50Gy in 25 fractions ended on 23/07/2018 because of myxoid liposarcoma.
+
+post-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+
+Note: The provided medical note does not mention post-operative radiotherapy details.";[]
+response-to-int;Response to palliative chemotherapy was: [select response type];P001;2022-09-25;P001_2022-09-25_oncology_14;oncology;"Response to palliative chemotherapy was: [select response type]
+
+Note: The note describes the initiation of palliative chemotherapy with doxorubicin for metastatic myxoid liposarcoma, but does not mention the response to the treatment. The annotation is incomplete due to the lack of information about the disease response.";[]
+patient-status-int;Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).;P001;2022-09-25;P001_2022-09-25_oncology_14;oncology;Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).;[]
+chemotherapy_start-int;### Annotation:;P001;2022-12-18;P001_2022-12-18_oncology_15;oncology;"### Annotation:
+
+Pre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+
+Post-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+
+### Details:
+
+- **Pre-operative chemotherapy**: 
+  - Intent: [select intent] (not explicitly mentioned, but implied as part of the treatment plan)
+  - Date: [provide date] (not explicitly mentioned, but implied as part of the treatment plan)
+  - Regimen: doxorubicina (6 cycles started on 25/09/2022)
+
+- **Post-operative chemotherapy**: 
+  - Intent: [select intent] (not explicitly mentioned, but implied as part of the treatment plan)
+  - Date: [provide date] (not explicitly mentioned, but implied as part of the treatment plan)
+  - Regimen: [select regimen] (not explicitly mentioned, but doxorubicina is mentioned as part of the treatment plan)
+
+### Note:
+The intent and date for both pre-operative and post-operative chemotherapy are not explicitly mentioned in the note. However, based on the context, it can be inferred that the intent is part of the treatment plan for metastatic disease, and the date is likely to";[]
+chemotherapy_end-int;### Annotation:;P001;2022-12-18;P001_2022-12-18_oncology_15;oncology;"### Annotation:
+
+Pre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+
+- Date: 25/09/2022
+- Number of cycles: 6
+- Reason: [select reason] (not explicitly stated, but implied as part of the treatment plan)
+
+Post-operative chemotherapy details are not mentioned in the provided note.";[]
+radiotherapy_start-int;### Annotation:;P001;2022-12-18;P001_2022-12-18_oncology_15;oncology;"### Annotation:
+
+No pre-operative radiotherapy (conventional) details found.
+
+Post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date].
+
+Note: The patient had received adjuvant radiotherapy (RT) completed on 23/07/2018 for myxoid liposarcoma of the left femur.";[]
+radiotherapy_end-int;### Annotation:;P001;2022-12-18;P001_2022-12-18_oncology_15;oncology;"### Annotation:
+
+No pre-operative radiotherapy details found in the note.
+
+Post-operative radiotherapy details:
+- Total dose: [put total dose]
+- Number of fractions: [put number of]
+- Ended on: [put date]
+- Reason: [select reason]
+
+From the note, it appears that the patient received adjuvant radiotherapy after the initial surgery in 2018. However, the details of the radiotherapy are not provided in the note. Therefore, the annotation is incomplete.
+
+If we assume that the radiotherapy details are the same as the one mentioned in the note, we can fill in the blanks as follows:
+
+Post-operative radiotherapy details:
+- Total dose: [put total dose] (not specified in the note)
+- Number of fractions: [put number of] (not specified in the note)
+- Ended on: 23/07/2018
+- Reason: [select reason] (not specified in the note)
+
+Please note that the annotation is incomplete due to the lack of information in the note.";[]
+response-to-int;Response to therapeutic (without surgery) chemotherapy was: partial response;P001;2022-12-18;P001_2022-12-18_oncology_15;oncology;Annotation: Response to therapeutic (without surgery) chemotherapy was: partial response;[]
+patient-status-int;Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).;P001;2022-12-18;P001_2022-12-18_oncology_15;oncology;Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).;[]
+tumordiameter-int;Tumor longest diameter: 15mm (at initial imaging on 01/09/2022).;P001;2023-08-10;P001_2023-08-10_radiology_16;radiology;"Tumor longest diameter: 15mm (at initial imaging on 01/09/2022).
+Tumor longest diameter unknown.
+
+Note: The longest diameter of the tumor is mentioned as 15mm in the previous examination (01/09/2022), but the current examination shows that some nodules are larger than that reference. However, the longest diameter in the current examination is not explicitly mentioned.";['01/09/2022', '01/09/2022']
+tumordepth-int;Tumor depth: superficial.;P001;2023-08-10;P001_2023-08-10_radiology_16;radiology;Annotation: Tumor depth: superficial.;[]
+tumorsite-int;Tumor site (Trunk wall): Lung.;P001;2023-08-10;P001_2023-08-10_radiology_16;radiology;Annotation: Tumor site (Trunk wall): Lung.;[]
+chemotherapy_start-int;### Annotation:;P001;2023-08-25;P001_2023-08-25_oncology_17;oncology;"### Annotation:
+
+pre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+
+post-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.
+
+### Details:
+
+- pre-operative chemotherapy: Not applicable (no pre-operative chemotherapy mentioned)
+- post-operative chemotherapy: Not applicable (no post-operative chemotherapy mentioned)
+- chemotherapy details:
+  - intent: palliative
+  - date: 25/08/2023
+  - regimen: trabectedina
+
+### Note:
+The patient was treated with doxorubicina as the first-line chemotherapy, and the current treatment is a second-line palliative chemotherapy with trabectedina.";[]
+chemotherapy_end-int;### Annotation:;P001;2023-08-25;P001_2023-08-25_oncology_17;oncology;"### Annotation:
+
+pre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+
+- pre-operative chemotherapy ended on 18/12/2022 after 6 cycles because of progressione polmonare
+
+post-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]
+
+- post-operative chemotherapy is not mentioned in the note, so the format cannot be applied.
+
+Note: The note does not explicitly mention the start date of the first-line chemotherapy with antracicline, but it is mentioned that the second-line palliative chemotherapy with trabectedina was started 8 months after the end of the first-line treatment.";[]
+radiotherapy_start-int;### Annotation:;P001;2023-08-25;P001_2023-08-25_oncology_17;oncology;"### Annotation:
+
+pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+
+### Details:
+
+- pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+  - Intention: [select intention] (adiuvante)
+  - Started: [please select where] (not specified)
+  - Date: [put date] (25/08/2023)
+
+- post-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. 
+  - Intention: [select intention] (adiuvante)
+  - Started: [please select where] (not specified)
+  - Date: [put date] (25/08/2023)
+
+### Note:
+The note does not specify the details of pre-operative or post-operative radiotherapy. However, it mentions that the patient was treated with ""radioterapia adiuvante"" after the initial surgery.";[]
+radiotherapy_end-int;### Annotation:;P001;2023-08-25;P001_2023-08-25_oncology_17;oncology;"### Annotation:
+
+No pre-operative radiotherapy details found.
+No post-operative radiotherapy details found.
+
+However, the patient had adjuvant radiotherapy for myxoid liposarcoma of the left thigh in the past. The details are as follows:
+
+pre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].
+Post-operative radiotherapy details are not provided in the note, but it is mentioned that the patient had adjuvant radiotherapy.
+
+To fill in the details, we can use the following information:
+- The patient had myxoid liposarcoma of the left thigh.
+- The patient had wide excision and adjuvant radiotherapy.
+
+Assuming the standard treatment for myxoid liposarcoma, the details can be filled in as follows:
+
+pre-operative radiotherapy in total of 50Gy in 25 fractions ended on [put date] because of [select reason].
+post-operative radiotherapy in total of 50Gy in 25 fractions ended on [put date] because of [select reason].
+
+However, the exact dates and reasons are not provided in the note.";[]
+response-to-int;Response to palliative chemotherapy was: progression.;P001;2023-08-25;P001_2023-08-25_oncology_17;oncology;Response to palliative chemotherapy was: progression.;[]
+patient-status-int;Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung;P001;2023-08-25;P001_2023-08-25_oncology_17;oncology;Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung, soft tissue).;[]
+patient-status-int;soft tissue).;P001;2023-08-25;P001_2023-08-25_oncology_17;oncology;Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung, soft tissue).;[]
+patient-status-int;Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).;P001;2024-03-01;P001_2024-03-01_follow-up_18;follow-up;Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).;[]
+recur_or_prog-int;There was a progression on [put date].;P001;2024-03-01;P001_2024-03-01_follow-up_18;follow-up;Annotation: There was a progression on [put date].;[]
+recurrencetype-int;Type of recurrence/progression: metastatic lung.;P001;2024-03-01;P001_2024-03-01_follow-up_18;follow-up;Annotation: Type of recurrence/progression: metastatic lung.;[]

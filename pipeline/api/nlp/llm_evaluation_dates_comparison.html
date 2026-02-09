@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Evaluation Comparison Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .stats {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-item {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 15px;
+            background-color: #ecf0f1;
+            border-radius: 3px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .fewshot-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .fewshot-header {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .fewshot-example {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 3px;
+            border: 1px solid #dee2e6;
+        }
+        .fewshot-example:last-child {
+            margin-bottom: 0;
+        }
+        .fewshot-example-label {
+            font-weight: bold;
+            color: #495057;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        .fewshot-note {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 8px;
+            padding: 5px;
+            background-color: #f8f9fa;
+            border-radius: 2px;
+        }
+        .fewshot-annotation {
+            font-size: 12px;
+            color: #28a745;
+            font-weight: 500;
+            padding: 5px;
+            background-color: #d4edda;
+            border-radius: 2px;
+        }
+        .fewshot-toggle {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+        .fewshot-toggle:hover {
+            background-color: #2980b9;
+        }
+        .fewshot-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .filters {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .filters input, .filters select {
+            margin: 5px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .result-card {
+            background-color: white;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result-card.exact {
+            border-left: 5px solid #27ae60;
+        }
+        .result-card.partial {
+            border-left: 5px solid #f39c12;
+        }
+        .result-card.year {
+            border-left: 5px solid #e67e22;
+        }
+        .result-card.none {
+            border-left: 5px solid #e74c3c;
+        }
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .result-id {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .match-badge {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .match-badge.exact {
+            background-color: #27ae60;
+            color: white;
+        }
+        .match-badge.partial {
+            background-color: #f39c12;
+            color: white;
+        }
+        .match-badge.year {
+            background-color: #e67e22;
+            color: white;
+        }
+        .match-badge.none {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .date-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .date-column {
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .date-column.expected {
+            background-color: #ecf0f1;
+        }
+        .date-column.predicted {
+            background-color: #e8f5e9;
+        }
+        .column-label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        .date-list {
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .date-item {
+            padding: 5px;
+            margin: 3px 0;
+            background-color: white;
+            border-radius: 3px;
+            border-left: 3px solid #3498db;
+        }
+        .date-item.matched {
+            border-left-color: #27ae60;
+            background-color: #d5f4e6;
+        }
+        .metrics {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .metric {
+            padding: 5px 10px;
+            background-color: #ecf0f1;
+            border-radius: 3px;
+        }
+        .metric-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .no-dates {
+            color: #95a5a6;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Date Evaluation Comparison Report</h1>
+        <p>Comparison of expected vs predicted dates in LLM annotations</p>
+    </div>
+    
+    <div class="stats" id="stats">
+        <div class="stat-item">
+            <div class="stat-value" id="total-count">0</div>
+            <div class="stat-label">Total Evaluations</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="with-dates-count">0</div>
+            <div class="stat-label">With Expected Dates</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="exact-match-count">0</div>
+            <div class="stat-label">Exact Matches</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="accuracy">0%</div>
+            <div class="stat-label">Date Accuracy</div>
+        </div>
+    </div>
+    
+    <div class="filters">
+        <input type="text" id="search-input" placeholder="Search by note_id, p_id, or prompt_type..." style="width: 300px;">
+        <select id="match-filter">
+            <option value="all">All Results</option>
+            <option value="exact">Exact Matches</option>
+            <option value="partial">Partial Matches</option>
+            <option value="year">Year Matches</option>
+            <option value="none">No Match</option>
+        </select>
+        <select id="prompt-filter">
+            <option value="all">All Prompt Types</option>
+        </select>
+    </div>
+    
+    <div id="results-container"></div>
+    
+    <script>
+        const results = [{"note_id":"P001_2018-03-15_consultation_1","p_id":"P001","prompt_type":"tumordiameter-int","report_type":"consultation","expected_dates":"2018-03-15","predicted_dates":"","expected_count":1,"predicted_count":0,"exact_matches":0,"partial_matches":0,"year_matches":0,"date_match":false,"date_match_type":"none","date_precision":0.0,"date_recall":0.0,"date_f1_score":0.0,"exact_match_dates":""},{"note_id":"P001_2018-03-22_radiology_2","p_id":"P001","prompt_type":"tumordiameter-int","report_type":"radiology","expected_dates":"22\/03\/2018","predicted_dates":"22\/03\/2018","expected_count":1,"predicted_count":1,"exact_matches":1,"partial_matches":0,"year_matches":0,"date_match":true,"date_match_type":"exact","date_precision":1.0,"date_recall":1.0,"date_f1_score":1.0,"exact_match_dates":"2018-03-22"},{"note_id":"P001_2018-03-30_pathology_3","p_id":"P001","prompt_type":"tumorbiopsytype-int","report_type":"pathology","expected_dates":"30\/03\/2018","predicted_dates":"30\/03\/2018","expected_count":1,"predicted_count":1,"exact_matches":1,"partial_matches":0,"year_matches":0,"date_match":true,"date_match_type":"exact","date_precision":1.0,"date_recall":1.0,"date_f1_score":1.0,"exact_match_dates":"2018-03-30"},{"note_id":"P001_2018-04-05_staging_4","p_id":"P001","prompt_type":"stage_at_diagnosis-int","report_type":"staging","expected_dates":"05\/04\/2018","predicted_dates":"","expected_count":1,"predicted_count":0,"exact_matches":0,"partial_matches":0,"year_matches":0,"date_match":false,"date_match_type":"none","date_precision":0.0,"date_recall":0.0,"date_f1_score":0.0,"exact_match_dates":""},{"note_id":"P001_2018-05-22_pathology_6","p_id":"P001","prompt_type":"tumorbiopsytype-int","report_type":"pathology","expected_dates":"30\/03\/2018","predicted_dates":"22\/05\/2018","expected_count":1,"predicted_count":1,"exact_matches":0,"partial_matches":0,"year_matches":1,"date_match":false,"date_match_type":"year","date_precision":0.0,"date_recall":0.0,"date_f1_score":0.0,"exact_match_dates":""},{"note_id":"P001_2018-06-15_oncology_7","p_id":"P001","prompt_type":"radiotherapy_start-int","report_type":"oncology","expected_dates":"15\/06\/2018","predicted_dates":"15\/06\/2018","expected_count":1,"predicted_count":1,"exact_matches":1,"partial_matches":0,"year_matches":0,"date_match":true,"date_match_type":"exact","date_precision":1.0,"date_recall":1.0,"date_f1_score":1.0,"exact_match_dates":"2018-06-15"},{"note_id":"P001_2018-07-23_oncology_8","p_id":"P001","prompt_type":"radiotherapy_start-int","report_type":"oncology","expected_dates":"2018-06-15","predicted_dates":"15\/06\/2018","expected_count":1,"predicted_count":1,"exact_matches":1,"partial_matches":0,"year_matches":0,"date_match":true,"date_match_type":"exact","date_precision":1.0,"date_recall":1.0,"date_f1_score":1.0,"exact_match_dates":"2018-06-15"},{"note_id":"P001_2018-07-23_oncology_8","p_id":"P001","prompt_type":"radiotherapy_end-int","report_type":"oncology","expected_dates":"2018-07-23","predicted_dates":"23\/07\/2018","expected_count":1,"predicted_count":1,"exact_matches":1,"partial_matches":0,"year_matches":0,"date_match":true,"date_match_type":"exact","date_precision":1.0,"date_recall":1.0,"date_f1_score":1.0,"exact_match_dates":"2018-07-23"},{"note_id":"P001_2022-09-15_pathology_13","p_id":"P001","prompt_type":"tumorbiopsytype-int","report_type":"pathology","expected_dates":"15\/09\/2022","predicted_dates":"15\/09\/2022","expected_count":1,"predicted_count":1,"exact_matches":1,"partial_matches":0,"year_matches":0,"date_match":true,"date_match_type":"exact","date_precision":1.0,"date_recall":1.0,"date_f1_score":1.0,"exact_match_dates":"2022-09-15"},{"note_id":"P001_2022-09-25_oncology_14","p_id":"P001","prompt_type":"chemotherapy_start-int","report_type":"oncology","expected_dates":"25\/09\/2022","predicted_dates":"25\/09\/2022","expected_count":1,"predicted_count":1,"exact_matches":1,"partial_matches":0,"year_matches":0,"date_match":true,"date_match_type":"exact","date_precision":1.0,"date_recall":1.0,"date_f1_score":1.0,"exact_match_dates":"2022-09-25"},{"note_id":"P001_2022-09-25_oncology_14","p_id":"P001","prompt_type":"radiotherapy_end-int","report_type":"oncology","expected_dates":"23\/07\/2018","predicted_dates":"23\/07\/2018","expected_count":1,"predicted_count":1,"exact_matches":1,"partial_matches":0,"year_matches":0,"date_match":true,"date_match_type":"exact","date_precision":1.0,"date_recall":1.0,"date_f1_score":1.0,"exact_match_dates":"2018-07-23"},{"note_id":"P001_2022-12-18_oncology_15","p_id":"P001","prompt_type":"chemotherapy_start-int","report_type":"oncology","expected_dates":"25\/09\/2022","predicted_dates":"25\/09\/2022","expected_count":1,"predicted_count":1,"exact_matches":1,"partial_matches":0,"year_matches":0,"date_match":true,"date_match_type":"exact","date_precision":1.0,"date_recall":1.0,"date_f1_score":1.0,"exact_match_dates":"2022-09-25"},{"note_id":"P001_2022-12-18_oncology_15","p_id":"P001","prompt_type":"chemotherapy_end-int","report_type":"oncology","expected_dates":"18\/12\/2022","predicted_dates":"18\/12\/2022","expected_count":1,"predicted_count":1,"exact_matches":1,"partial_matches":0,"year_matches":0,"date_match":true,"date_match_type":"exact","date_precision":1.0,"date_recall":1.0,"date_f1_score":1.0,"exact_match_dates":"2022-12-18"},{"note_id":"P001_2023-08-25_oncology_17","p_id":"P001","prompt_type":"chemotherapy_start-int","report_type":"oncology","expected_dates":"25\/09\/2022","predicted_dates":"25\/08\/2023","expected_count":1,"predicted_count":1,"exact_matches":0,"partial_matches":0,"year_matches":0,"date_match":false,"date_match_type":"none","date_precision":0.0,"date_recall":0.0,"date_f1_score":0.0,"exact_match_dates":""},{"note_id":"P001_2023-08-25_oncology_17","p_id":"P001","prompt_type":"chemotherapy_end-int","report_type":"oncology","expected_dates":"18\/12\/2022","predicted_dates":"25\/08\/2023","expected_count":1,"predicted_count":1,"exact_matches":0,"partial_matches":0,"year_matches":0,"date_match":false,"date_match_type":"none","date_precision":0.0,"date_recall":0.0,"date_f1_score":0.0,"exact_match_dates":""},{"note_id":"P001_2023-08-25_oncology_17","p_id":"P001","prompt_type":"response-to-int","report_type":"oncology","expected_dates":"18\/12\/2022","predicted_dates":"","expected_count":1,"predicted_count":0,"exact_matches":0,"partial_matches":0,"year_matches":0,"date_match":false,"date_match_type":"none","date_precision":0.0,"date_recall":0.0,"date_f1_score":0.0,"exact_match_dates":""},{"note_id":"P001_2024-03-01_follow-up_18","p_id":"P001","prompt_type":"recur_or_prog-int","report_type":"follow-up","expected_dates":"10\/08\/2023","predicted_dates":"01\/03\/2024","expected_count":1,"predicted_count":1,"exact_matches":0,"partial_matches":0,"year_matches":0,"date_match":false,"date_match_type":"none","date_precision":0.0,"date_recall":0.0,"date_f1_score":0.0,"exact_match_dates":""}];
+        const stats = {"total_evaluations": 93, "rows_with_expected_dates": 17, "rows_with_predicted_dates": 24, "rows_with_exact_match": 76, "overall_date_accuracy": 4.4706, "overall_avg_precision": 0.1075, "overall_avg_recall": 0.1075, "overall_avg_f1": 0.1075, "per_prompt_type": {"gender-int": {"total_evaluations": 1, "rows_with_expected_dates": 0, "rows_with_exact_match": 1, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "ageatdiagnosis-int": {"total_evaluations": 1, "rows_with_expected_dates": 0, "rows_with_exact_match": 1, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "tumorsite-int": {"total_evaluations": 4, "rows_with_expected_dates": 0, "rows_with_exact_match": 4, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "tumordiameter-int": {"total_evaluations": 4, "rows_with_expected_dates": 2, "rows_with_exact_match": 1, "date_accuracy": 0.5, "avg_precision": 0.25, "avg_recall": 0.25, "avg_f1": 0.25}, "tumordepth-int": {"total_evaluations": 4, "rows_with_expected_dates": 0, "rows_with_exact_match": 4, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "histological-tipo-int": {"total_evaluations": 4, "rows_with_expected_dates": 0, "rows_with_exact_match": 4, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "biopsygrading-int": {"total_evaluations": 4, "rows_with_expected_dates": 0, "rows_with_exact_match": 4, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "tumorbiopsytype-int": {"total_evaluations": 4, "rows_with_expected_dates": 3, "rows_with_exact_match": 3, "date_accuracy": 1.0, "avg_precision": 0.5, "avg_recall": 0.5, "avg_f1": 0.5}, "stage_at_diagnosis-int": {"total_evaluations": 2, "rows_with_expected_dates": 1, "rows_with_exact_match": 1, "date_accuracy": 1.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "previous_cancer_treatment-int": {"total_evaluations": 1, "rows_with_expected_dates": 0, "rows_with_exact_match": 1, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "occurrence_cancer-int": {"total_evaluations": 1, "rows_with_expected_dates": 0, "rows_with_exact_match": 1, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "biopsymitoticcount-int": {"total_evaluations": 3, "rows_with_expected_dates": 0, "rows_with_exact_match": 3, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "necrosis_in_biopsy-int": {"total_evaluations": 3, "rows_with_expected_dates": 0, "rows_with_exact_match": 3, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "surgical-specimen-grading-int": {"total_evaluations": 4, "rows_with_expected_dates": 0, "rows_with_exact_match": 4, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "surgical-mitotic-count-int": {"total_evaluations": 4, "rows_with_expected_dates": 0, "rows_with_exact_match": 4, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "necrosis_in_surgical-int": {"total_evaluations": 4, "rows_with_expected_dates": 0, "rows_with_exact_match": 4, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "surgerytype-fs30-int": {"total_evaluations": 1, "rows_with_expected_dates": 0, "rows_with_exact_match": 0, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "surgerymargins-int": {"total_evaluations": 1, "rows_with_expected_dates": 0, "rows_with_exact_match": 1, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "reexcision-int": {"total_evaluations": 1, "rows_with_expected_dates": 0, "rows_with_exact_match": 0, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "chemotherapy_start-int": {"total_evaluations": 5, "rows_with_expected_dates": 3, "rows_with_exact_match": 3, "date_accuracy": 1.0, "avg_precision": 0.4, "avg_recall": 0.4, "avg_f1": 0.4}, "chemotherapy_end-int": {"total_evaluations": 5, "rows_with_expected_dates": 2, "rows_with_exact_match": 2, "date_accuracy": 1.0, "avg_precision": 0.2, "avg_recall": 0.2, "avg_f1": 0.2}, "radiotherapy_start-int": {"total_evaluations": 5, "rows_with_expected_dates": 2, "rows_with_exact_match": 4, "date_accuracy": 2.0, "avg_precision": 0.4, "avg_recall": 0.4, "avg_f1": 0.4}, "radiotherapy_end-int": {"total_evaluations": 5, "rows_with_expected_dates": 2, "rows_with_exact_match": 4, "date_accuracy": 2.0, "avg_precision": 0.4, "avg_recall": 0.4, "avg_f1": 0.4}, "response-to-int": {"total_evaluations": 5, "rows_with_expected_dates": 1, "rows_with_exact_match": 3, "date_accuracy": 3.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "patient-status-int": {"total_evaluations": 9, "rows_with_expected_dates": 0, "rows_with_exact_match": 9, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "recur_or_prog-int": {"total_evaluations": 4, "rows_with_expected_dates": 1, "rows_with_exact_match": 3, "date_accuracy": 3.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}, "recurrencetype-int": {"total_evaluations": 4, "rows_with_expected_dates": 0, "rows_with_exact_match": 4, "date_accuracy": 0.0, "avg_precision": 0.0, "avg_recall": 0.0, "avg_f1": 0.0}}};
+        
+        // Populate filters
+        const promptTypes = [...new Set(results.map(r => r.prompt_type))].sort();
+        const promptFilter = document.getElementById('prompt-filter');
+        promptTypes.forEach(pt => {
+            const option = document.createElement('option');
+            option.value = pt;
+            option.textContent = pt;
+            promptFilter.appendChild(option);
+        });
+        
+        function updateStats(filteredResults) {
+            const total = filteredResults.length;
+            const withDates = filteredResults.filter(r => r.expected_count > 0).length;
+            const exactMatches = filteredResults.filter(r => r.date_match_type === 'exact').length;
+            const accuracy = withDates > 0 ? Math.round((exactMatches / withDates) * 100) : 0;
+            
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('with-dates-count').textContent = withDates;
+            document.getElementById('exact-match-count').textContent = exactMatches;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+        
+        function parseDates(dateStr) {
+            if (!dateStr || dateStr.trim() === '') return [];
+            return dateStr.split(',').map(d => d.trim()).filter(d => d);
+        }
+        
+        function renderResults(filteredResults) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = '';
+            
+            filteredResults.forEach((result, index) => {
+                const card = document.createElement('div');
+                const matchType = result.date_match_type || 'none';
+                card.className = 'result-card ' + matchType;
+                
+                const expectedDates = parseDates(result.expected_dates || '');
+                const predictedDates = parseDates(result.predicted_dates || '');
+                const exactMatchDates = parseDates(result.exact_match_dates || '');
+                
+                // Create date lists
+                const expectedDatesHtml = expectedDates.length > 0 
+                    ? expectedDates.map(d => `<div class="date-item ${exactMatchDates.includes(d) ? 'matched' : ''}">${d}</div>`).join('')
+                    : '<div class="no-dates">No expected dates</div>';
+                
+                const predictedDatesHtml = predictedDates.length > 0
+                    ? predictedDates.map(d => `<div class="date-item ${exactMatchDates.includes(d) ? 'matched' : ''}">${d}</div>`).join('')
+                    : '<div class="no-dates">No predicted dates</div>';
+                
+                const matchTypeLabels = {
+                    'exact': '✓ Exact Match',
+                    'partial': '~ Partial Match',
+                    'year': '≈ Year Match',
+                    'none': '✗ No Match'
+                };
+                
+                card.innerHTML = `
+                    <div class="result-header">
+                        <div class="result-id">
+                            Note: ${result.note_id || 'N/A'} | Patient: ${result.p_id || 'N/A'} | Prompt: ${result.prompt_type || 'N/A'}
+                        </div>
+                        <div class="match-badge ${matchType}">${matchTypeLabels[matchType] || 'Unknown'}</div>
+                    </div>
+                    <div class="date-comparison">
+                        <div class="date-column expected">
+                            <div class="column-label">Expected Dates (${result.expected_count || 0})</div>
+                            <div class="date-list">${expectedDatesHtml}</div>
+                        </div>
+                        <div class="date-column predicted">
+                            <div class="column-label">Predicted Dates (${result.predicted_count || 0})</div>
+                            <div class="date-list">${predictedDatesHtml}</div>
+                        </div>
+                    </div>
+                    <div class="metrics">
+                        <div class="metric">
+                            <span class="metric-value">Precision:</span> ${(result.date_precision || 0).toFixed(3)}
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">Recall:</span> ${(result.date_recall || 0).toFixed(3)}
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">F1 Score:</span> ${(result.date_f1_score || 0).toFixed(3)}
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">Exact Matches:</span> ${result.exact_matches || 0}
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">Partial Matches:</span> ${result.partial_matches || 0}
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">Year Matches:</span> ${result.year_matches || 0}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            updateStats(filteredResults);
+        }
+        
+        function filterResults() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const matchFilter = document.getElementById('match-filter').value;
+            const promptFilter = document.getElementById('prompt-filter').value;
+            
+            // All results already have expected_count > 0 (filtered before HTML generation)
+            let filtered = results.filter(r => {
+                const matchesSearch = !searchTerm || 
+                    (r.note_id && r.note_id.toString().toLowerCase().includes(searchTerm)) ||
+                    (r.p_id && r.p_id.toString().toLowerCase().includes(searchTerm)) ||
+                    (r.prompt_type && r.prompt_type.toLowerCase().includes(searchTerm));
+                
+                const matchesMatchFilter = matchFilter === 'all' ||
+                    (matchFilter === 'exact' && r.date_match_type === 'exact') ||
+                    (matchFilter === 'partial' && r.date_match_type === 'partial') ||
+                    (matchFilter === 'year' && r.date_match_type === 'year') ||
+                    (matchFilter === 'none' && r.date_match_type === 'none');
+                
+                const matchesPromptFilter = promptFilter === 'all' || r.prompt_type === promptFilter;
+                
+                return matchesSearch && matchesMatchFilter && matchesPromptFilter;
+            });
+            
+            renderResults(filtered);
+        }
+        
+        document.getElementById('search-input').addEventListener('input', filterResults);
+        document.getElementById('match-filter').addEventListener('change', filterResults);
+        document.getElementById('prompt-filter').addEventListener('change', filterResults);
+        
+        // Initial render
+        renderResults(results);
+    </script>
+</body>
+</html>

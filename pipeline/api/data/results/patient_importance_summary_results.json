@@ -1,0 +1,26 @@
+[
+    {
+        "PatientID": "TEST001",
+        "Group": "M",
+        "Passed": 12,
+        "Failed": 29,
+        "Total": 41,
+        "PassPercent": 29.27
+    },
+    {
+        "PatientID": "TEST001",
+        "Group": "O",
+        "Passed": 0,
+        "Failed": 15,
+        "Total": 15,
+        "PassPercent": 0.0
+    },
+    {
+        "PatientID": "TEST001",
+        "Group": "R",
+        "Passed": 0,
+        "Failed": 3,
+        "Total": 3,
+        "PassPercent": 0.0
+    }
+]
