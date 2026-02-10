@@ -2,9 +2,9 @@
     {
         "PatientID": "TEST001",
         "Phase": "Diagnosis",
-        "Present": 12,
+        "Present": 10,
         "Missing": 0,
-        "Total": 12,
+        "Total": 10,
         "MissingPercent": 0.0
     }
 ]

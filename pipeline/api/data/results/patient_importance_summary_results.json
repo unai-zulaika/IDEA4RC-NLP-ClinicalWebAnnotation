@@ -2,10 +2,10 @@
     {
         "PatientID": "TEST001",
         "Group": "M",
-        "Passed": 12,
-        "Failed": 29,
+        "Passed": 10,
+        "Failed": 31,
         "Total": 41,
-        "PassPercent": 29.27
+        "PassPercent": 24.39
     },
     {
         "PatientID": "TEST001",

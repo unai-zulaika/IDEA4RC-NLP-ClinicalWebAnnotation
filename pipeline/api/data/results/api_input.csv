@@ -10,5 +10,3 @@ TEST001,CGM.structured,EpisodeEvent.cancerEpisode,2023-07-15,2,4,2,,reference,Ep
 TEST001,CGM.structured,EpisodeEvent.diseaseStatus,2023-07-15,32947,4,2,,CodeableConcept,EpisodeEvent,
 TEST001,CGM.structured,Surgery.episodeEvent,2023-07-30,4,5,4,,reference,Surgery,
 TEST001,CGM.structured,Surgery.dateOfSurgery,2023-07-30,2023-07-30,5,4,,date in the ISO format ISO8601,Surgery,
-TEST001,NLP_LLM,Diagnosis.histologySubgroup,15/06/2023,Undifferentiated pleomorphic sarcoma ([8805/3]),6,2,,CodeableConcept,Diagnosis,8805/3-C32.0
-TEST001,NLP_LLM,Diagnosis.subsite,15/06/2023,Right thigh,6,2,,CodeableConcept,Diagnosis,8805/3-C32.0

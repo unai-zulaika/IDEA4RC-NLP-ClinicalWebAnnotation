@@ -43,14 +43,5 @@
         "Present": 2,
         "Missing": [],
         "Complete": true
-    },
-    {
-        "PatientID": "TEST001",
-        "Entity": "Diagnosis6",
-        "Phase": "Diagnosis",
-        "Total": 2,
-        "Present": 2,
-        "Missing": [],
-        "Complete": true
     }
 ]

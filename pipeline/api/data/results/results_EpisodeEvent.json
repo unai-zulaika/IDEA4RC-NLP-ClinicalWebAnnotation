@@ -1,10 +1,10 @@
 {
     "run_id": {
         "run_name": null,
-        "run_time": "2026-02-03T14:44:10.995420+00:00"
+        "run_time": "2026-02-10T10:31:21.198323+00:00"
     },
     "run_results": {
-        "ValidationResultIdentifier::default/__none__/20260203T144410.995420Z/EpisodeEvent_validator_checkpoint-f{entity_name}_data_asset": {
+        "ValidationResultIdentifier::default/__none__/20260210T103121.198323Z/EpisodeEvent_validator_checkpoint-f{entity_name}_data_asset": {
             "validation_result": {
                 "success": false,
                 "results": [
@@ -195,13 +195,13 @@
                     "expectation_suite_name": "default",
                     "run_id": {
                         "run_name": null,
-                        "run_time": "2026-02-03T14:44:10.995420+00:00"
+                        "run_time": "2026-02-10T10:31:21.198323+00:00"
                     },
                     "batch_spec": {
                         "batch_data": "PandasDataFrame"
                     },
                     "batch_markers": {
-                        "ge_load_time": "20260203T144410.997122Z",
+                        "ge_load_time": "20260210T103121.200078Z",
                         "pandas_data_fingerprint": "9c26839a083267e9de5924b8259b6d50"
                     },
                     "active_batch_definition": {
@@ -210,7 +210,7 @@
                         "data_asset_name": "f{entity_name}_data_asset",
                         "batch_identifiers": {}
                     },
-                    "validation_time": "20260203T144411.000224Z",
+                    "validation_time": "20260210T103121.203549Z",
                     "checkpoint_name": "EpisodeEvent_checkpoint",
                     "validation_id": null,
                     "checkpoint_id": null
@@ -230,24 +230,24 @@
         }
     },
     "checkpoint_config": {
-        "notify_on": null,
-        "module_name": "great_expectations.checkpoint",
-        "slack_webhook": null,
         "config_version": 1.0,
-        "validations": [],
-        "default_validation_id": null,
-        "profilers": [],
-        "template_name": null,
-        "evaluation_parameters": {},
-        "site_names": null,
         "batch_request": {
             "datasource_name": "EpisodeEvent_validator_checkpoint",
             "data_asset_name": "f{entity_name}_data_asset"
         },
+        "expectation_suite_name": "default",
+        "template_name": null,
+        "validations": [],
+        "site_names": null,
         "run_name_template": null,
-        "notify_with": null,
+        "module_name": "great_expectations.checkpoint",
+        "notify_on": null,
+        "default_validation_id": null,
         "expectation_suite_ge_cloud_id": null,
-        "class_name": "Checkpoint",
+        "slack_webhook": null,
+        "name": "EpisodeEvent_checkpoint",
+        "notify_with": null,
+        "ge_cloud_id": null,
         "action_list": [
             {
                 "name": "store_validation_result",
@@ -268,7 +268,8 @@
                 }
             }
         ],
-        "name": "EpisodeEvent_checkpoint",
+        "evaluation_parameters": {},
+        "profilers": [],
         "runtime_configuration": {
             "result_format": {
                 "result_format": "COMPLETE",
@@ -279,8 +280,7 @@
                 "return_unexpected_index_query": true
             }
         },
-        "expectation_suite_name": "default",
-        "ge_cloud_id": null
+        "class_name": "Checkpoint"
     },
     "success": false
 }

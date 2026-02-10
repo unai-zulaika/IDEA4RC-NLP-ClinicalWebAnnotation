@@ -1,10 +1,10 @@
 {
     "run_id": {
         "run_name": null,
-        "run_time": "2026-02-03T14:44:11.118181+00:00"
+        "run_time": "2026-02-10T10:31:21.326836+00:00"
     },
     "run_results": {
-        "ValidationResultIdentifier::default/__none__/20260203T144411.118181Z/Surgery_validator_checkpoint-f{entity_name}_data_asset": {
+        "ValidationResultIdentifier::default/__none__/20260210T103121.326836Z/Surgery_validator_checkpoint-f{entity_name}_data_asset": {
             "validation_result": {
                 "success": false,
                 "results": [
@@ -465,13 +465,13 @@
                     "expectation_suite_name": "default",
                     "run_id": {
                         "run_name": null,
-                        "run_time": "2026-02-03T14:44:11.118181+00:00"
+                        "run_time": "2026-02-10T10:31:21.326836+00:00"
                     },
                     "batch_spec": {
                         "batch_data": "PandasDataFrame"
                     },
                     "batch_markers": {
-                        "ge_load_time": "20260203T144411.120221Z",
+                        "ge_load_time": "20260210T103121.328761Z",
                         "pandas_data_fingerprint": "3243432918ff7c03e6e35cd5fa00e65f"
                     },
                     "active_batch_definition": {
@@ -480,7 +480,7 @@
                         "data_asset_name": "f{entity_name}_data_asset",
                         "batch_identifiers": {}
                     },
-                    "validation_time": "20260203T144411.124544Z",
+                    "validation_time": "20260210T103121.333281Z",
                     "checkpoint_name": "Surgery_checkpoint",
                     "validation_id": null,
                     "checkpoint_id": null
@@ -500,24 +500,24 @@
         }
     },
     "checkpoint_config": {
-        "notify_on": null,
-        "module_name": "great_expectations.checkpoint",
-        "slack_webhook": null,
         "config_version": 1.0,
-        "validations": [],
-        "default_validation_id": null,
-        "profilers": [],
-        "template_name": null,
-        "evaluation_parameters": {},
-        "site_names": null,
         "batch_request": {
             "datasource_name": "Surgery_validator_checkpoint",
             "data_asset_name": "f{entity_name}_data_asset"
         },
+        "expectation_suite_name": "default",
+        "template_name": null,
+        "validations": [],
+        "site_names": null,
         "run_name_template": null,
-        "notify_with": null,
+        "module_name": "great_expectations.checkpoint",
+        "notify_on": null,
+        "default_validation_id": null,
         "expectation_suite_ge_cloud_id": null,
-        "class_name": "Checkpoint",
+        "slack_webhook": null,
+        "name": "Surgery_checkpoint",
+        "notify_with": null,
+        "ge_cloud_id": null,
         "action_list": [
             {
                 "name": "store_validation_result",
@@ -538,7 +538,8 @@
                 }
             }
         ],
-        "name": "Surgery_checkpoint",
+        "evaluation_parameters": {},
+        "profilers": [],
         "runtime_configuration": {
             "result_format": {
                 "result_format": "COMPLETE",
@@ -549,8 +550,7 @@
                 "return_unexpected_index_query": true
             }
         },
-        "expectation_suite_name": "default",
-        "ge_cloud_id": null
+        "class_name": "Checkpoint"
     },
     "success": false
 }

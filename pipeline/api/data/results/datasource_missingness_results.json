@@ -1,18 +1,18 @@
 [
     {
         "Datasource": "CGM.structured",
-        "total_variables": 57,
-        "failed_variables": 47,
+        "total_variables": 59,
+        "failed_variables": 49,
         "passed_variables": 10,
-        "complete_variables_percentage": 17.54,
-        "missing_variables_percentage": 82.46,
+        "complete_variables_percentage": 16.95,
+        "missing_variables_percentage": 83.05,
         "total_patients": 1,
         "failed_patients": 1,
         "passed_patients": 0,
         "complete_patients_percentage": 0.0,
         "missing_patients_percentage": 100.0,
-        "total_quality_checks": 57,
-        "failed_quality_checks": 47,
+        "total_quality_checks": 59,
+        "failed_quality_checks": 49,
         "passed_quality_checks": 10,
         "quality_checks_percentage_passed": 0.0,
         "quality_checks_percentage_fail": 0.05,
@@ -31,59 +31,15 @@
             },
             "Completeness": {
                 "Passed": 10,
-                "Failed": 47,
-                "Total": 57,
-                "PercentagePass": "17.5%"
+                "Failed": 49,
+                "Total": 59,
+                "PercentagePass": "16.9%"
             },
             "Total": {
                 "Passed": 10,
-                "Failed": 47,
-                "Total": 57,
-                "PercentagePass": "17.5%"
-            }
-        }
-    },
-    {
-        "Datasource": "NLP_LLM",
-        "total_variables": 2,
-        "failed_variables": 0,
-        "passed_variables": 2,
-        "complete_variables_percentage": 100.0,
-        "missing_variables_percentage": 0.0,
-        "total_patients": 0,
-        "failed_patients": 0,
-        "passed_patients": 0,
-        "complete_patients_percentage": "not computed",
-        "missing_patients_percentage": "not computed",
-        "total_quality_checks": 2,
-        "failed_quality_checks": 0,
-        "passed_quality_checks": 2,
-        "quality_checks_percentage_passed": 0.01,
-        "quality_checks_percentage_fail": 0.0,
-        "dimensions": {
-            "Plausibility": {
-                "Passed": 0,
-                "Failed": 0,
-                "Total": 0,
-                "PercentagePass": "100.0%"
-            },
-            "Conformance": {
-                "Passed": 0,
-                "Failed": 0,
-                "Total": 0,
-                "PercentagePass": "100.0%"
-            },
-            "Completeness": {
-                "Passed": 2,
-                "Failed": 0,
-                "Total": 2,
-                "PercentagePass": "100.0%"
-            },
-            "Total": {
-                "Passed": 2,
-                "Failed": 0,
-                "Total": 2,
-                "PercentagePass": "100.0%"
+                "Failed": 49,
+                "Total": 59,
+                "PercentagePass": "16.9%"
             }
         }
     }

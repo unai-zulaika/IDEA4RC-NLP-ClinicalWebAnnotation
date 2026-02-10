@@ -23,10 +23,5 @@
         "Entity": "Surgery5",
         "Phase": "Diagnosis",
         "Present": 2
-    },
-    {
-        "Entity": "Diagnosis6",
-        "Phase": "Diagnosis",
-        "Present": 2
     }
 ]

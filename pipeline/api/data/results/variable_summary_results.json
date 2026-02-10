@@ -307,17 +307,17 @@
         "Variable": "Diagnosis.histologySubgroup",
         "Description": "Histology subgroup value for the cancer diagnosis.",
         "Total": 1,
-        "Failed": 0,
-        "Passed": 1,
-        "PercentagePass": 100.0
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.subsite",
         "Description": "Topography subsite value for the cancer diagnosis",
         "Total": 1,
-        "Failed": 0,
-        "Passed": 1,
-        "PercentagePass": 100.0
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.diagnosisCode",
