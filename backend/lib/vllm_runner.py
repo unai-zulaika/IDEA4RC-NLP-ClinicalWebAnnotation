@@ -320,14 +320,13 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
     Returns:
         Configuration dictionary
     """
-    # Check environment variables first
-    use_vllm = os.getenv("USE_VLLM", "false").lower() == "true"
-    vllm_endpoint = os.getenv("VLLM_ENDPOINT", "http://localhost:8000/v1")
-    model_name = os.getenv("VLLM_MODEL_NAME", "meta-llama/Llama-3.1-8B-Instruct")
-    batch_size = int(os.getenv("VLLM_BATCH_SIZE", "8"))
-    timeout = int(os.getenv("VLLM_TIMEOUT", "30"))
-    
-    # Override with config file if provided
+    # Load defaults from config file first
+    use_vllm = False
+    vllm_endpoint = "http://localhost:8000/v1"
+    model_name = "meta-llama/Llama-3.1-8B-Instruct"
+    batch_size = 8
+    timeout = 30
+
     if config_path and config_path.exists():
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
@@ -339,7 +338,19 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
                 timeout = config.get("timeout", timeout)
         except Exception as e:
             print(f"[WARN] Failed to load VLLM config from {config_path}: {e}")
-    
+
+    # Environment variables override config file
+    if os.getenv("USE_VLLM"):
+        use_vllm = os.getenv("USE_VLLM", "false").lower() == "true"
+    if os.getenv("VLLM_ENDPOINT"):
+        vllm_endpoint = os.getenv("VLLM_ENDPOINT")
+    if os.getenv("VLLM_MODEL_NAME"):
+        model_name = os.getenv("VLLM_MODEL_NAME")
+    if os.getenv("VLLM_BATCH_SIZE"):
+        batch_size = int(os.getenv("VLLM_BATCH_SIZE"))
+    if os.getenv("VLLM_TIMEOUT"):
+        timeout = int(os.getenv("VLLM_TIMEOUT"))
+
     return {
         "use_vllm": use_vllm,
         "vllm_endpoint": vllm_endpoint,

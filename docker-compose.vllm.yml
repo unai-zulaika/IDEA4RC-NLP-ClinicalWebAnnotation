@@ -1,7 +1,7 @@
 services:
   # vLLM Inference Server (GPU required)
   vllm:
-    image: vllm/vllm-openai:latest
+    image: ${VLLM_IMAGE:-vllm/vllm-openai:latest}
     container_name: vllm
     ports:
       - "${VLLM_HOST_PORT:-8080}:8000"
@@ -36,7 +36,7 @@ services:
   # Override annotation-api to connect to vLLM via Docker network
   annotation-api:
     environment:
-      - VLLM_API_URL=http://vllm:8000
+      - VLLM_ENDPOINT=http://vllm:8000/v1
       - PYTHONUNBUFFERED=1
     depends_on:
       vllm:
