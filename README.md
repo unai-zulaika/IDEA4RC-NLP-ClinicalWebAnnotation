@@ -49,16 +49,20 @@ cd clinical-annotation-platform
 
 # Copy environment file and configure
 cp .env.example .env
-# Edit .env to set VLLM_API_URL to your vLLM server
+# Edit .env to set your vLLM model and parameters (see vLLM section below)
 
-# Start all services
-docker-compose up -d
+# Full stack with vLLM (GPU required)
+docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d
+
+# Or app only (vLLM running externally)
+docker compose up -d
 
 # Access the applications:
 # - Annotation UI: http://localhost:3000
 # - Annotation API: http://localhost:8001
 # - Pipeline API: http://localhost:8000
 # - Pipeline Dashboard: http://localhost:8501
+# - vLLM API (when enabled): http://localhost:8080
 ```
 
 ### Local Development
@@ -147,6 +151,7 @@ clinical-annotation-platform/
 ├── docs/                    # Documentation
 ├── scripts/                 # Utility scripts
 ├── docker-compose.yml       # Production deployment
+├── docker-compose.vllm.yml  # vLLM GPU inference server overlay
 ├── docker-compose.dev.yml   # Development overrides
 └── .env.example            # Environment configuration template
 ```
@@ -206,6 +211,8 @@ clinical-annotation-platform/
 | `NLP_BACKEND_URL` | `http://localhost:8001` | Pipeline → Annotation API |
 | `NLP_FRONTEND_URL` | `http://localhost:3000` | Pipeline → Annotation UI |
 
+See [vLLM Configuration](#vllm-configuration) for the full list of vLLM-specific variables.
+
 ## Development
 
 ### Running Tests
@@ -227,12 +234,151 @@ npm test
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
+## vLLM Configuration
+
+The platform uses [vLLM](https://docs.vllm.ai/) to serve LLM inference via an OpenAI-compatible API. There are two ways to run it: as a Docker container alongside the app, or externally.
+
+### Prerequisites
+
+- NVIDIA GPU with sufficient VRAM for your chosen model
+- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed
+
+### Running vLLM with Docker Compose
+
+The `docker-compose.vllm.yml` overlay adds a vLLM container to the stack. All parameters are configured via `.env`:
+
+```bash
+# .env
+VLLM_MODEL=unsloth/medgemma-27b-text-it-unsloth-bnb-4bit
+VLLM_MAX_MODEL_LEN=16384
+VLLM_MAX_NUM_SEQS=32
+VLLM_GPU_MEM_UTIL=0.85
+VLLM_HOST_PORT=8080
+VLLM_EXTRA_ARGS=
+# HF_TOKEN=
+```
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d
+```
+
+When using this overlay, the annotation API automatically connects to vLLM via the Docker network (`http://vllm:8000`), and vLLM is exposed on the host at port 8080.
+
+#### vLLM Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VLLM_MODEL` | `unsloth/medgemma-27b-text-it-unsloth-bnb-4bit` | HuggingFace model ID to serve |
+| `VLLM_MAX_MODEL_LEN` | `16384` | Maximum sequence length (context window) |
+| `VLLM_MAX_NUM_SEQS` | `32` | Maximum number of concurrent sequences |
+| `VLLM_GPU_MEM_UTIL` | `0.85` | Fraction of GPU memory to use (0.0-1.0) |
+| `VLLM_HOST_PORT` | `8080` | Host port to expose the vLLM API on |
+| `VLLM_EXTRA_ARGS` | *(empty)* | Additional vLLM CLI arguments |
+| `HF_TOKEN` | *(empty)* | HuggingFace token for gated models (Llama, Gemma, etc.) |
+
+#### Switching Models
+
+Edit `.env` and restart the vLLM container:
+
+```bash
+# Example: switch to a smaller model
+VLLM_MODEL=unsloth/Llama-3.2-3B-Instruct-unsloth-bnb-4bit
+VLLM_MAX_MODEL_LEN=8192
+```
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d vllm
+```
+
+#### Extra Arguments
+
+Use `VLLM_EXTRA_ARGS` for any additional vLLM flags not covered by dedicated variables:
+
+```bash
+VLLM_EXTRA_ARGS=--dtype half --tensor-parallel-size 2
+```
+
+Common flags:
+
+| Flag | Description |
+|------|-------------|
+| `--dtype half` | Force FP16 dtype |
+| `--tensor-parallel-size N` | Split model across N GPUs |
+| `--quantization bitsandbytes` | Explicit BNB quantization (auto-detected for most models) |
+| `--max-num-batched-tokens N` | Max tokens per batch for throughput tuning |
+| `--disable-log-requests` | Reduce logging verbosity |
+
+#### Model Cache
+
+Model weights are stored in the `vllm-cache` Docker volume and persist across restarts. To clear the cache and re-download:
+
+```bash
+docker volume rm clinicalannotationweb_vllm-cache
+```
+
+### Running vLLM Externally
+
+If you prefer to run vLLM outside Docker (e.g., in a virtual environment):
+
+```bash
+pip install vllm
+
+vllm serve unsloth/medgemma-27b-text-it-unsloth-bnb-4bit \
+  --max-model-len 16384 \
+  --max-num-seqs 32 \
+  --gpu-memory-utilization 0.85 \
+  --enforce-eager
+```
+
+Then start the app without the vLLM overlay:
+
+```bash
+docker compose up -d
+```
+
+The annotation API defaults to connecting to `http://host.docker.internal:8000` (your host machine's port 8000). Override this with `VLLM_API_URL` in `.env` if needed.
+
+### Backend-Level vLLM Config
+
+In addition to the Docker-level configuration, the backend application has its own config at `backend/config/vllm_config.json`:
+
+```json
+{
+  "use_vllm": true,
+  "vllm_endpoint": "http://localhost:8000/v1",
+  "model_name": "unsloth/medgemma-27b-text-it-unsloth-bnb-4bit",
+  "batch_size": 8,
+  "timeout": 150
+}
+```
+
+These can be overridden with environment variables: `USE_VLLM`, `VLLM_ENDPOINT`, `VLLM_MODEL_NAME`, `VLLM_BATCH_SIZE`, `VLLM_TIMEOUT`.
+
+The pipeline has a separate config at `pipeline/api/nlp/vllm_config.json` with the same format.
+
+### Verifying vLLM
+
+```bash
+# Check container status
+docker ps --filter name=vllm
+
+# Check loaded model
+curl http://localhost:8080/v1/models
+
+# Check health via the annotation API
+curl http://localhost:8001/api/server/status
+```
+
 ## Deployment
 
 ### Docker Compose (Single Server)
 
 ```bash
-docker-compose up -d
+# Without vLLM
+docker compose up -d
+
+# With vLLM (GPU required)
+docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d
 ```
 
 ### Kubernetes (Helm)
