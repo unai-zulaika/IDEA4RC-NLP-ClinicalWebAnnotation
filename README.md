@@ -38,34 +38,177 @@ This platform provides:
 └──────────────────────┘  └──────────────────┘  └──────────────────────┘
 ```
 
-## Quick Start
+## Prerequisites & Host Setup
 
-### Using Docker Compose (Recommended)
+### Minimum Requirements
+
+| Component | Requirement |
+|-----------|-------------|
+| **OS** | Linux (tested on Ubuntu 22.04+) |
+| **Docker** | Docker Engine 24+ with Compose V2 |
+| **RAM** | 8 GB minimum (16 GB recommended) |
+
+### GPU Requirements (for LLM inference)
+
+LLM inference requires an NVIDIA GPU. This applies whether you run vLLM inside Docker or externally.
+
+| Component | Requirement |
+|-----------|-------------|
+| **GPU** | NVIDIA GPU with sufficient VRAM for your model (24 GB+ for 27B models, 8 GB+ for 3B models) |
+| **NVIDIA Driver** | 550+ (CUDA 12.4) or 570+ (CUDA 12.8+) |
+| **CUDA** | 12.4+ (bundled with the driver) |
+
+Check your current driver and CUDA version:
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd clinical-annotation-platform
-
-# Copy environment file and configure
-cp .env.example .env
-# Edit .env to set your vLLM model and parameters (see vLLM section below)
-
-# Full stack with vLLM (GPU required)
-docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d
-
-# Or app only (vLLM running externally)
-docker compose up -d
-
-# Access the applications:
-# - Annotation UI: http://localhost:3000
-# - Annotation API: http://localhost:8001
-# - Pipeline API: http://localhost:8000
-# - Pipeline Dashboard: http://localhost:8501
-# - vLLM API (when enabled): http://localhost:8080
+nvidia-smi
 ```
 
-### Local Development
+### Installing Docker
+
+```bash
+# Install Docker (if not already installed)
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+# Log out and back in for the group change to take effect
+```
+
+### Installing NVIDIA Container Toolkit (required for vLLM in Docker)
+
+Skip this if you plan to run vLLM outside Docker.
+
+```bash
+# Add the NVIDIA Container Toolkit repository
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \
+  | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
+  | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
+  | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+# Install and configure
+sudo apt-get update
+sudo apt-get install -y nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+
+# Verify GPU access from Docker
+docker run --rm --gpus all nvidia/cuda:12.4.0-base-ubuntu22.04 nvidia-smi
+```
+
+## Quick Start
+
+### 1. Clone and configure
+
+```bash
+git clone <repository-url>
+cd clinical-annotation-platform
+cp .env.example .env
+```
+
+Edit `.env` to set your vLLM model and parameters (see [vLLM Configuration](#vllm-configuration)).
+
+### 2. Choose a deployment mode
+
+There are two ways to deploy the platform, depending on whether you want vLLM managed by Docker or running separately.
+
+---
+
+#### Option A: Full stack with vLLM in Docker (GPU required)
+
+Everything runs in Docker, including the vLLM inference server. Requires NVIDIA Container Toolkit (see above).
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d
+```
+
+This starts all 5 services. The annotation API automatically connects to vLLM via the Docker network. On the first run, the model weights are downloaded and cached in a Docker volume.
+
+| Service | URL |
+|---------|-----|
+| Annotation UI | http://localhost:3000 |
+| Annotation API | http://localhost:8001 |
+| Pipeline API | http://localhost:8000 |
+| Pipeline Dashboard | http://localhost:8501 |
+| vLLM API | http://localhost:8080 |
+
+To stop everything:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.vllm.yml down
+```
+
+**CUDA compatibility note:** The default vLLM image (`vllm/vllm-openai:latest`) requires a recent NVIDIA driver. If you get a `forward compatibility was attempted on non supported HW` error, either upgrade your driver or set a compatible image in `.env`:
+
+```bash
+# For NVIDIA driver 550.x / CUDA 12.4
+VLLM_IMAGE=vastai/vllm:v0.8.5-cuda-12.4-pytorch-2.6.0-py312
+```
+
+---
+
+#### Option B: App in Docker + vLLM running externally
+
+The 4 application services run in Docker. You run vLLM separately (in a virtual environment, on a different machine, etc.). This is useful if you already have a vLLM setup or need more control over the GPU environment.
+
+**Step 1 — Start vLLM externally:**
+
+```bash
+# In a virtual environment with vllm installed
+pip install vllm
+
+vllm serve unsloth/medgemma-27b-text-it-unsloth-bnb-4bit \
+  --max-model-len 16384 \
+  --max-num-seqs 32 \
+  --gpu-memory-utilization 0.85 \
+  --enforce-eager
+```
+
+vLLM will serve on `http://localhost:8000` by default.
+
+**Step 2 — Start the application:**
+
+```bash
+docker compose up -d
+```
+
+The annotation API connects to vLLM at `http://host.docker.internal:8000` (the host machine's port 8000). To change this, set `VLLM_API_URL` in `.env`:
+
+```bash
+# Example: vLLM running on a different machine
+VLLM_API_URL=http://192.168.1.100:8000
+```
+
+| Service | URL |
+|---------|-----|
+| Annotation UI | http://localhost:3000 |
+| Annotation API | http://localhost:8001 |
+| Pipeline API | http://localhost:8000 |
+| Pipeline Dashboard | http://localhost:8501 |
+
+To stop the app:
+
+```bash
+docker compose down
+```
+
+### 3. Verify the deployment
+
+```bash
+# Check all containers are running
+docker ps
+
+# Check annotation API health
+curl http://localhost:8001/api/server/status
+
+# Check vLLM is reachable (use port 8080 for Option A, 8000 for Option B)
+curl http://localhost:8080/v1/models
+```
+
+---
+
+### Local Development (without Docker)
+
+For developing individual components locally.
 
 #### Prerequisites
 - Python 3.11+
@@ -77,7 +220,7 @@ docker compose up -d
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+source venv/bin/activate
 pip install -r requirements.txt
 
 # Start the API server
@@ -236,19 +379,12 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
 ## vLLM Configuration
 
-The platform uses [vLLM](https://docs.vllm.ai/) to serve LLM inference via an OpenAI-compatible API. There are two ways to run it: as a Docker container alongside the app, or externally.
+The platform uses [vLLM](https://docs.vllm.ai/) to serve LLM inference via an OpenAI-compatible API. See [Quick Start](#quick-start) for deployment instructions and [Prerequisites](#gpu-requirements-for-llm-inference) for host setup.
 
-### Prerequisites
-
-- NVIDIA GPU with sufficient VRAM for your chosen model
-- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed
-
-### Running vLLM with Docker Compose
-
-The `docker-compose.vllm.yml` overlay adds a vLLM container to the stack. All parameters are configured via `.env`:
+All vLLM Docker parameters are configured via `.env`:
 
 ```bash
-# .env
+VLLM_IMAGE=vllm/vllm-openai:latest
 VLLM_MODEL=unsloth/medgemma-27b-text-it-unsloth-bnb-4bit
 VLLM_MAX_MODEL_LEN=16384
 VLLM_MAX_NUM_SEQS=32
@@ -258,16 +394,11 @@ VLLM_EXTRA_ARGS=
 # HF_TOKEN=
 ```
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d
-```
-
-When using this overlay, the annotation API automatically connects to vLLM via the Docker network (`http://vllm:8000`), and vLLM is exposed on the host at port 8080.
-
-#### vLLM Environment Variables
+### vLLM Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `VLLM_IMAGE` | `vllm/vllm-openai:latest` | Docker image for vLLM (change for CUDA compatibility) |
 | `VLLM_MODEL` | `unsloth/medgemma-27b-text-it-unsloth-bnb-4bit` | HuggingFace model ID to serve |
 | `VLLM_MAX_MODEL_LEN` | `16384` | Maximum sequence length (context window) |
 | `VLLM_MAX_NUM_SEQS` | `32` | Maximum number of concurrent sequences |
@@ -316,28 +447,6 @@ Model weights are stored in the `vllm-cache` Docker volume and persist across re
 docker volume rm clinicalannotationweb_vllm-cache
 ```
 
-### Running vLLM Externally
-
-If you prefer to run vLLM outside Docker (e.g., in a virtual environment):
-
-```bash
-pip install vllm
-
-vllm serve unsloth/medgemma-27b-text-it-unsloth-bnb-4bit \
-  --max-model-len 16384 \
-  --max-num-seqs 32 \
-  --gpu-memory-utilization 0.85 \
-  --enforce-eager
-```
-
-Then start the app without the vLLM overlay:
-
-```bash
-docker compose up -d
-```
-
-The annotation API defaults to connecting to `http://host.docker.internal:8000` (your host machine's port 8000). Override this with `VLLM_API_URL` in `.env` if needed.
-
 ### Backend-Level vLLM Config
 
 In addition to the Docker-level configuration, the backend application has its own config at `backend/config/vllm_config.json`:
@@ -369,24 +478,25 @@ curl http://localhost:8080/v1/models
 curl http://localhost:8001/api/server/status
 ```
 
-## Deployment
+## Data Storage
 
-### Docker Compose (Single Server)
+The application stores runtime data in the following directories:
 
-```bash
-# Without vLLM
-docker compose up -d
+### Session Data (`backend/sessions/`)
 
-# With vLLM (GPU required)
-docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d
-```
+The `backend/sessions/` directory stores annotation session data:
+- **Session files**: Each annotation session is saved as a JSON file named with the session UUID (e.g., `{session-id}.json`). These files contain the session state, annotations, and metadata.
+- **Report type mappings**: The `report_type_mappings.json` file stores mappings between report types and their corresponding annotation configurations.
 
-### Kubernetes (Helm)
+Session files are automatically created when a new annotation session is started and updated as annotations are made.
 
-```bash
-cd pipeline/helm
-helm install clinical-platform ./charts
-```
+### Prompt Data (`backend/data/prompts/`)
+
+The `backend/data/prompts/` directory stores prompt templates and configurations:
+- **Prompt templates**: JSON files containing prompt templates for different annotation tasks and centers (INT, MSCI, VGR variants).
+- **Prompt generation scripts**: Python scripts for generating and managing prompt templates.
+
+Prompts can be edited through the web interface's prompt editor, which updates the files in this directory.
 
 ## Data Requirements
 
@@ -401,10 +511,3 @@ helm install clinical-platform ./charts
 | `report_type` | No | Type of clinical report |
 | `annotations` | No | Pre-existing annotations (JSON) |
 
-## License
-
-[Specify license]
-
-## Contributing
-
-[Contribution guidelines]
