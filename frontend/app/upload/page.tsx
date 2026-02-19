@@ -4,9 +4,12 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { uploadApi, promptsApi, sessionsApi } from '@/lib/api'
 import type { CSVUploadResponse, PromptInfo, CSVRow } from '@/lib/api'
+import { useDefaultCenter } from '@/lib/useDefaultCenter'
 
 export default function UploadPage() {
   const router = useRouter()
+  const [selectedCenter, setSelectedCenter] = useDefaultCenter()
+  const [centers, setCenters] = useState<string[]>([])
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<CSVUploadResponse | null>(null)
@@ -22,9 +25,21 @@ export default function UploadPage() {
   const [savedMappings, setSavedMappings] = useState<Record<string, string[]>>({})
 
   useEffect(() => {
-    loadPrompts()
+    promptsApi.listCenters().then(setCenters).catch(console.error)
     loadFewshotsStatus()
   }, [])
+
+  useEffect(() => {
+    if (centers.length > 0 && !centers.includes(selectedCenter)) {
+      setSelectedCenter(centers[0])
+    }
+  }, [centers, selectedCenter, setSelectedCenter])
+
+  useEffect(() => {
+    if (selectedCenter) {
+      loadPrompts()
+    }
+  }, [selectedCenter])
 
   const loadFewshotsStatus = async () => {
     try {
@@ -37,7 +52,7 @@ export default function UploadPage() {
 
   const loadPrompts = async () => {
     try {
-      const data = await promptsApi.list()
+      const data = await promptsApi.list(selectedCenter)
       setPrompts(data)
     } catch (err) {
       console.error('Failed to load prompts:', err)
@@ -213,7 +228,23 @@ export default function UploadPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Upload CSV</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Upload CSV</h1>
+        {centers.length > 0 && (
+          <div className="flex items-center">
+            <label className="text-sm font-medium text-gray-700 mr-2">Center / group:</label>
+            <select
+              value={selectedCenter}
+              onChange={(e) => setSelectedCenter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              {centers.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
 
       <div className="bg-white rounded-lg shadow p-6 space-y-6">
         {/* Few-shot Examples Upload Section */}
