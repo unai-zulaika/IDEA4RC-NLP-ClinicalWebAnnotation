@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react'
 import { promptsApi } from '@/lib/api'
 import type { PromptInfo } from '@/lib/api'
 import PromptEditor from '@/components/PromptEditor'
+import { useDefaultCenter } from '@/lib/useDefaultCenter'
 
 export default function PromptsPage() {
   const [centers, setCenters] = useState<string[]>([])
-  const [selectedCenter, setSelectedCenter] = useState<string>('INT')
+  const [selectedCenter, setSelectedCenter] = useDefaultCenter()
   const [prompts, setPrompts] = useState<PromptInfo[]>([])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)

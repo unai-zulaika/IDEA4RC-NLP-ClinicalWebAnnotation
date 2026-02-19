@@ -206,48 +206,462 @@ curl http://localhost:8080/v1/models
 
 ---
 
-### Local Development (without Docker)
+### Option C: Bare-Metal Deployment (without Docker)
 
-For developing individual components locally.
+Deploy each component directly on the host. This gives full control over each service and avoids the Docker layer entirely.
 
 #### Prerequisites
-- Python 3.11+
-- Node.js 20+
-- vLLM server running (or compatible OpenAI API endpoint)
 
-#### Backend Setup
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| **OS** | Linux (Ubuntu 22.04+ recommended) | macOS works for development |
+| **Python** | 3.11+ | 3.9+ for the pipeline dashboard only |
+| **Node.js** | 20+ | With npm |
+| **NVIDIA GPU** | Optional | Required only if running vLLM locally |
+| **NVIDIA Driver** | 550+ / CUDA 12.4+ | Only if using a GPU |
+| **build-essential, cmake** | Latest | Needed to compile native Python deps (FAISS, torch, etc.) |
+
+Install system packages (Ubuntu/Debian):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential cmake curl git
+```
+
+#### 1. Clone and configure
+
+```bash
+git clone <repository-url>
+cd clinical-annotation-platform
+cp .env.example .env
+```
+
+Edit `.env` to match your bare-metal setup. The key variables are:
+
+```bash
+# Point to wherever your vLLM server is running
+VLLM_API_URL=http://localhost:8000
+
+# The annotation API port (backend)
+ANNOTATION_API_PORT=8001
+
+# The URL the frontend uses to reach the backend (browser-side, so use localhost or your host IP)
+NEXT_PUBLIC_API_URL=http://localhost:8001
+
+# Pipeline ↔ backend/frontend communication
+NLP_BACKEND_URL=http://localhost:8001
+NLP_FRONTEND_URL=http://localhost:3000
+```
+
+---
+
+#### 2. Backend (Annotation API)
+
+The backend is a FastAPI application that handles sessions, prompts, CSV uploads, LLM inference via vLLM, FAISS-based few-shot retrieval, and ICD-O-3 code lookup.
+
+**Port:** 8001
 
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
 
-# Start the API server
-uvicorn main:app --reload --port 8001
+# Create and activate a virtual environment
+python3.11 -m venv venv
+source venv/bin/activate
+
+# Install dependencies (includes PyTorch, FAISS, vLLM client, sentence-transformers, etc.)
+pip install -r requirements.txt
 ```
 
-#### Frontend Setup
+**Create required directories** (these are normally created by Docker):
+
+```bash
+mkdir -p sessions data/faiss_store
+```
+
+**Configure the vLLM connection.** The backend reads `config/vllm_config.json`:
+
+```json
+{
+  "use_vllm": true,
+  "vllm_endpoint": "http://localhost:8000/v1",
+  "model_name": "unsloth/medgemma-27b-text-it-unsloth-bnb-4bit",
+  "batch_size": 8,
+  "timeout": 150
+}
+```
+
+Update `vllm_endpoint` to match your vLLM server address. These values can also be overridden with environment variables: `VLLM_ENDPOINT`, `VLLM_MODEL_NAME`, `VLLM_BATCH_SIZE`, `VLLM_TIMEOUT`.
+
+**Start the backend:**
+
+```bash
+# Development (with auto-reload)
+uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+
+# Production
+uvicorn main:app --host 0.0.0.0 --port 8001 --workers 4
+```
+
+**Verify:**
+
+```bash
+curl http://localhost:8001/api/server/status
+# Expected: {"status": "ok", ...}
+
+curl http://localhost:8001/api/health
+# Expected: {"status": "healthy"}
+```
+
+> **Note on CORS:** The backend allows requests from `http://localhost:3000` and `http://localhost:3001` by default. If you serve the frontend from a different origin, update the `allow_origins` list in `backend/main.py`.
+
+---
+
+#### 3. Frontend (Annotation Web UI)
+
+The frontend is a Next.js 14 application (React 18, TypeScript, Tailwind CSS) with standalone output mode.
+
+**Port:** 3000
 
 ```bash
 cd frontend
-npm install
+
+# Install Node.js dependencies
+npm ci
+```
+
+**Set the API URL.** The frontend needs to know where the backend is. This is a build-time variable:
+
+```bash
+export NEXT_PUBLIC_API_URL=http://localhost:8001
+```
+
+Or create a `frontend/.env.local` file:
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8001
+```
+
+##### Development mode
+
+```bash
 npm run dev
 ```
 
-Open http://localhost:3000 in your browser.
+Opens at http://localhost:3000 with hot-reload.
 
-#### Pipeline Setup (Optional)
+##### Production build and run
+
+```bash
+# Build (generates .next/standalone)
+npm run build
+
+# Start the production server
+cd .next/standalone
+node server.js
+```
+
+The standalone build bundles everything into a single directory. If you need static assets (images, CSS), copy them:
+
+```bash
+cp -r .next/static .next/standalone/.next/static
+cp -r public .next/standalone/public 2>/dev/null || true
+```
+
+Then run:
+
+```bash
+PORT=3000 HOSTNAME=0.0.0.0 node .next/standalone/server.js
+```
+
+**Verify:** Open http://localhost:3000 in your browser. The dashboard should load and show the navigation bar.
+
+---
+
+#### 4. Pipeline (NLP Processing) — Optional
+
+The pipeline consists of two services: the **Pipeline API** (FastAPI) for NLP processing, entity linking, and quality checks, and the **Pipeline Dashboard** (Streamlit) for monitoring.
+
+Skip this section if you only need the annotation workflow (upload CSV → LLM annotation → review).
+
+##### 4a. Pipeline API
+
+**Port:** 8000 (or 8010 if vLLM already uses 8000)
 
 ```bash
 cd pipeline/api
-pip install -r requirements.txt
-uvicorn app:app --port 8000
 
-# In another terminal, for the dashboard:
-cd pipeline/status_web
+# Create and activate a virtual environment (separate from backend)
+python3.11 -m venv venv
+source venv/bin/activate
+
+# Install system dependencies needed for compilation
+# (build-essential and cmake should already be installed from prerequisites)
+
+# Install Python dependencies
 pip install -r requirements.txt
-streamlit run app.py --server.port 8501
+```
+
+**Create the results directory:**
+
+```bash
+mkdir -p /data/results/data
+# Or use a local path and set APP_PATH accordingly:
+mkdir -p ./results/data
+export APP_PATH=$(pwd)/results/data
+```
+
+**Configure environment variables:**
+
+```bash
+export APP_PATH=/data/results/data          # Where pipeline outputs are stored
+export NLP_BACKEND_URL=http://localhost:8001 # Annotation API URL
+export NLP_FRONTEND_URL=http://localhost:3000 # Annotation Web UI URL
+```
+
+**Configure the vLLM connection.** The pipeline has its own config at `nlp/vllm_config.json`:
+
+```json
+{
+  "use_vllm": true,
+  "vllm_endpoint": "http://localhost:8000/v1",
+  "model_name": "unsloth/Llama-3.2-3B-Instruct-unsloth-bnb-4bit",
+  "batch_size": 8,
+  "timeout": 30
+}
+```
+
+> **Port conflict:** If vLLM is already running on port 8000, start the pipeline API on a different port (e.g., 8010) and update `PIPELINE_API_URL` accordingly in the dashboard environment.
+
+**Start the Pipeline API:**
+
+```bash
+# Development
+uvicorn app:app --host 0.0.0.0 --port 8010 --reload
+
+# Production
+uvicorn app:app --host 0.0.0.0 --port 8010 --workers 2
+```
+
+**Verify:**
+
+```bash
+curl http://localhost:8010/docs
+# Should return the FastAPI Swagger UI
+```
+
+##### 4b. Pipeline Dashboard
+
+**Port:** 8501
+
+```bash
+cd pipeline/status_web
+
+# Create and activate a virtual environment
+python3.9 -m venv venv   # Python 3.9+ is sufficient
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+**Configure environment variables:**
+
+```bash
+export PIPELINE_API_URL=http://localhost:8010  # Pipeline API URL (use 8010 if vLLM is on 8000)
+export NLP_BACKEND_URL=http://localhost:8001   # Annotation API URL
+export NLP_FRONTEND_URL=http://localhost:3000  # Annotation Web UI URL
+```
+
+**Start the dashboard:**
+
+```bash
+streamlit run app.py \
+  --server.port 8501 \
+  --server.address 0.0.0.0
+```
+
+**Verify:** Open http://localhost:8501 in your browser.
+
+---
+
+#### 5. vLLM Server (GPU Inference)
+
+The platform requires a vLLM server for LLM inference. This can run on the same machine (if it has a GPU) or on a remote GPU server.
+
+```bash
+# Create a dedicated virtual environment
+python3.11 -m venv vllm-env
+source vllm-env/bin/activate
+
+pip install vllm
+```
+
+**Start vLLM:**
+
+```bash
+vllm serve unsloth/medgemma-27b-text-it-unsloth-bnb-4bit \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --max-model-len 16384 \
+  --max-num-seqs 32 \
+  --gpu-memory-utilization 0.85 \
+  --enforce-eager
+```
+
+For gated models (Llama, Gemma), set your HuggingFace token:
+
+```bash
+export HF_TOKEN=hf_your_token_here
+```
+
+**Smaller model alternative** (requires less VRAM):
+
+```bash
+vllm serve unsloth/Llama-3.2-3B-Instruct-unsloth-bnb-4bit \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --max-model-len 8192 \
+  --max-num-seqs 32 \
+  --gpu-memory-utilization 0.85
+```
+
+**Verify:**
+
+```bash
+curl http://localhost:8000/v1/models
+# Should list the loaded model
+```
+
+> **Remote vLLM:** If vLLM runs on a different machine, update `vllm_endpoint` in both `backend/config/vllm_config.json` and `pipeline/api/nlp/vllm_config.json` to point to `http://<gpu-host>:<port>/v1`.
+
+---
+
+#### 6. Bare-metal service summary
+
+Once all components are running, you should have:
+
+| Service | URL | Process |
+|---------|-----|---------|
+| Annotation Web UI | http://localhost:3000 | `node server.js` or `npm run dev` |
+| Annotation API | http://localhost:8001 | `uvicorn main:app --port 8001` |
+| Pipeline API | http://localhost:8010 | `uvicorn app:app --port 8010` |
+| Pipeline Dashboard | http://localhost:8501 | `streamlit run app.py` |
+| vLLM Server | http://localhost:8000 | `vllm serve ...` |
+
+#### 7. Running as systemd services (production)
+
+For a production bare-metal deployment, create systemd unit files so services start on boot and restart on failure. Here is an example for the annotation API:
+
+```ini
+# /etc/systemd/system/annotation-api.service
+[Unit]
+Description=Clinical Annotation API
+After=network.target
+
+[Service]
+Type=simple
+User=appuser
+WorkingDirectory=/opt/clinical-annotation-platform/backend
+Environment="VLLM_ENDPOINT=http://localhost:8000/v1"
+ExecStart=/opt/clinical-annotation-platform/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8001 --workers 4
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```ini
+# /etc/systemd/system/annotation-web.service
+[Unit]
+Description=Clinical Annotation Web UI
+After=annotation-api.service
+
+[Service]
+Type=simple
+User=appuser
+WorkingDirectory=/opt/clinical-annotation-platform/frontend/.next/standalone
+Environment="PORT=3000"
+Environment="HOSTNAME=0.0.0.0"
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```ini
+# /etc/systemd/system/pipeline-api.service
+[Unit]
+Description=Clinical Pipeline API
+After=network.target
+
+[Service]
+Type=simple
+User=appuser
+WorkingDirectory=/opt/clinical-annotation-platform/pipeline/api
+Environment="APP_PATH=/data/results/data"
+Environment="NLP_BACKEND_URL=http://localhost:8001"
+Environment="NLP_FRONTEND_URL=http://localhost:3000"
+ExecStart=/opt/clinical-annotation-platform/pipeline/api/venv/bin/uvicorn app:app --host 0.0.0.0 --port 8010 --workers 2
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```ini
+# /etc/systemd/system/pipeline-dashboard.service
+[Unit]
+Description=Clinical Pipeline Dashboard
+After=pipeline-api.service
+
+[Service]
+Type=simple
+User=appuser
+WorkingDirectory=/opt/clinical-annotation-platform/pipeline/status_web
+Environment="PIPELINE_API_URL=http://localhost:8010"
+Environment="NLP_BACKEND_URL=http://localhost:8001"
+Environment="NLP_FRONTEND_URL=http://localhost:3000"
+ExecStart=/opt/clinical-annotation-platform/pipeline/status_web/venv/bin/streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start all services:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now annotation-api annotation-web pipeline-api pipeline-dashboard
+```
+
+Check status:
+
+```bash
+sudo systemctl status annotation-api annotation-web pipeline-api pipeline-dashboard
+```
+
+#### 8. Verify the full stack
+
+```bash
+# Backend health
+curl http://localhost:8001/api/server/status
+
+# Frontend loads
+curl -s http://localhost:3000 | head -5
+
+# vLLM is reachable from the backend
+curl http://localhost:8000/v1/models
+
+# Pipeline API (if deployed)
+curl http://localhost:8010/docs
+
+# Pipeline Dashboard (if deployed)
+curl -s http://localhost:8501 | head -5
 ```
 
 ## Project Structure
