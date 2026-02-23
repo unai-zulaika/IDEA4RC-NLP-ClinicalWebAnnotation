@@ -48,6 +48,9 @@ export default function Navbar() {
               <Link href="/prompts" className={linkClass('/prompts')}>
                 Prompts
               </Link>
+              <Link href="/presets" className={linkClass('/presets')}>
+                Presets
+              </Link>
               <Link href="/upload" className={linkClass('/upload')}>
                 Upload
               </Link>

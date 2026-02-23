@@ -299,3 +299,28 @@ class ICDO3CombineResponse(BaseModel):
     unified_code: Optional[UnifiedICDO3Code] = None
     message: Optional[str] = None
 
+
+# Annotation Preset Schemas
+class AnnotationPresetCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=200)
+    center: str = Field(..., min_length=1)
+    description: Optional[str] = None
+    report_type_mapping: Dict[str, List[str]]
+
+
+class AnnotationPresetUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=200)
+    center: Optional[str] = None
+    description: Optional[str] = None
+    report_type_mapping: Optional[Dict[str, List[str]]] = None
+
+
+class AnnotationPreset(BaseModel):
+    id: str
+    name: str
+    center: str
+    description: Optional[str] = None
+    report_type_mapping: Dict[str, List[str]]
+    created_at: str
+    updated_at: str
+
