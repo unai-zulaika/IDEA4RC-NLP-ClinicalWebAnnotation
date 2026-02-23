@@ -58,28 +58,37 @@ _prompts_loaded = False
 
 # Global prompts storage (avoid importing model_runner which requires llama_cpp)
 _PROMPTS: Dict[str, Any] = {}
-_PROMPTS_FILE_MTIME: float = 0.0  # Track file modification time
+_PROMPTS_DIR_MTIMES: Dict[str, float] = {}  # Track per-center file modification times
 
 def _ensure_prompts_loaded(force_reload: bool = False):
-    """Load prompts without importing model_runner (which requires llama_cpp)"""
-    global _prompts_loaded, _PROMPTS, _PROMPTS_FILE_MTIME
-    from lib.prompt_adapter import adapt_int_prompts
-    
+    """Load prompts from directory-based structure without importing model_runner."""
+    global _prompts_loaded, _PROMPTS, _PROMPTS_DIR_MTIMES
+    from lib.prompt_adapter import adapt_all_prompts
+
     backend_dir = Path(__file__).parent.parent
-    prompts_path = backend_dir / "data" / "prompts" / "prompts.json"
-    
-    # Check if file has been modified
-    current_mtime = prompts_path.stat().st_mtime if prompts_path.exists() else 0.0
-    file_changed = current_mtime > _PROMPTS_FILE_MTIME
-    
-    if not _prompts_loaded or force_reload or file_changed:
-        adapted_prompts = adapt_int_prompts(prompts_path)
-        _PROMPTS.clear()  # Clear existing prompts
+    prompts_dir = backend_dir / "data" / "latest_prompts"
+
+    # Check if any center file has been modified
+    files_changed = False
+    if prompts_dir.is_dir():
+        for center_dir in prompts_dir.iterdir():
+            if not center_dir.is_dir():
+                continue
+            prompts_file = center_dir / "prompts.json"
+            if prompts_file.exists():
+                current_mtime = prompts_file.stat().st_mtime
+                prev_mtime = _PROMPTS_DIR_MTIMES.get(center_dir.name, 0.0)
+                if current_mtime > prev_mtime:
+                    files_changed = True
+                    _PROMPTS_DIR_MTIMES[center_dir.name] = current_mtime
+
+    if not _prompts_loaded or force_reload or files_changed:
+        adapted_prompts = adapt_all_prompts(prompts_dir)
+        _PROMPTS.clear()
         _PROMPTS.update(adapted_prompts)
-        _PROMPTS_FILE_MTIME = current_mtime
         _prompts_loaded = True
-        if file_changed or force_reload:
-            print(f"[INFO] Loaded {len(_PROMPTS)} prompts: {list(_PROMPTS.keys())}")
+        if files_changed or force_reload:
+            print(f"[INFO] Loaded {len(_PROMPTS)} prompts from {prompts_dir}: {list(_PROMPTS.keys())}")
 
 
 def _is_simple_prompt(template: str) -> bool:
@@ -216,11 +225,11 @@ def _get_fewshot_builder():
             # Build indexes if needed and JSON file exists
             if json_file.exists():
                 if not (faiss_dir / "gender-int.index").exists():
-                    prompts_path = backend_dir / "data" / "prompts" / "prompts.json"
-                    if prompts_path.exists():
+                    prompts_dir = backend_dir / "data" / "latest_prompts"
+                    if prompts_dir.is_dir():
                         _fewshot_builder.build_all_int_prompts(
                             json_file,
-                            prompts_path,
+                            prompts_dir,
                             patient_indices=[8, 9],
                             force_rebuild=False
                         )

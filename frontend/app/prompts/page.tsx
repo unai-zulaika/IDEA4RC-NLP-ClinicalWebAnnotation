@@ -249,7 +249,7 @@ Annotation:`)
 
         <div className="lg:col-span-3">
           <div className="bg-white rounded-lg shadow p-6">
-            {selectedPrompt ? (
+            {selectedPrompt && prompts.some((p) => p.prompt_type === selectedPrompt) ? (
               <PromptEditor
                 promptType={selectedPrompt}
                 center={selectedCenter}

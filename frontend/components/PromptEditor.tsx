@@ -39,7 +39,11 @@ export default function PromptEditor({ promptType, center = 'INT', onSave, onDel
       setPromptName(data.prompt_type)
       setEntityMapping(data.entity_mapping || null)
       setIsRenaming(false)
+      setError(null)
     } catch (err: any) {
+      // Ignore 404s — happens transiently when center switches before
+      // the parent clears the selected prompt type
+      if (err.response?.status === 404) return
       setError(err.message || 'Failed to load prompt')
     }
   }

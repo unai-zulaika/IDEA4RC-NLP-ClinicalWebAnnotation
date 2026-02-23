@@ -20,21 +20,52 @@ router = APIRouter()
 DEFAULT_CENTER = "INT"
 
 
-def get_prompts_json_path() -> Path:
-    """Get path to prompts.json"""
-    # From routes/prompts.py: routes -> backend
+def get_latest_prompts_dir() -> Path:
+    """Get path to the latest_prompts directory (directory-based prompt storage)."""
     backend_dir = Path(__file__).parent.parent
-    return backend_dir / "data" / "prompts" / "prompts.json"
+    return backend_dir / "data" / "latest_prompts"
 
 
 def load_prompts_json() -> Dict:
-    """Load prompts.json file"""
-    prompts_path = get_prompts_json_path()
-    if not prompts_path.exists():
-        raise HTTPException(status_code=404, detail=f"Prompts file not found: {prompts_path}")
-    
-    with open(prompts_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    """
+    Load prompts from the directory-based structure.
+
+    Iterates over center subdirectories in latest_prompts/, loads each
+    {CENTER}/prompts.json, and suffixes keys with -{center_lower} to
+    maintain uniqueness in the flat dict.
+
+    Returns:
+        Dict with shape {center: {suffixed_key: prompt_data}}
+        e.g. {"INT": {"biopsygrading-int": {...}}, "VGR": {"biopsygrading-vgr": {...}}}
+    """
+    prompts_dir = get_latest_prompts_dir()
+    if not prompts_dir.is_dir():
+        raise HTTPException(status_code=404, detail=f"Prompts directory not found: {prompts_dir}")
+
+    result: Dict[str, Dict] = {}
+    center_dirs = sorted(
+        [d for d in prompts_dir.iterdir() if d.is_dir() and (d / "prompts.json").exists()]
+    )
+
+    if not center_dirs:
+        raise HTTPException(status_code=404, detail=f"No center directories found in {prompts_dir}")
+
+    for center_dir in center_dirs:
+        center = center_dir.name  # e.g. "INT"
+        center_lower = center.lower()
+        prompts_file = center_dir / "prompts.json"
+
+        with open(prompts_file, 'r', encoding='utf-8') as f:
+            raw_prompts = json.load(f)
+
+        # Suffix keys with -center_lower
+        suffixed: Dict = {}
+        for key, value in raw_prompts.items():
+            suffixed[f"{key}-{center_lower}"] = value
+
+        result[center] = suffixed
+
+    return result
 
 
 def _extract_template_and_mapping(prompt_data) -> Tuple[str, Optional[EntityMapping]]:
@@ -89,10 +120,30 @@ def _serialize_prompt_data(template: str, mapping: Optional[EntityMapping] = Non
 
 
 def save_prompts_json(data: Dict):
-    """Save prompts.json file"""
-    prompts_path = get_prompts_json_path()
-    with open(prompts_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    """
+    Save prompts back to the directory-based structure.
+
+    For each center key in data, strips the -{center_lower} suffix from
+    prompt keys and writes to {center}/prompts.json.
+    """
+    prompts_dir = get_latest_prompts_dir()
+    prompts_dir.mkdir(parents=True, exist_ok=True)
+
+    for center, center_prompts in data.items():
+        center_lower = center.lower()
+        suffix = f"-{center_lower}"
+
+        # Strip the center suffix from keys before writing
+        raw_prompts: Dict = {}
+        for key, value in center_prompts.items():
+            raw_key = key[: -len(suffix)] if key.endswith(suffix) else key
+            raw_prompts[raw_key] = value
+
+        center_dir = prompts_dir / center
+        center_dir.mkdir(parents=True, exist_ok=True)
+        prompts_file = center_dir / "prompts.json"
+        with open(prompts_file, 'w', encoding='utf-8') as f:
+            json.dump(raw_prompts, f, indent=2, ensure_ascii=False)
 
 
 def _get_center_prompts(prompts_data: Dict, center: str) -> Dict:
@@ -106,22 +157,31 @@ def _get_center_prompts(prompts_data: Dict, center: str) -> Dict:
 
 @router.get("/centers", response_model=List[str])
 async def list_centers():
-    """List all center/group names (top-level keys in prompts.json)."""
-    prompts_data = load_prompts_json()
-    return list(prompts_data.keys())
+    """List all center/group names (subdirectories in latest_prompts/)."""
+    prompts_dir = get_latest_prompts_dir()
+    if not prompts_dir.is_dir():
+        return []
+    return sorted(
+        d.name for d in prompts_dir.iterdir()
+        if d.is_dir() and (d / "prompts.json").exists()
+    )
 
 
 @router.post("/centers", response_model=dict)
 async def create_center(body: CenterCreate):
     """Create a new center/group. Prompts can then be added to it."""
-    prompts_data = load_prompts_json()
     center = body.center.strip()
     if not center:
         raise HTTPException(status_code=400, detail="Center name cannot be empty")
-    if center in prompts_data:
+
+    prompts_dir = get_latest_prompts_dir()
+    center_dir = prompts_dir / center
+    if center_dir.is_dir() and (center_dir / "prompts.json").exists():
         raise HTTPException(status_code=400, detail=f"Center '{center}' already exists")
-    prompts_data[center] = {}
-    save_prompts_json(prompts_data)
+
+    center_dir.mkdir(parents=True, exist_ok=True)
+    with open(center_dir / "prompts.json", 'w', encoding='utf-8') as f:
+        json.dump({}, f, indent=2)
     return {"center": center, "message": f"Center '{center}' created"}
 
 
