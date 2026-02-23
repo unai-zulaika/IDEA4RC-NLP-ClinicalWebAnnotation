@@ -92,6 +92,19 @@ async def create_session(session: SessionCreate):
         if has_annotations:
             evaluation_mode = "evaluation"
     
+    # Infer center from prompt_types if not explicitly provided
+    center = session.center
+    if not center and session.prompt_types:
+        # Extract center suffix from prompt_types (e.g. "biopsygrading-int" -> "INT")
+        center_votes: Dict[str, int] = {}
+        for pt in session.prompt_types:
+            if '-' in pt:
+                suffix = pt.rsplit('-', 1)[-1].upper()
+                center_votes[suffix] = center_votes.get(suffix, 0) + 1
+        if center_votes:
+            center = max(center_votes, key=center_votes.get)
+            print(f"[INFO] Inferred center '{center}' from prompt_types")
+
     session_data = {
         'session_id': session_id,
         'name': session.name,
@@ -101,12 +114,13 @@ async def create_session(session: SessionCreate):
         'notes': [note.dict() for note in session.csv_data],
         'annotations': {},
         'prompt_types': session.prompt_types,
+        'center': center,
         'evaluation_mode': evaluation_mode,
         'report_type_mapping': session.report_type_mapping
     }
-    
+
     _save_session(session_id, session_data)
-    
+
     return SessionInfo(
         session_id=session_id,
         name=session.name,
@@ -115,6 +129,7 @@ async def create_session(session: SessionCreate):
         updated_at=datetime.fromisoformat(session_data['updated_at']),
         note_count=len(session.csv_data),
         prompt_types=session.prompt_types,
+        center=center,
         evaluation_mode=evaluation_mode
     )
 

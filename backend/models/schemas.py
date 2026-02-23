@@ -183,6 +183,7 @@ class SessionCreate(BaseModel):
     description: Optional[str] = None
     csv_data: List[CSVRow]
     prompt_types: List[str]
+    center: Optional[str] = None  # Center/group name (e.g. INT, VGR, MSCI); inferred from prompt_types if omitted
     evaluation_mode: Optional[str] = "validation"  # "validation" or "evaluation"
     report_type_mapping: Optional[Dict[str, List[str]]] = None  # report_type -> list of prompt_types
 
@@ -195,6 +196,7 @@ class SessionInfo(BaseModel):
     updated_at: datetime
     note_count: int
     prompt_types: List[str]
+    center: Optional[str] = None
 
 
 class SessionAnnotation(BaseModel):
@@ -228,6 +230,7 @@ class SessionData(BaseModel):
     notes: List[CSVRow]
     annotations: Dict[str, Dict[str, SessionAnnotation]]  # note_id -> prompt_type -> annotation
     prompt_types: List[str]
+    center: Optional[str] = None  # Center/group name inferred from prompt_types
     evaluation_mode: Optional[str] = "validation"  # "validation" or "evaluation"
     report_type_mapping: Optional[Dict[str, List[str]]] = None  # report_type -> list of prompt_types
 

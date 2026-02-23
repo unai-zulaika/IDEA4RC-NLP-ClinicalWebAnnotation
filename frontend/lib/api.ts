@@ -277,6 +277,7 @@ export interface SessionInfo {
   updated_at: string
   note_count: number
   prompt_types: string[]
+  center?: string  // Center/group name (e.g. INT, VGR, MSCI)
   evaluation_mode?: 'validation' | 'evaluation'  // Session mode
 }
 
@@ -309,6 +310,7 @@ export interface SessionData {
   notes: CSVRow[]
   annotations: Record<string, Record<string, SessionAnnotation>>
   prompt_types: string[]
+  center?: string  // Center/group name (e.g. INT, VGR, MSCI)
   evaluation_mode?: 'validation' | 'evaluation'  // Session mode
   report_type_mapping?: Record<string, string[]>  // report_type -> list of prompt_types
 }

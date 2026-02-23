@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { sessionsApi, annotateApi, promptsApi } from '@/lib/api'
+import { useDefaultCenter } from '@/lib/useDefaultCenter'
 import type { SessionData, AnnotationResult, EvidenceSpan, PromptInfo, ICDO3CodeInfo, UnifiedICDO3Code } from '@/lib/api'
 import TextHighlighter from '@/components/TextHighlighter'
 import AnnotationViewer from '@/components/AnnotationViewer'
@@ -221,6 +222,7 @@ function formatTimeRemaining(seconds: number): string {
 export default function AnnotatePage() {
   const params = useParams()
   const sessionId = params.sessionId as string
+  const [center] = useDefaultCenter()
 
   const [session, setSession] = useState<SessionData | null>(null)
   const [selectedNoteIndex, setSelectedNoteIndex] = useState(0)
@@ -250,12 +252,15 @@ export default function AnnotatePage() {
 
   useEffect(() => {
     loadSession()
-    loadAvailablePrompts()
   }, [sessionId])
+
+  useEffect(() => {
+    loadAvailablePrompts()
+  }, [center])
 
   const loadAvailablePrompts = async () => {
     try {
-      const prompts = await promptsApi.list()
+      const prompts = await promptsApi.list(center)
       setAvailablePrompts(prompts)
     } catch (err) {
       console.error('Failed to load prompts:', err)
