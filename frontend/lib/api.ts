@@ -315,6 +315,31 @@ export interface SessionData {
   report_type_mapping?: Record<string, string[]>  // report_type -> list of prompt_types
 }
 
+// Annotation Preset Types
+export interface AnnotationPreset {
+  id: string
+  name: string
+  center: string
+  description?: string
+  report_type_mapping: Record<string, string[]>
+  created_at: string
+  updated_at: string
+}
+
+export interface AnnotationPresetCreate {
+  name: string
+  center: string
+  description?: string
+  report_type_mapping: Record<string, string[]>
+}
+
+export interface AnnotationPresetUpdate {
+  name?: string
+  center?: string
+  description?: string
+  report_type_mapping?: Record<string, string[]>
+}
+
 // API Functions
 export const serverApi = {
   getStatus: async (): Promise<ServerStatus> => {
@@ -657,6 +682,34 @@ export const sessionsApi = {
     const response = await api.get(`/api/sessions/${session_id}/export/codes`, {
       responseType: 'blob',
     })
+    return response.data
+  },
+}
+
+export const presetsApi = {
+  list: async (center?: string): Promise<AnnotationPreset[]> => {
+    const params = center ? { center } : {}
+    const response = await api.get('/api/presets', { params })
+    return response.data
+  },
+
+  get: async (id: string): Promise<AnnotationPreset> => {
+    const response = await api.get(`/api/presets/${id}`)
+    return response.data
+  },
+
+  create: async (data: AnnotationPresetCreate): Promise<AnnotationPreset> => {
+    const response = await api.post('/api/presets', data)
+    return response.data
+  },
+
+  update: async (id: string, data: AnnotationPresetUpdate): Promise<AnnotationPreset> => {
+    const response = await api.put(`/api/presets/${id}`, data)
+    return response.data
+  },
+
+  delete: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete(`/api/presets/${id}`)
     return response.data
   },
 }

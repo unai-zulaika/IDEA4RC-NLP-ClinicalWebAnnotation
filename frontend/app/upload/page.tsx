@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { uploadApi, promptsApi, sessionsApi } from '@/lib/api'
+import { uploadApi, promptsApi, sessionsApi, presetsApi } from '@/lib/api'
 import type { CSVUploadResponse, PromptInfo, CSVRow } from '@/lib/api'
+import PresetSelector from '@/components/PresetSelector'
 import { useDefaultCenter } from '@/lib/useDefaultCenter'
 
 export default function UploadPage() {
@@ -362,6 +363,24 @@ export default function UploadPage() {
                 placeholder="Enter session name"
               />
             </div>
+
+            {/* Preset Selector */}
+            {uploadResult.report_types && uploadResult.report_types.length > 0 && (
+              <PresetSelector
+                center={selectedCenter}
+                currentMapping={reportTypeMapping}
+                onLoadPreset={(presetMapping) => {
+                  const merged: Record<string, string[]> = { ...reportTypeMapping }
+                  for (const rt of uploadResult.report_types || []) {
+                    if (presetMapping[rt]) {
+                      merged[rt] = presetMapping[rt]
+                    }
+                  }
+                  setReportTypeMapping(merged)
+                }}
+                reportTypes={uploadResult.report_types}
+              />
+            )}
 
             {/* Report Type to Prompt Type Mapping */}
             {uploadResult.report_types && uploadResult.report_types.length > 0 && (

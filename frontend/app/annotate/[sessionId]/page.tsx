@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { sessionsApi, annotateApi, promptsApi } from '@/lib/api'
+import { sessionsApi, annotateApi, promptsApi, presetsApi } from '@/lib/api'
 import { useDefaultCenter } from '@/lib/useDefaultCenter'
 import type { SessionData, AnnotationResult, EvidenceSpan, PromptInfo, ICDO3CodeInfo, UnifiedICDO3Code } from '@/lib/api'
+import PresetSelector from '@/components/PresetSelector'
 import TextHighlighter from '@/components/TextHighlighter'
 import AnnotationViewer from '@/components/AnnotationViewer'
 import { extractExpectedAnnotation } from '@/lib/annotationUtils'
@@ -121,6 +122,26 @@ function ManagePromptTypesModal({
               <button onClick={deselectAllGlobal} className="text-xs text-gray-500 hover:text-gray-700 font-medium">Clear All</button>
             </div>
           </div>
+
+          {/* Preset Selector */}
+          {reportTypes.length > 0 && (
+            <div className="mb-4">
+              <PresetSelector
+                center={session.center || ''}
+                currentMapping={mapping}
+                onLoadPreset={(presetMapping) => {
+                  const updated: Record<string, string[]> = { ...mapping }
+                  for (const rt of reportTypes) {
+                    if (presetMapping[rt]) {
+                      updated[rt] = presetMapping[rt]
+                    }
+                  }
+                  setMapping(updated)
+                }}
+                reportTypes={reportTypes}
+              />
+            </div>
+          )}
 
           {reportTypes.length > 0 ? (
             <div className="space-y-4">
