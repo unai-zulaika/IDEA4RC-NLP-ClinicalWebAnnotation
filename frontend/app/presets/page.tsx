@@ -32,27 +32,33 @@ export default function PresetsPage() {
     }
   }, [centers, selectedCenter, setSelectedCenter])
 
-  useEffect(() => {
-    if (selectedCenter) {
-      loadData()
-    }
-  }, [selectedCenter])
+  const [refreshKey, setRefreshKey] = useState(0)
 
-  const loadData = async () => {
-    setLoading(true)
-    try {
-      const [presetsData, promptsData] = await Promise.all([
-        presetsApi.list(selectedCenter),
-        promptsApi.list(selectedCenter),
-      ])
-      setPresets(presetsData)
-      setPrompts(promptsData)
-    } catch (err) {
-      console.error('Failed to load data:', err)
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    if (!selectedCenter) return
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      try {
+        const [presetsData, promptsData] = await Promise.all([
+          presetsApi.list(selectedCenter),
+          promptsApi.list(selectedCenter),
+        ])
+        if (!cancelled) {
+          setPresets(presetsData)
+          setPrompts(promptsData)
+        }
+      } catch (err) {
+        if (!cancelled) console.error('Failed to load data:', err)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
-  }
+    load()
+    return () => { cancelled = true }
+  }, [selectedCenter, refreshKey])
+
+  const loadData = () => setRefreshKey((k) => k + 1)
 
   const resetForm = () => {
     setFormName('')
