@@ -287,6 +287,12 @@ if "nlp_session_id" not in st.session_state:
 if "structured_data_1a" not in st.session_state:
     st.session_state.structured_data_1a = None
 
+# Show creation messages after rerun
+if st.session_state.get("_nlp_session_created"):
+    created_id = st.session_state.pop("_nlp_session_created")
+    st.success(f"NLP Session created: {created_id}")
+    st.info("The **Manage** panel has been opened above — customize the session name and report-type mapping.")
+
 disease_type_1a = st.selectbox(
     "Select disease type:",
     ["sarcoma", "head_and_neck"],
@@ -339,8 +345,8 @@ with col1:
                 _add_recent_process(_store, "session", st.session_state.nlp_session_id)
                 # Auto-open the Manage panel for the new session
                 st.session_state[f"manage_{st.session_state.nlp_session_id}"] = True
-                st.success(f"NLP Session created: {st.session_state.nlp_session_id}")
-                st.info("The **Manage** panel has been opened above — customize the session name and report-type mapping.")
+                st.session_state["_nlp_session_created"] = st.session_state.nlp_session_id
+                st.rerun()
             else:
                 st.error(f"Failed to create session: {resp.text}")
         except requests.exceptions.RequestException as e:

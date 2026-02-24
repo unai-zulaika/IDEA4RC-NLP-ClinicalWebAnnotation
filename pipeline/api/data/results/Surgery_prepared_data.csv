@@ -1,2 +1,2 @@
-patient_id,record_id,Surgery.dateOfSurgery,Surgery.episodeEvent,Surgery.diagnosisReference,Surgery.tumorRupture,Surgery.surgeryIntention,Surgery.surgeryType,Surgery.marginsAfterSurgery,Surgery.surgicalSpecimenMitoticCount,Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours
-TEST001,5,2023-07-30,4,,,,,,,
+patient_id,record_id,Surgery.dateOfSurgery,Surgery.episodeEvent,Surgery.marginsAfterSurgery,Surgery.surgeryIntention,Surgery.surgeryType,Surgery.surgicalSpecimenMitoticCount,Surgery.tumorRupture,Surgery.diagnosisReference,Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours
+3,7,2024-05-23 00:00:00,7,1634643,4162591,4315400,6343,0,,

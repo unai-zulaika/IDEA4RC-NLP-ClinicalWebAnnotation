@@ -1,12 +1,12 @@
 {
     "run_id": {
         "run_name": null,
-        "run_time": "2026-02-10T10:31:21.198323+00:00"
+        "run_time": "2026-02-24T08:49:30.921698+00:00"
     },
     "run_results": {
-        "ValidationResultIdentifier::default/__none__/20260210T103121.198323Z/EpisodeEvent_validator_checkpoint-f{entity_name}_data_asset": {
+        "ValidationResultIdentifier::default/__none__/20260224T084930.921698Z/EpisodeEvent_validator_checkpoint-f{entity_name}_data_asset": {
             "validation_result": {
-                "success": false,
+                "success": true,
                 "results": [
                     {
                         "success": true,
@@ -75,7 +75,7 @@
                         }
                     },
                     {
-                        "success": false,
+                        "success": true,
                         "expectation_config": {
                             "expectation_type": "expect_column_values_to_not_be_null",
                             "kwargs": {
@@ -91,35 +91,14 @@
                         },
                         "result": {
                             "element_count": 1,
-                            "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
-                            "partial_unexpected_list": [
-                                null
-                            ],
-                            "partial_unexpected_counts": [
-                                {
-                                    "value": null,
-                                    "count": 1
-                                }
-                            ],
-                            "partial_unexpected_index_list": [
-                                {
-                                    "EpisodeEvent.definedAt": null,
-                                    "patient_id": "TEST001",
-                                    "record_id": "4"
-                                }
-                            ],
-                            "unexpected_list": [
-                                null
-                            ],
-                            "unexpected_index_list": [
-                                {
-                                    "EpisodeEvent.definedAt": null,
-                                    "patient_id": "TEST001",
-                                    "record_id": "4"
-                                }
-                            ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -129,7 +108,7 @@
                         }
                     },
                     {
-                        "success": false,
+                        "success": true,
                         "expectation_config": {
                             "expectation_type": "expect_column_values_to_not_be_null",
                             "kwargs": {
@@ -145,35 +124,14 @@
                         },
                         "result": {
                             "element_count": 1,
-                            "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
-                            "partial_unexpected_list": [
-                                null
-                            ],
-                            "partial_unexpected_counts": [
-                                {
-                                    "value": null,
-                                    "count": 1
-                                }
-                            ],
-                            "partial_unexpected_index_list": [
-                                {
-                                    "EpisodeEvent.dateOfEpisode": null,
-                                    "patient_id": "TEST001",
-                                    "record_id": "4"
-                                }
-                            ],
-                            "unexpected_list": [
-                                null
-                            ],
-                            "unexpected_index_list": [
-                                {
-                                    "EpisodeEvent.dateOfEpisode": null,
-                                    "patient_id": "TEST001",
-                                    "record_id": "4"
-                                }
-                            ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_count": 0,
+                            "unexpected_percent": 0.0,
+                            "partial_unexpected_list": [],
+                            "partial_unexpected_counts": [],
+                            "partial_unexpected_index_list": [],
+                            "unexpected_list": [],
+                            "unexpected_index_list": [],
+                            "unexpected_index_query": "df.filter(items=[], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -186,23 +144,23 @@
                 "evaluation_parameters": {},
                 "statistics": {
                     "evaluated_expectations": 4,
-                    "successful_expectations": 2,
-                    "unsuccessful_expectations": 2,
-                    "success_percent": 50.0
+                    "successful_expectations": 4,
+                    "unsuccessful_expectations": 0,
+                    "success_percent": 100.0
                 },
                 "meta": {
                     "great_expectations_version": "0.18.15",
                     "expectation_suite_name": "default",
                     "run_id": {
                         "run_name": null,
-                        "run_time": "2026-02-10T10:31:21.198323+00:00"
+                        "run_time": "2026-02-24T08:49:30.921698+00:00"
                     },
                     "batch_spec": {
                         "batch_data": "PandasDataFrame"
                     },
                     "batch_markers": {
-                        "ge_load_time": "20260210T103121.200078Z",
-                        "pandas_data_fingerprint": "9c26839a083267e9de5924b8259b6d50"
+                        "ge_load_time": "20260224T084930.923608Z",
+                        "pandas_data_fingerprint": "5752e8eadd4509e8ed032a477eaec80b"
                     },
                     "active_batch_definition": {
                         "datasource_name": "EpisodeEvent_validator_checkpoint",
@@ -210,7 +168,7 @@
                         "data_asset_name": "f{entity_name}_data_asset",
                         "batch_identifiers": {}
                     },
-                    "validation_time": "20260210T103121.203549Z",
+                    "validation_time": "20260224T084930.927170Z",
                     "checkpoint_name": "EpisodeEvent_checkpoint",
                     "validation_id": null,
                     "checkpoint_id": null
@@ -230,24 +188,9 @@
         }
     },
     "checkpoint_config": {
-        "config_version": 1.0,
-        "batch_request": {
-            "datasource_name": "EpisodeEvent_validator_checkpoint",
-            "data_asset_name": "f{entity_name}_data_asset"
-        },
-        "expectation_suite_name": "default",
-        "template_name": null,
-        "validations": [],
-        "site_names": null,
-        "run_name_template": null,
-        "module_name": "great_expectations.checkpoint",
-        "notify_on": null,
         "default_validation_id": null,
-        "expectation_suite_ge_cloud_id": null,
-        "slack_webhook": null,
-        "name": "EpisodeEvent_checkpoint",
-        "notify_with": null,
-        "ge_cloud_id": null,
+        "template_name": null,
+        "config_version": 1.0,
         "action_list": [
             {
                 "name": "store_validation_result",
@@ -268,8 +211,23 @@
                 }
             }
         ],
+        "module_name": "great_expectations.checkpoint",
+        "class_name": "Checkpoint",
         "evaluation_parameters": {},
-        "profilers": [],
+        "validations": [],
+        "notify_on": null,
+        "expectation_suite_ge_cloud_id": null,
+        "slack_webhook": null,
+        "notify_with": null,
+        "batch_request": {
+            "datasource_name": "EpisodeEvent_validator_checkpoint",
+            "data_asset_name": "f{entity_name}_data_asset"
+        },
+        "name": "EpisodeEvent_checkpoint",
+        "expectation_suite_name": "default",
+        "site_names": null,
+        "ge_cloud_id": null,
+        "run_name_template": null,
         "runtime_configuration": {
             "result_format": {
                 "result_format": "COMPLETE",
@@ -280,7 +238,7 @@
                 "return_unexpected_index_query": true
             }
         },
-        "class_name": "Checkpoint"
+        "profilers": []
     },
-    "success": false
+    "success": true
 }

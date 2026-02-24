@@ -95,3 +95,4 @@ standalone_linking_tool/
 # Keep directory structures
 !**/.gitkeep
 CLAUDE.md
+

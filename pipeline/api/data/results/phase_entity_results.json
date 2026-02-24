@@ -2,26 +2,61 @@
     {
         "Entity": "Patient1",
         "Phase": "Diagnosis",
-        "Present": 2
+        "Present": 5
     },
     {
-        "Entity": "CancerEpisode2",
+        "Entity": "PatientFollowUp2",
+        "Phase": "Diagnosis",
+        "Present": 4
+    },
+    {
+        "Entity": "CancerEpisode13",
         "Phase": "Diagnosis",
         "Present": 2
     },
     {
         "Entity": "Diagnosis3",
         "Phase": "Diagnosis",
+        "Present": 8
+    },
+    {
+        "Entity": "EpisodeEvent5",
+        "Phase": "Diagnosis",
+        "Present": 4
+    },
+    {
+        "Entity": "PathologicalStage6",
+        "Phase": "Diagnosis",
         "Present": 3
     },
     {
-        "Entity": "EpisodeEvent4",
+        "Entity": "Surgery7",
+        "Phase": "Diagnosis",
+        "Present": 8
+    },
+    {
+        "Entity": "SystemicTreatment8",
+        "Phase": "Diagnosis",
+        "Present": 8
+    },
+    {
+        "Entity": "Radiotherapy9",
+        "Phase": "Diagnosis",
+        "Present": 15
+    },
+    {
+        "Entity": "DrugsForTreatments10",
         "Phase": "Diagnosis",
         "Present": 2
     },
     {
-        "Entity": "Surgery5",
+        "Entity": "DrugsForTreatments11",
         "Phase": "Diagnosis",
         "Present": 2
+    },
+    {
+        "Entity": "TreatmentResponse12",
+        "Phase": "Diagnosis",
+        "Present": 3
     }
 ]

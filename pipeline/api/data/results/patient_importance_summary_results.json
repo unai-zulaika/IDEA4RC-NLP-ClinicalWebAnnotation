@@ -1,26 +1,50 @@
 [
     {
-        "PatientID": "TEST001",
+        "PatientID": "3",
         "Group": "M",
-        "Passed": 10,
-        "Failed": 31,
-        "Total": 41,
-        "PassPercent": 24.39
+        "Passed": 40,
+        "Failed": 62,
+        "Total": 102,
+        "PassPercent": 39.22
     },
     {
-        "PatientID": "TEST001",
+        "PatientID": "nan",
+        "Group": "M",
+        "Passed": 40,
+        "Failed": 62,
+        "Total": 102,
+        "PassPercent": 39.22
+    },
+    {
+        "PatientID": "3",
         "Group": "O",
-        "Passed": 0,
-        "Failed": 15,
-        "Total": 15,
-        "PassPercent": 0.0
+        "Passed": 7,
+        "Failed": 26,
+        "Total": 33,
+        "PassPercent": 21.21
     },
     {
-        "PatientID": "TEST001",
+        "PatientID": "nan",
+        "Group": "O",
+        "Passed": 7,
+        "Failed": 26,
+        "Total": 33,
+        "PassPercent": 21.21
+    },
+    {
+        "PatientID": "3",
         "Group": "R",
-        "Passed": 0,
-        "Failed": 3,
-        "Total": 3,
-        "PassPercent": 0.0
+        "Passed": 2,
+        "Failed": 33,
+        "Total": 35,
+        "PassPercent": 5.71
+    },
+    {
+        "PatientID": "nan",
+        "Group": "R",
+        "Passed": 2,
+        "Failed": 33,
+        "Total": 35,
+        "PassPercent": 5.71
     }
 ]

@@ -1,15 +1,15 @@
 {
     "run_id": {
         "run_name": null,
-        "run_time": "2026-02-10T10:31:20.106585+00:00"
+        "run_time": "2026-02-24T08:49:29.157659+00:00"
     },
     "run_results": {
-        "ValidationResultIdentifier::non_repeatable_default_suite/__none__/20260210T103120.106585Z/non_repeatable_validator_checkpoint-non_repeatable_data_asset": {
+        "ValidationResultIdentifier::non_repeatable_default_suite/__none__/20260224T084929.157659Z/non_repeatable_validator_checkpoint-non_repeatable_data_asset": {
             "validation_result": {
                 "success": false,
                 "results": [
                     {
-                        "success": true,
+                        "success": false,
                         "expectation_config": {
                             "expectation_type": "expect_column_values_to_not_be_null",
                             "kwargs": {
@@ -24,15 +24,36 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 0,
-                            "unexpected_percent": 0.0,
-                            "partial_unexpected_list": [],
-                            "partial_unexpected_counts": [],
-                            "partial_unexpected_index_list": [],
-                            "unexpected_list": [],
-                            "unexpected_index_list": [],
-                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                            "element_count": 2,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 50.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "Patient.sex": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "Patient.sex": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -57,13 +78,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -72,21 +98,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.race": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.race": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.race": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.race": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -96,7 +133,7 @@
                         }
                     },
                     {
-                        "success": true,
+                        "success": false,
                         "expectation_config": {
                             "expectation_type": "expect_column_values_to_not_be_null",
                             "kwargs": {
@@ -111,15 +148,36 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 0,
-                            "unexpected_percent": 0.0,
-                            "partial_unexpected_list": [],
-                            "partial_unexpected_counts": [],
-                            "partial_unexpected_index_list": [],
-                            "unexpected_list": [],
-                            "unexpected_index_list": [],
-                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                            "element_count": 2,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 50.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "Patient.birthYear": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "Patient.birthYear": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -144,9 +202,9 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
+                            "element_count": 2,
                             "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
+                            "unexpected_percent": 50.0,
                             "partial_unexpected_list": [
                                 null
                             ],
@@ -159,8 +217,8 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.countryOfResidence": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
@@ -169,11 +227,11 @@
                             "unexpected_index_list": [
                                 {
                                     "Patient.countryOfResidence": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -198,13 +256,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -213,21 +276,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.smoking": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.smoking": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.smoking": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.smoking": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -252,13 +326,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -267,21 +346,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.cigarettesPackYearsSmokedDuringLife": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.cigarettesPackYearsSmokedDuringLife": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.cigarettesPackYearsSmokedDuringLife": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.cigarettesPackYearsSmokedDuringLife": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -306,13 +396,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -321,21 +416,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.alcohol": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.alcohol": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.alcohol": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.alcohol": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -360,9 +466,9 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
+                            "element_count": 2,
                             "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
+                            "unexpected_percent": 50.0,
                             "partial_unexpected_list": [
                                 null
                             ],
@@ -375,8 +481,8 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.charlsonComorbidityIndex": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
@@ -385,11 +491,11 @@
                             "unexpected_index_list": [
                                 {
                                     "Patient.charlsonComorbidityIndex": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -414,13 +520,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -429,21 +540,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.noGeneticSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.noGeneticSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.noGeneticSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.noGeneticSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -468,13 +590,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -483,21 +610,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.olliersDisease": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.olliersDisease": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.olliersDisease": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.olliersDisease": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -522,13 +660,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -537,21 +680,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.maffuciSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.maffuciSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.maffuciSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.maffuciSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -576,13 +730,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -591,21 +750,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.liFraumeniSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.liFraumeniSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.liFraumeniSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.liFraumeniSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -630,13 +800,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -645,21 +820,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.mccuneAlbrightSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.mccuneAlbrightSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.mccuneAlbrightSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.mccuneAlbrightSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -684,13 +870,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -699,21 +890,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.multipleOsteochondromas": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.multipleOsteochondromas": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.multipleOsteochondromas": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.multipleOsteochondromas": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -738,13 +940,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -753,21 +960,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.neurofibromatosisType1": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.neurofibromatosisType1": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.neurofibromatosisType1": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.neurofibromatosisType1": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -792,13 +1010,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -807,21 +1030,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.rothmundThomsonSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.rothmundThomsonSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.rothmundThomsonSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.rothmundThomsonSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -846,13 +1080,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -861,21 +1100,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.wernerSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.wernerSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.wernerSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.wernerSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -900,13 +1150,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -915,21 +1170,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.retinoblastoma": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.retinoblastoma": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.retinoblastoma": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.retinoblastoma": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -954,13 +1220,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -969,21 +1240,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.pagetDisease": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.pagetDisease": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.pagetDisease": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.pagetDisease": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1008,13 +1290,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -1023,21 +1310,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.otherGeneticSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.otherGeneticSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.otherGeneticSyndrome": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.otherGeneticSyndrome": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1062,13 +1360,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -1077,21 +1380,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.previousMalignantCancerSite": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.previousMalignantCancerSite": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.previousMalignantCancerSite": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.previousMalignantCancerSite": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1116,13 +1430,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -1131,21 +1450,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Patient.previousCancerTreatment": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.previousCancerTreatment": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Patient.previousCancerTreatment": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Patient.previousCancerTreatment": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1170,9 +1500,9 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
+                            "element_count": 2,
                             "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
+                            "unexpected_percent": 50.0,
                             "partial_unexpected_list": [
                                 null
                             ],
@@ -1185,8 +1515,8 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "PatientFollowUp.patient": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
@@ -1195,11 +1525,11 @@
                             "unexpected_index_list": [
                                 {
                                     "PatientFollowUp.patient": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1224,13 +1554,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -1239,21 +1574,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "PatientFollowUp.statusOfPatientAtLastFollowUp": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "PatientFollowUp.statusOfPatientAtLastFollowUp": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "PatientFollowUp.statusOfPatientAtLastFollowUp": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "PatientFollowUp.statusOfPatientAtLastFollowUp": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1278,13 +1624,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -1293,21 +1644,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "PatientFollowUp.statusOfDiseaseAtLastFollowUp": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "PatientFollowUp.statusOfDiseaseAtLastFollowUp": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "PatientFollowUp.statusOfDiseaseAtLastFollowUp": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "PatientFollowUp.statusOfDiseaseAtLastFollowUp": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1332,9 +1694,9 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
+                            "element_count": 2,
                             "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
+                            "unexpected_percent": 50.0,
                             "partial_unexpected_list": [
                                 null
                             ],
@@ -1347,8 +1709,8 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "PatientFollowUp.patientFollowUpDate": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
@@ -1357,11 +1719,11 @@
                             "unexpected_index_list": [
                                 {
                                     "PatientFollowUp.patientFollowUpDate": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1386,9 +1748,9 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
+                            "element_count": 2,
                             "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
+                            "unexpected_percent": 50.0,
                             "partial_unexpected_list": [
                                 null
                             ],
@@ -1401,8 +1763,8 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "PatientFollowUp.lastContact": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
@@ -1411,11 +1773,11 @@
                             "unexpected_index_list": [
                                 {
                                     "PatientFollowUp.lastContact": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1425,7 +1787,7 @@
                         }
                     },
                     {
-                        "success": true,
+                        "success": false,
                         "expectation_config": {
                             "expectation_type": "expect_column_values_to_not_be_null",
                             "kwargs": {
@@ -1440,15 +1802,36 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 0,
-                            "unexpected_percent": 0.0,
-                            "partial_unexpected_list": [],
-                            "partial_unexpected_counts": [],
-                            "partial_unexpected_index_list": [],
-                            "unexpected_list": [],
-                            "unexpected_index_list": [],
-                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                            "element_count": 2,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 50.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "CancerEpisode.patient": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "CancerEpisode.patient": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1458,7 +1841,7 @@
                         }
                     },
                     {
-                        "success": true,
+                        "success": false,
                         "expectation_config": {
                             "expectation_type": "expect_column_values_to_not_be_null",
                             "kwargs": {
@@ -1473,15 +1856,36 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 0,
-                            "unexpected_percent": 0.0,
-                            "partial_unexpected_list": [],
-                            "partial_unexpected_counts": [],
-                            "partial_unexpected_index_list": [],
-                            "unexpected_list": [],
-                            "unexpected_index_list": [],
-                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                            "element_count": 2,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 50.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "CancerEpisode.cancerStartDate": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "CancerEpisode.cancerStartDate": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1506,13 +1910,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -1521,21 +1930,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.cancerepisode": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.cancerepisode": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.cancerepisode": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.cancerepisode": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1545,7 +1965,7 @@
                         }
                     },
                     {
-                        "success": true,
+                        "success": false,
                         "expectation_config": {
                             "expectation_type": "expect_column_values_to_not_be_null",
                             "kwargs": {
@@ -1560,15 +1980,36 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 0,
-                            "unexpected_percent": 0.0,
-                            "partial_unexpected_list": [],
-                            "partial_unexpected_counts": [],
-                            "partial_unexpected_index_list": [],
-                            "unexpected_list": [],
-                            "unexpected_index_list": [],
-                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                            "element_count": 2,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 50.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "Diagnosis.dateOfDiagnosis": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "Diagnosis.dateOfDiagnosis": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1593,9 +2034,9 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
+                            "element_count": 2,
                             "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
+                            "unexpected_percent": 50.0,
                             "partial_unexpected_list": [
                                 null
                             ],
@@ -1608,8 +2049,8 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.typeOfBiopsy": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
@@ -1618,11 +2059,11 @@
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.typeOfBiopsy": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1647,9 +2088,9 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
+                            "element_count": 2,
                             "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
+                            "unexpected_percent": 50.0,
                             "partial_unexpected_list": [
                                 null
                             ],
@@ -1662,8 +2103,8 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.biopsyDoneBy": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
@@ -1672,11 +2113,11 @@
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.biopsyDoneBy": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1686,7 +2127,7 @@
                         }
                     },
                     {
-                        "success": true,
+                        "success": false,
                         "expectation_config": {
                             "expectation_type": "expect_column_values_to_not_be_null",
                             "kwargs": {
@@ -1701,15 +2142,36 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 0,
-                            "unexpected_percent": 0.0,
-                            "partial_unexpected_list": [],
-                            "partial_unexpected_counts": [],
-                            "partial_unexpected_index_list": [],
-                            "unexpected_list": [],
-                            "unexpected_index_list": [],
-                            "unexpected_index_query": "df.filter(items=[], axis=0)"
+                            "element_count": 2,
+                            "unexpected_count": 1,
+                            "unexpected_percent": 50.0,
+                            "partial_unexpected_list": [
+                                null
+                            ],
+                            "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                }
+                            ],
+                            "partial_unexpected_index_list": [
+                                {
+                                    "Diagnosis.ageAtDiagnosis": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_list": [
+                                null
+                            ],
+                            "unexpected_index_list": [
+                                {
+                                    "Diagnosis.ageAtDiagnosis": null,
+                                    "patient_id": null,
+                                    "original_source": null
+                                }
+                            ],
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1734,13 +2196,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -1749,21 +2216,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.radiotherapyInducedSarcoma": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.radiotherapyInducedSarcoma": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.radiotherapyInducedSarcoma": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.radiotherapyInducedSarcoma": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1788,13 +2266,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -1803,21 +2286,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.biopsyGrading": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.biopsyGrading": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.biopsyGrading": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.biopsyGrading": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1842,13 +2336,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -1857,21 +2356,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.histologyGroup": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.histologyGroup": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.histologyGroup": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.histologyGroup": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1896,13 +2406,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -1911,21 +2426,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.site": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.site": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.site": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.site": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -1950,9 +2476,9 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
+                            "element_count": 2,
                             "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
+                            "unexpected_percent": 50.0,
                             "partial_unexpected_list": [
                                 null
                             ],
@@ -1965,8 +2491,8 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.histologySubgroup": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
@@ -1975,11 +2501,11 @@
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.histologySubgroup": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -2004,9 +2530,9 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
+                            "element_count": 2,
                             "unexpected_count": 1,
-                            "unexpected_percent": 100.0,
+                            "unexpected_percent": 50.0,
                             "partial_unexpected_list": [
                                 null
                             ],
@@ -2019,8 +2545,8 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.subsite": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
@@ -2029,11 +2555,11 @@
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.subsite": null,
-                                    "patient_id": "TEST001",
-                                    "original_source": "CGM.structured"
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -2058,13 +2584,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -2073,21 +2604,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.diagnosisCode": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.diagnosisCode": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.diagnosisCode": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.diagnosisCode": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -2112,13 +2654,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -2127,21 +2674,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.tumorSize": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.tumorSize": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.tumorSize": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.tumorSize": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -2166,13 +2724,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -2181,21 +2744,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.superficialDepth": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.superficialDepth": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.superficialDepth": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.superficialDepth": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -2220,13 +2794,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -2235,21 +2814,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.deepDepth": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.deepDepth": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.deepDepth": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.deepDepth": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -2274,13 +2864,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -2289,21 +2884,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.biopsyMitoticCount": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.biopsyMitoticCount": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.biopsyMitoticCount": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.biopsyMitoticCount": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -2328,13 +2934,18 @@
                             }
                         },
                         "result": {
-                            "element_count": 1,
-                            "unexpected_count": 1,
+                            "element_count": 2,
+                            "unexpected_count": 2,
                             "unexpected_percent": 100.0,
                             "partial_unexpected_list": [
+                                null,
                                 null
                             ],
                             "partial_unexpected_counts": [
+                                {
+                                    "value": null,
+                                    "count": 1
+                                },
                                 {
                                     "value": null,
                                     "count": 1
@@ -2343,21 +2954,32 @@
                             "partial_unexpected_index_list": [
                                 {
                                     "Diagnosis.mitoticIndex": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.mitoticIndex": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
                             "unexpected_list": [
+                                null,
                                 null
                             ],
                             "unexpected_index_list": [
                                 {
                                     "Diagnosis.mitoticIndex": null,
-                                    "patient_id": "TEST001",
+                                    "patient_id": 3.0,
                                     "original_source": "CGM.structured"
+                                },
+                                {
+                                    "Diagnosis.mitoticIndex": null,
+                                    "patient_id": null,
+                                    "original_source": null
                                 }
                             ],
-                            "unexpected_index_query": "df.filter(items=[0], axis=0)"
+                            "unexpected_index_query": "df.filter(items=[0, 1], axis=0)"
                         },
                         "meta": {},
                         "exception_info": {
@@ -2370,23 +2992,23 @@
                 "evaluation_parameters": {},
                 "statistics": {
                     "evaluated_expectations": 46,
-                    "successful_expectations": 6,
-                    "unsuccessful_expectations": 40,
-                    "success_percent": 13.043478260869565
+                    "successful_expectations": 0,
+                    "unsuccessful_expectations": 46,
+                    "success_percent": 0.0
                 },
                 "meta": {
                     "great_expectations_version": "0.18.15",
                     "expectation_suite_name": "non_repeatable_default_suite",
                     "run_id": {
                         "run_name": null,
-                        "run_time": "2026-02-10T10:31:20.106585+00:00"
+                        "run_time": "2026-02-24T08:49:29.157659+00:00"
                     },
                     "batch_spec": {
                         "batch_data": "PandasDataFrame"
                     },
                     "batch_markers": {
-                        "ge_load_time": "20260210T103120.109513Z",
-                        "pandas_data_fingerprint": "8989930d96d94a2d136044af167ca2c3"
+                        "ge_load_time": "20260224T084929.160771Z",
+                        "pandas_data_fingerprint": "771faec5dbe9082eb63e3b2ae4dfa7df"
                     },
                     "active_batch_definition": {
                         "datasource_name": "non_repeatable_validator_checkpoint",
@@ -2394,7 +3016,7 @@
                         "data_asset_name": "non_repeatable_data_asset",
                         "batch_identifiers": {}
                     },
-                    "validation_time": "20260210T103120.115331Z",
+                    "validation_time": "20260224T084929.167751Z",
                     "checkpoint_name": "non_repeatable_checkpoint",
                     "validation_id": null,
                     "checkpoint_id": null
@@ -2414,24 +3036,9 @@
         }
     },
     "checkpoint_config": {
-        "config_version": 1.0,
-        "batch_request": {
-            "datasource_name": "non_repeatable_validator_checkpoint",
-            "data_asset_name": "non_repeatable_data_asset"
-        },
-        "expectation_suite_name": "non_repeatable_default_suite",
-        "template_name": null,
-        "validations": [],
-        "site_names": null,
-        "run_name_template": null,
-        "module_name": "great_expectations.checkpoint",
-        "notify_on": null,
         "default_validation_id": null,
-        "expectation_suite_ge_cloud_id": null,
-        "slack_webhook": null,
-        "name": "non_repeatable_checkpoint",
-        "notify_with": null,
-        "ge_cloud_id": null,
+        "template_name": null,
+        "config_version": 1.0,
         "action_list": [
             {
                 "name": "store_validation_result",
@@ -2452,8 +3059,23 @@
                 }
             }
         ],
+        "module_name": "great_expectations.checkpoint",
+        "class_name": "Checkpoint",
         "evaluation_parameters": {},
-        "profilers": [],
+        "validations": [],
+        "notify_on": null,
+        "expectation_suite_ge_cloud_id": null,
+        "slack_webhook": null,
+        "notify_with": null,
+        "batch_request": {
+            "datasource_name": "non_repeatable_validator_checkpoint",
+            "data_asset_name": "non_repeatable_data_asset"
+        },
+        "name": "non_repeatable_checkpoint",
+        "expectation_suite_name": "non_repeatable_default_suite",
+        "site_names": null,
+        "ge_cloud_id": null,
+        "run_name_template": null,
         "runtime_configuration": {
             "result_format": {
                 "result_format": "COMPLETE",
@@ -2464,7 +3086,7 @@
                 "return_unexpected_index_query": true
             }
         },
-        "class_name": "Checkpoint"
+        "profilers": []
     },
     "success": false
 }

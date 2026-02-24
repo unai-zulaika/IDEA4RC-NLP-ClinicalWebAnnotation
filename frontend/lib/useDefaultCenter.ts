@@ -7,20 +7,20 @@ const FALLBACK = 'INT'
 
 /**
  * Custom hook that persists the selected center to localStorage.
- * SSR-safe: reads from localStorage only after mount.
+ * SSR-safe: reads from localStorage synchronously via lazy initializer.
  */
 export function useDefaultCenter(): [string, (center: string) => void] {
-  const [center, setCenterState] = useState<string>(FALLBACK)
-
-  // Hydrate from localStorage after mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) setCenterState(stored)
-    } catch {
-      // localStorage unavailable (SSR / private browsing)
+  const [center, setCenterState] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY)
+        if (stored) return stored
+      } catch {
+        // localStorage unavailable
+      }
     }
-  }, [])
+    return FALLBACK
+  })
 
   const setCenter = useCallback((newCenter: string) => {
     setCenterState(newCenter)

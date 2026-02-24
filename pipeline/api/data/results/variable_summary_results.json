@@ -2,366 +2,598 @@
     {
         "Variable": "Patient.sex",
         "Description": "Describes biological sex as recorded in the patient's identity document or in the hospital record. In the absence of documentation, the one declared by the patient will be recorded",
-        "Total": 1,
-        "Failed": 0,
+        "Total": 2,
+        "Failed": 1,
         "Passed": 1,
-        "PercentagePass": 100.0
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Patient.race",
         "Description": "Describes race as recorded in  the hospital record, the one declared by the patient,, otherwise, the onerecognized by the observer",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.birthYear",
         "Description": "Year of birth of the patient.",
-        "Total": 1,
-        "Failed": 0,
+        "Total": 2,
+        "Failed": 1,
         "Passed": 1,
-        "PercentagePass": 100.0
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Patient.countryOfResidence",
         "Description": "Country of residence at the time of diagnosis",
-        "Total": 1,
+        "Total": 2,
         "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Passed": 1,
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Patient.smoking",
         "Description": "Describes tobacco smoker habits within the options proposed",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.cigarettesPackYearsSmokedDuringLife",
         "Description": "Calculates pack/ year by multiplying the number of packs of cigarettes smoked per day by the number of years the person has been smoking.\r\n",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.alcohol",
         "Description": "Describes alcohol habits within the options proposed",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.charlsonComorbidityIndex",
         "Description": "Provides the Charlson Comorbidity index for the patient",
-        "Total": 1,
+        "Total": 2,
         "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Passed": 1,
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Patient.noGeneticSyndrome",
         "Description": "If no genetic syndrome was identified for the patient. based on WHO 2020.",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.olliersDisease",
         "Description": "If patient presents Olliers disease",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.maffuciSyndrome",
         "Description": "If patient presents Maffuci syndrome",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.liFraumeniSyndrome",
         "Description": "If patient presents Li-Fraumeni syndrome",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.mccuneAlbrightSyndrome",
         "Description": "If patient presents McCune-Albright syndrome",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.multipleOsteochondromas",
         "Description": "If patient presents Multiple osteochondromas",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.neurofibromatosisType1",
         "Description": "If patient presents Neurofibromatosis type 1",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.rothmundThomsonSyndrome",
         "Description": "If patient presents Rothmund-Thomson syndrome",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.wernerSyndrome",
         "Description": "If patient presents Werner syndrome",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.retinoblastoma",
         "Description": "If patient presents Retinoblastoma",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.pagetDisease",
         "Description": "If patient presents Paget disease",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.otherGeneticSyndrome",
         "Description": "If patient presents Other Genetic syndrome. According to WHO 2020",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.previousMalignantCancerSite",
         "Description": "Describes the site of the malignant tumour reported or assesed before the cancer under study. Any type of of solid and haematological cancer is listed. To obtain the previous malignant cancer refer to the solid tumor (metastatic and non-metastatic)  comorbidity",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Patient.previousCancerTreatment",
         "Description": "Describes the type of treatment performed for the previous cancer",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "PatientFollowUp.patient",
         "Description": "Patient element",
-        "Total": 1,
+        "Total": 2,
         "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Passed": 1,
+        "PercentagePass": 50.0
     },
     {
         "Variable": "PatientFollowUp.statusOfPatientAtLastFollowUp",
         "Description": "Describes the status at last follow-up",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "PatientFollowUp.statusOfDiseaseAtLastFollowUp",
         "Description": "Describes the disease status at the last follow-up. This value is redundant as it could be derived from the disease status in EpisodeEvent. If a Patient has 3 follow-ups, but the disease status (e.g., stable disease) did not change during those, the follow-ups will be grouped into a single one with the last date of the three of them.",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "PatientFollowUp.patientFollowUpDate",
         "Description": "Date of the clinical follow-up",
-        "Total": 1,
+        "Total": 2,
         "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Passed": 1,
+        "PercentagePass": 50.0
     },
     {
         "Variable": "PatientFollowUp.lastContact",
         "Description": "Date of the last contact with the patient, of any kind.",
-        "Total": 1,
+        "Total": 2,
         "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Passed": 1,
+        "PercentagePass": 50.0
     },
     {
         "Variable": "CancerEpisode.patient",
         "Description": "Patient element containing the data regarding the patient followed by the hospital",
-        "Total": 1,
-        "Failed": 0,
+        "Total": 2,
+        "Failed": 1,
         "Passed": 1,
-        "PercentagePass": 100.0
+        "PercentagePass": 50.0
     },
     {
         "Variable": "CancerEpisode.cancerStartDate",
         "Description": "Date when the cancer was detected. Must match the date of the first diagnosis. It works as the \"overarching\" episode",
-        "Total": 1,
-        "Failed": 0,
+        "Total": 2,
+        "Failed": 1,
         "Passed": 1,
-        "PercentagePass": 100.0
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Diagnosis.cancerepisode",
         "Description": "CancerEpisode reference where the diagnosis was performed",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.dateOfDiagnosis",
         "Description": "Date of the procedure performed to obtain the specimen for the histological diagnosis, regardless of the institution that performed it.",
-        "Total": 1,
-        "Failed": 0,
+        "Total": 2,
+        "Failed": 1,
         "Passed": 1,
-        "PercentagePass": 100.0
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Diagnosis.typeOfBiopsy",
         "Description": "Type of biopsy performed to the patient. Information coming from the biopsy data.",
-        "Total": 1,
+        "Total": 2,
         "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Passed": 1,
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Diagnosis.biopsyDoneBy",
         "Description": "Describes the institution where diagnostic procedure was performed. A pseudonym for a hospital. It could be the ID assigned from the original hospital.",
-        "Total": 1,
+        "Total": 2,
         "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Passed": 1,
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Diagnosis.ageAtDiagnosis",
         "Description": "Age of the patient at the time of the diagnosis.",
-        "Total": 1,
-        "Failed": 0,
+        "Total": 2,
+        "Failed": 1,
         "Passed": 1,
-        "PercentagePass": 100.0
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Diagnosis.radiotherapyInducedSarcoma",
         "Description": "radiotherapy induced if the new tumour is in the field or marginal  the anatomical area that received high radiation dose; please specify the interval time from the radiotherapy treatment",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.biopsyGrading",
         "Description": "Grading of the cancer given by the biopsy",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.histologyGroup",
         "Description": "HNC: Describes the histology of primary tumour according to WHO 2017 clasification.",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.site",
         "Description": "Describes the primary tumor site. For head and neck, according to AJCC .",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.histologySubgroup",
         "Description": "Histology subgroup value for the cancer diagnosis.",
-        "Total": 1,
+        "Total": 2,
         "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Passed": 1,
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Diagnosis.subsite",
         "Description": "Topography subsite value for the cancer diagnosis",
-        "Total": 1,
+        "Total": 2,
         "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Passed": 1,
+        "PercentagePass": 50.0
     },
     {
         "Variable": "Diagnosis.diagnosisCode",
         "Description": "Histology/Topography code combination for the cancer diagnosis",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.tumorSize",
         "Description": "Describes the tumor size in CM. (the longest diameter; longest dimension between pre operatory imaging and pathological specimen) cm ",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.superficialDepth",
         "Description": "Provides the superficial depth of the tumour (for upper and lower limbs and superficial trunk)  superficial (superficial tumour is located exclusively above the investing fascia without invasion of the fascia), deep (deep tumour is located beneath or invade the investing fascia). All the others are deep by definition.",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.deepDepth",
         "Description": "Provides the deep depth of the tumour (for upper and lower limbs and superficial trunk)  superficial (superficial tumour is located exclusively above the investing fascia without invasion of the fascia), deep (deep tumour is located beneath or invade the investing fascia). All the others are deep by definition",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.biopsyMitoticCount",
         "Description": "Mitotic count reported from the biopsy (Number/10HPF/1mm2, 50HPF/5mm2). Reported as Number of mitoses per 10 high power fields.",
-        "Total": 1,
-        "Failed": 1,
+        "Total": 2,
+        "Failed": 2,
         "Passed": 0,
         "PercentagePass": 0.0
     },
     {
         "Variable": "Diagnosis.mitoticIndex",
         "Description": "Mitotic index derived from the mitotic count. Information coming from the biopsy and derived. M1 for less than 10HPF, M2 for range 10-20 HPF and M3 for greater than 20 HPF.",
+        "Total": 2,
+        "Failed": 2,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.imagingForPrimarySite",
+        "Description": "Defines whether any imaging study for primary site was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.ctForPrimarySite",
+        "Description": "Defines whether any CT scan for primary site was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.mriForPrimarySite",
+        "Description": "Defines whether any MRI for primary site was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.usForPrimarySite",
+        "Description": "Defines whether any US for primary site was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.otherImagingForPrimarySite",
+        "Description": "Provides any other value for imaging options for primary site",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.imagingForNeck",
+        "Description": "Whether any imaging study for the neck was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.ctForNeck",
+        "Description": "Defines whether any CT scan for neck was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.mriForNeck",
+        "Description": "Defines whether any MRI for neck was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.usForNeck",
+        "Description": "Defines whether any US for neck was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.otherImagingForNeck",
+        "Description": "Provides any other value for imaging options for neck",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.imagingForMetastasis",
+        "Description": "Wherther any imaging study for metastasis was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.ctForMetastasis",
+        "Description": "Defines whether any CT scan for metastasis was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.mriForMetastasis",
+        "Description": "Defines whether any MRI for metastasis was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.usForMetastasis",
+        "Description": "Defines whether any US for metastasis was performed or not",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.otherImagingForMetastasis",
+        "Description": "Provides any other value for imaging options for metastasis",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.localised",
+        "Description": "Describes if there disease is local",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "PathologicalStage.numberOfTumorNodules",
+        "Description": "Indicates the number of tumor nodules in the case the disease is localised",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.locoRegional",
+        "Description": "Indicates if the disease is in a loco-regional extent",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "PathologicalStage.regionalNodalMetastases",
+        "Description": "Describes if regional nodal mestastases happened",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "PathologicalStage.softTissue",
+        "Description": "Describes if site of metastasic disease  is soft tissue",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.distantLymphNode",
+        "Description": "Describes if site of metastasic disease  is dystan lymph node",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.lung",
+        "Description": "Describes if site of metastasic disease  is lung",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.metastasisatbone",
+        "Description": "Describes if site of metastasic disease  is bone",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.liver",
+        "Description": "Describes if site of metastasic disease  is liver",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.pleura",
+        "Description": "Describes if site of metastasic disease  is pleura",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.peritoneum",
+        "Description": "Describes if site of metastasic disease  is peritoneum",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.brain",
+        "Description": "Describes if site of metastasic disease  is brain",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.otherViscera",
+        "Description": "Describes if site of metastasic disease  is other viscera",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "PathologicalStage.unknown",
+        "Description": "Describes if site of metastasic disease  is unknown",
         "Total": 1,
         "Failed": 1,
         "Passed": 0,
@@ -387,17 +619,17 @@
         "Variable": "EpisodeEvent.definedAt",
         "Description": "Whether or not the progression/recurrence or persistent disease  was performed at the registering hospital or another hospital.",
         "Total": 1,
-        "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
     },
     {
         "Variable": "EpisodeEvent.dateOfEpisode",
         "Description": "Start date of progression/recurrence or persistent disease",
         "Total": 1,
-        "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
     },
     {
         "Variable": "Surgery.diagnosisReference",
@@ -419,9 +651,9 @@
         "Variable": "Surgery.surgeryType",
         "Description": "Primary surgery/re-excision (check with unplanned or excisional biopsy)\r\n",
         "Total": 1,
-        "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
     },
     {
         "Variable": "Surgery.dateOfSurgery",
@@ -435,33 +667,33 @@
         "Variable": "Surgery.surgeryIntention",
         "Description": "Palliative: surgery performed with the intent of improving quality of life or relieving symptoms caused by advanced disease.\r\nCurative: surgery performed with the intend of oncologic cure, regardless of its result (R0 / R1/R2)",
         "Total": 1,
-        "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
     },
     {
         "Variable": "Surgery.marginsAfterSurgery",
         "Description": "The R0 (\u201cno residual rumor\u201d) category applies only to cases in which residual tumor cannot be detected by conventional diagnostic methods. A more exact definition would read \u201cno detectable residual tumor.\u201dThis category corresponds to surgical resection for cure.\r\nThe R1 category is reserved exclusively for cases in which residual tumor is found by histologic examination. This category may apply to biopsy sampling of the regional tissue at the site of resection or of a distant site at the time of surgery. It also applies to microscopic examination of the resection margins of the surgical resection specimen by the pathologist.\r\nR2 applies to cases with macroscopically visible residual tumor that is detected either clinically or pathologically.",
         "Total": 1,
-        "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
     },
     {
         "Variable": "Surgery.tumorRupture",
         "Description": "Tumor rupture Yes/No",
         "Total": 1,
-        "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
     },
     {
         "Variable": "Surgery.surgicalSpecimenMitoticCount",
         "Description": "Surgical specimen Mitotic count",
         "Total": 1,
-        "Failed": 1,
-        "Passed": 0,
-        "PercentagePass": 0.0
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
     },
     {
         "Variable": "Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours",
@@ -470,5 +702,261 @@
         "Failed": 1,
         "Passed": 0,
         "PercentagePass": 0.0
+    },
+    {
+        "Variable": "SystemicTreatment.diagnosisReference",
+        "Description": "Diagnosis reference in case the treatment was done for baseline",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "SystemicTreatment.episodeEvent",
+        "Description": "EpisodeEvent element containing the data regarding the patient's cancer",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "SystemicTreatment.systemictreatmentHospital",
+        "Description": "In which hospital was the SystemicTreatment performed",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "SystemicTreatment.typeOfSystemicTreatment",
+        "Description": "Select the type of systemic treatment administered. It is possible to directly select the single treatment as appropriate.",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "SystemicTreatment.chemotherapyInfo",
+        "Description": "Information for chemotherapy",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "SystemicTreatment.startDateSystemicTreatment",
+        "Description": "Specifies when systemic treatment begins",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "SystemicTreatment.endDateSystemicTreatment",
+        "Description": "Specifies when systemic treatment ends",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "SystemicTreatment.numberOfCycles/Administrations",
+        "Description": "clarifies how many times the treatment was administered. A cycle of treatment is a period of treatment followed by a period of rest (no treatment). For example, treatment given for one week followed by three weeks of rest is one cycle of treatment. A cycle can be repeated multiple times.",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "SystemicTreatment.regimen",
+        "Description": "The regimen applied to the patient. If this is not present, or the specific regimen is not listed here, use the DrugsForTreatments entity.",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "SystemicTreatment.reasonForEndOfTreatment",
+        "Description": "Clarifies the reasons why the treatment ended or was interrupted",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "SystemicTreatment.treatmentResponse",
+        "Description": "Measures how well a cancer patient responds to treatment. RECIST criteria should not be applied. The definition of Complete response; Partial response; Stable disease; Progression, should be based on the clinical judgement based on imaging.  Only when setting=neoadiuvant or  palliative",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "Radiotherapy.diagnosisReference",
+        "Description": "Diagnosis reference in case the treatment was done for baseline",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "Radiotherapy.episodeEvent",
+        "Description": "EpisodeEvent element containing the data regarding the patient's cancer",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "Radiotherapy.radiotherapyHospital",
+        "Description": "Whether it was performed at the registering hospital or another hospital.",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "Radiotherapy.intent",
+        "Description": "Radiotherapy intent refers to whether the intention of treatment is to cure the patient or to treat symptoms and palliate",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "Radiotherapy.setting",
+        "Description": "Whether radiotherapy is delivered as the main treatment modality (definitive) or if it is delivered before or after another treatment such as surgery",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "Radiotherapy.totalDoseGy",
+        "Description": "Refers to the total dose delivered to the patient in Gy",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "Radiotherapy.numberOfFractions",
+        "Description": "Refers to the total number of fractions delivered to the patient",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "Radiotherapy.startDate",
+        "Description": "Date when  the first radiation treatment was delivered",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "Radiotherapy.endDate",
+        "Description": "Date when the last radiation treatment ended",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "Radiotherapy.metastaticTreatmentSiteLung",
+        "Description": "Designates which treatment sites were irradiated. Lung Vs Mediastinum Vs Bone Vs soft tissue vs liver Vs other.",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "Radiotherapy.metastaticTreatmentSiteMediastinum",
+        "Description": "Designates which treatment sites were irradiated. Lung Vs Mediastinum Vs Bone Vs soft tissue vs liver Vs other.",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "Radiotherapy.metastaticTreatmentSiteBone",
+        "Description": "Designates which treatment sites were irradiated. Lung Vs Mediastinum Vs Bone Vs soft tissue vs liver Vs other.",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "Radiotherapy.metastaticTreatmentSiteSoftTissue",
+        "Description": "Designates which treatment sites were irradiated. Lung Vs Mediastinum Vs Bone Vs soft tissue vs liver Vs other.",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "Radiotherapy.metastaticTreatmentSiteLiver",
+        "Description": "Designates which treatment sites were irradiated. Lung Vs Mediastinum Vs Bone Vs soft tissue vs liver Vs other.",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "Radiotherapy.rtTreatmentCompletedAsPlanned?",
+        "Description": "Refers to whether patient completed all treatment as planned or if it had to be interrupted due to several reasons including toxicity, a co-morbidity preventing the delivery of radiation (pulmonary embolism, failure to thrive during RT), death due to progression of the cancer or patient decision",
+        "Total": 1,
+        "Failed": 1,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "Radiotherapy.regionalDeepHyperthemia",
+        "Description": "Whether Regional Deep Hyperthemia was applied with the RT (information for Regional Deep Hyperthemia can be found in the specific entity)",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "Radiotherapy.treatmentResponse",
+        "Description": "Clinical treatment response for the radiotherapy",
+        "Total": 1,
+        "Failed": 0,
+        "Passed": 1,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "DrugsForTreatments.systemicTreatment",
+        "Description": "Systemic treatment reference that will apply the drug to the patient. ",
+        "Total": 2,
+        "Failed": 0,
+        "Passed": 2,
+        "PercentagePass": 100.0
+    },
+    {
+        "Variable": "DrugsForTreatments.otherLocalTreatment",
+        "Description": "RegionalDeepHyperthemia reference that will apply the drug to the patient.",
+        "Total": 2,
+        "Failed": 2,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "DrugsForTreatments.isolatedLimbPerfusion",
+        "Description": "Isolated Limb Perfusion reference that will apply the drug to the patient.",
+        "Total": 2,
+        "Failed": 2,
+        "Passed": 0,
+        "PercentagePass": 0.0
+    },
+    {
+        "Variable": "DrugsForTreatments.drug",
+        "Description": "A list of drugs given to a patient for a specific treatment.",
+        "Total": 2,
+        "Failed": 0,
+        "Passed": 2,
+        "PercentagePass": 100.0
     }
 ]

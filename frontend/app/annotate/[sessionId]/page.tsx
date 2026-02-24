@@ -16,12 +16,14 @@ function ManagePromptTypesModal({
   onClose,
   onSave,
   error,
+  center,
 }: {
   session: SessionData
   availablePrompts: PromptInfo[]
   onClose: () => void
   onSave: (reportTypeMapping: Record<string, string[]>) => Promise<void>
   error: string | null
+  center: string
 }) {
   const allPromptTypes = availablePrompts.map((p) => p.prompt_type)
   const [saving, setSaving] = useState(false)
@@ -127,7 +129,7 @@ function ManagePromptTypesModal({
           {reportTypes.length > 0 && (
             <div className="mb-4">
               <PresetSelector
-                center={session.center || ''}
+                center={center}
                 currentMapping={mapping}
                 onLoadPreset={(presetMapping) => {
                   const updated: Record<string, string[]> = { ...mapping }
@@ -1027,6 +1029,7 @@ export default function AnnotatePage() {
         <ManagePromptTypesModal
           session={session}
           availablePrompts={availablePrompts}
+          center={session.center || center}
           onClose={() => setShowPromptTypesModal(false)}
           onSave={async (reportTypeMapping) => {
             try {

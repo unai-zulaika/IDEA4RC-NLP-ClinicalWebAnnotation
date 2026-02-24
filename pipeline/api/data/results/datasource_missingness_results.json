@@ -1,21 +1,21 @@
 [
     {
-        "Datasource": "CGM.structured",
-        "total_variables": 59,
-        "failed_variables": 49,
-        "passed_variables": 10,
-        "complete_variables_percentage": 16.95,
-        "missing_variables_percentage": 83.05,
-        "total_patients": 1,
-        "failed_patients": 1,
+        "Datasource": "CGM.Unstructured",
+        "total_variables": 1,
+        "failed_variables": 1,
+        "passed_variables": 0,
+        "complete_variables_percentage": 0.0,
+        "missing_variables_percentage": 100.0,
+        "total_patients": 0,
+        "failed_patients": 0,
         "passed_patients": 0,
-        "complete_patients_percentage": 0.0,
-        "missing_patients_percentage": 100.0,
-        "total_quality_checks": 59,
-        "failed_quality_checks": 49,
-        "passed_quality_checks": 10,
-        "quality_checks_percentage_passed": 0.0,
-        "quality_checks_percentage_fail": 0.05,
+        "complete_patients_percentage": "not computed",
+        "missing_patients_percentage": "not computed",
+        "total_quality_checks": 2,
+        "failed_quality_checks": 1,
+        "passed_quality_checks": 1,
+        "quality_checks_percentage_passed": 0.01,
+        "quality_checks_percentage_fail": 0.01,
         "dimensions": {
             "Plausibility": {
                 "Passed": 0,
@@ -30,16 +30,192 @@
                 "PercentagePass": "100.0%"
             },
             "Completeness": {
-                "Passed": 10,
-                "Failed": 49,
-                "Total": 59,
-                "PercentagePass": "16.9%"
+                "Passed": 1,
+                "Failed": 1,
+                "Total": 2,
+                "PercentagePass": "50.0%"
             },
             "Total": {
-                "Passed": 10,
-                "Failed": 49,
-                "Total": 59,
-                "PercentagePass": "16.9%"
+                "Passed": 1,
+                "Failed": 1,
+                "Total": 2,
+                "PercentagePass": "50.0%"
+            }
+        }
+    },
+    {
+        "Datasource": "CGM.Unstrucutred",
+        "total_variables": 42,
+        "failed_variables": 11,
+        "passed_variables": 31,
+        "complete_variables_percentage": 73.81,
+        "missing_variables_percentage": 26.19,
+        "total_patients": 1,
+        "failed_patients": 0,
+        "passed_patients": 1,
+        "complete_patients_percentage": 100.0,
+        "missing_patients_percentage": 0.0,
+        "total_quality_checks": 54,
+        "failed_quality_checks": 11,
+        "passed_quality_checks": 43,
+        "quality_checks_percentage_passed": 0.01,
+        "quality_checks_percentage_fail": 0.0,
+        "dimensions": {
+            "Plausibility": {
+                "Passed": 0,
+                "Failed": 0,
+                "Total": 0,
+                "PercentagePass": "100.0%"
+            },
+            "Conformance": {
+                "Passed": 0,
+                "Failed": 0,
+                "Total": 0,
+                "PercentagePass": "100.0%"
+            },
+            "Completeness": {
+                "Passed": 43,
+                "Failed": 11,
+                "Total": 54,
+                "PercentagePass": "79.6%"
+            },
+            "Total": {
+                "Passed": 43,
+                "Failed": 11,
+                "Total": 54,
+                "PercentagePass": "79.6%"
+            }
+        }
+    },
+    {
+        "Datasource": "CGM.structured",
+        "total_variables": 3,
+        "failed_variables": 3,
+        "passed_variables": 0,
+        "complete_variables_percentage": 0.0,
+        "missing_variables_percentage": 100.0,
+        "total_patients": 0,
+        "failed_patients": 0,
+        "passed_patients": 0,
+        "complete_patients_percentage": "not computed",
+        "missing_patients_percentage": "not computed",
+        "total_quality_checks": 6,
+        "failed_quality_checks": 3,
+        "passed_quality_checks": 3,
+        "quality_checks_percentage_passed": 0.01,
+        "quality_checks_percentage_fail": 0.01,
+        "dimensions": {
+            "Plausibility": {
+                "Passed": 0,
+                "Failed": 0,
+                "Total": 0,
+                "PercentagePass": "100.0%"
+            },
+            "Conformance": {
+                "Passed": 0,
+                "Failed": 0,
+                "Total": 0,
+                "PercentagePass": "100.0%"
+            },
+            "Completeness": {
+                "Passed": 3,
+                "Failed": 3,
+                "Total": 6,
+                "PercentagePass": "50.0%"
+            },
+            "Total": {
+                "Passed": 3,
+                "Failed": 3,
+                "Total": 6,
+                "PercentagePass": "50.0%"
+            }
+        }
+    },
+    {
+        "Datasource": "CGM.unstructured/structured",
+        "total_variables": 1,
+        "failed_variables": 0,
+        "passed_variables": 1,
+        "complete_variables_percentage": 100.0,
+        "missing_variables_percentage": 0.0,
+        "total_patients": 1,
+        "failed_patients": 0,
+        "passed_patients": 1,
+        "complete_patients_percentage": 100.0,
+        "missing_patients_percentage": 0.0,
+        "total_quality_checks": 2,
+        "failed_quality_checks": 0,
+        "passed_quality_checks": 2,
+        "quality_checks_percentage_passed": 0.01,
+        "quality_checks_percentage_fail": 0.0,
+        "dimensions": {
+            "Plausibility": {
+                "Passed": 0,
+                "Failed": 0,
+                "Total": 0,
+                "PercentagePass": "100.0%"
+            },
+            "Conformance": {
+                "Passed": 0,
+                "Failed": 0,
+                "Total": 0,
+                "PercentagePass": "100.0%"
+            },
+            "Completeness": {
+                "Passed": 2,
+                "Failed": 0,
+                "Total": 2,
+                "PercentagePass": "100.0%"
+            },
+            "Total": {
+                "Passed": 2,
+                "Failed": 0,
+                "Total": 2,
+                "PercentagePass": "100.0%"
+            }
+        }
+    },
+    {
+        "Datasource": "UNKNOWN_SOURCE",
+        "total_variables": 73,
+        "failed_variables": 73,
+        "passed_variables": 0,
+        "complete_variables_percentage": 0.0,
+        "missing_variables_percentage": 100.0,
+        "total_patients": 2,
+        "failed_patients": 2,
+        "passed_patients": 0,
+        "complete_patients_percentage": 0.0,
+        "missing_patients_percentage": 100.0,
+        "total_quality_checks": 106,
+        "failed_quality_checks": 106,
+        "passed_quality_checks": 0,
+        "quality_checks_percentage_passed": 0.0,
+        "quality_checks_percentage_fail": 0,
+        "dimensions": {
+            "Plausibility": {
+                "Passed": 0,
+                "Failed": 0,
+                "Total": 0,
+                "PercentagePass": "100.0%"
+            },
+            "Conformance": {
+                "Passed": 0,
+                "Failed": 0,
+                "Total": 0,
+                "PercentagePass": "100.0%"
+            },
+            "Completeness": {
+                "Passed": 0,
+                "Failed": 106,
+                "Total": 106,
+                "PercentagePass": "0.0%"
+            },
+            "Total": {
+                "Passed": 0,
+                "Failed": 106,
+                "Total": 106,
+                "PercentagePass": "0.0%"
             }
         }
     }

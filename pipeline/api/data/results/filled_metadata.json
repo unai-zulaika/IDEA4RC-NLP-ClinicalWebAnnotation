@@ -22,10 +22,10 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 100
+          "overall_score": 50
         }
       },
       {
@@ -196,8 +196,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -364,10 +364,10 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 100
+          "overall_score": 50
         }
       },
       {
@@ -526,16 +526,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
+          "n_cases": 2,
           "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -704,8 +704,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -872,8 +872,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -1042,8 +1042,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -1209,8 +1209,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -1371,16 +1371,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
+          "n_cases": 2,
           "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -1544,8 +1544,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -1711,8 +1711,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -1878,8 +1878,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -2045,8 +2045,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -2212,8 +2212,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -2379,8 +2379,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -2546,8 +2546,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -2713,8 +2713,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -2880,8 +2880,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -3047,8 +3047,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -3214,8 +3214,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -3381,8 +3381,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -3548,8 +3548,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -3715,8 +3715,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -3882,8 +3882,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -4049,8 +4049,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -4216,8 +4216,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -4383,8 +4383,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -4550,8 +4550,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -4717,8 +4717,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -4884,8 +4884,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -5051,8 +5051,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -5220,8 +5220,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -5387,8 +5387,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -5556,8 +5556,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -5725,8 +5725,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -5894,8 +5894,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -6063,8 +6063,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -6230,8 +6230,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -6399,8 +6399,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -6568,8 +6568,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -6737,8 +6737,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -6904,8 +6904,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -7073,8 +7073,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -7242,8 +7242,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -7411,8 +7411,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -7580,8 +7580,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -7748,8 +7748,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -7919,8 +7919,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -8081,16 +8081,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
+          "n_cases": 2,
           "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -8262,8 +8262,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -8436,8 +8436,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -8598,16 +8598,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
+          "n_cases": 2,
           "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -8773,8 +8773,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -8940,8 +8940,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -9107,8 +9107,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -9268,16 +9268,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
+          "n_cases": 2,
           "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -9441,8 +9441,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -9608,8 +9608,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -9775,8 +9775,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -9942,8 +9942,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -10110,10 +10110,10 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 100
+          "overall_score": 50
         }
       },
       {
@@ -10278,10 +10278,10 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 100
+          "overall_score": 50
         }
       },
       {
@@ -10446,8 +10446,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -10614,10 +10614,10 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 100
+          "overall_score": 50
         }
       },
       {
@@ -10781,16 +10781,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
+          "n_cases": 2,
           "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -10955,8 +10955,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -11123,10 +11123,10 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 100
+          "overall_score": 50
         }
       },
       {
@@ -11290,8 +11290,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -11458,8 +11458,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -11648,8 +11648,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -11844,8 +11844,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -12233,16 +12233,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
+          "n_cases": 2,
           "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -12529,16 +12529,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
+          "n_cases": 2,
           "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -12703,8 +12703,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -12870,8 +12870,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -13037,8 +13037,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -13207,8 +13207,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -13374,8 +13374,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -13544,8 +13544,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -13715,8 +13715,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -13886,8 +13886,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -14057,8 +14057,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 1,
-          "m_cases": 1,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -20728,8 +20728,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -20895,8 +20895,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -21631,8 +21631,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -21800,8 +21800,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -21992,8 +21992,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -22155,16 +22155,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -22330,8 +22330,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -22493,16 +22493,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -23000,16 +23000,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -23175,8 +23175,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -23344,8 +23344,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -23513,8 +23513,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -23682,8 +23682,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -23851,8 +23851,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -24020,8 +24020,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -24189,8 +24189,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -24358,8 +24358,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -24527,8 +24527,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -24696,8 +24696,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -25200,16 +25200,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
           "n_cases": 1,
-          "m_cases": 1,
+          "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -25368,16 +25368,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
           "n_cases": 1,
-          "m_cases": 1,
+          "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -31262,16 +31262,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
           "n_cases": 1,
-          "m_cases": 1,
+          "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -31768,16 +31768,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
           "n_cases": 1,
-          "m_cases": 1,
+          "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -31942,16 +31942,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
           "n_cases": 1,
-          "m_cases": 1,
+          "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -32114,16 +32114,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
           "n_cases": 1,
-          "m_cases": 1,
+          "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -32283,16 +32283,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
           "n_cases": 1,
-          "m_cases": 1,
+          "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -32621,16 +32621,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
           "n_cases": 1,
-          "m_cases": 1,
+          "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -35833,8 +35833,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -35995,16 +35995,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
+          "n_cases": 1,
           "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -36169,8 +36169,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -36334,16 +36334,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
+          "n_cases": 1,
           "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -36510,8 +36510,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -36681,8 +36681,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -36847,16 +36847,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
+          "n_cases": 1,
           "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -37015,16 +37015,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
+          "n_cases": 1,
           "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -37183,16 +37183,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
+          "n_cases": 1,
           "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -37357,8 +37357,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -37580,8 +37580,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -37747,8 +37747,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -37914,8 +37914,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 1,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -38082,16 +38082,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
+          "n_cases": 1,
           "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -38255,16 +38255,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
+          "n_cases": 1,
           "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -38429,8 +38429,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -38591,16 +38591,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -38765,8 +38765,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -38930,16 +38930,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -39104,16 +39104,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -39285,8 +39285,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -39452,8 +39452,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -39624,16 +39624,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -39792,16 +39792,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -39967,8 +39967,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -40129,16 +40129,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -40304,8 +40304,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -40473,8 +40473,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -40640,8 +40640,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -40807,8 +40807,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -40969,16 +40969,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -41137,16 +41137,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -41310,8 +41310,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -41477,8 +41477,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -41644,8 +41644,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -41811,8 +41811,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -41980,8 +41980,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -42147,8 +42147,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -42317,8 +42317,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -42487,8 +42487,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -42657,8 +42657,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -42827,8 +42827,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -42997,8 +42997,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -43171,8 +43171,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -43332,16 +43332,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -43504,16 +43504,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 1,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 50
         }
       },
       {
@@ -45686,16 +45686,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
+          "n_cases": 2,
           "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {
@@ -45860,8 +45860,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -46028,8 +46028,8 @@
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
-          "m_cases": 0,
+          "n_cases": 2,
+          "m_cases": 2,
           "plausability_score": "Does not apply",
           "overall_score": 0
         }
@@ -46190,16 +46190,16 @@
     "centers": [
       {
         "INT": {
-          "availability_d": false,
+          "availability_d": true,
           "availability_p": false,
           "availability_r": false,
           "years": "2023-2023",
           "datasource_name": "Default",
           "datasource_information": "No description provided.",
-          "n_cases": 0,
+          "n_cases": 2,
           "m_cases": 0,
           "plausability_score": "Does not apply",
-          "overall_score": 0
+          "overall_score": 100
         }
       },
       {

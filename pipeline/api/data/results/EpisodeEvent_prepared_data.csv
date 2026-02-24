@@ -1,2 +1,2 @@
-patient_id,record_id,EpisodeEvent.cancerEpisode,EpisodeEvent.diseaseStatus,EpisodeEvent.definedAt,EpisodeEvent.dateOfEpisode
-TEST001,4,2,32947,,
+patient_id,record_id,EpisodeEvent.cancerEpisode,EpisodeEvent.dateOfEpisode,EpisodeEvent.definedAt,EpisodeEvent.diseaseStatus
+3,5,2,2024-05-23 00:00:00,origin_center,32947

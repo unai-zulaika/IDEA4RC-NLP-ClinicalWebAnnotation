@@ -24,6 +24,7 @@ export default function PresetSelector({
   const [saveDescription, setSaveDescription] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
 
   const loadPresets = async () => {
     try {
@@ -35,7 +36,11 @@ export default function PresetSelector({
   }
 
   useEffect(() => {
-    if (center) loadPresets()
+    if (center) {
+      loadPresets()
+    } else {
+      setPresets([])
+    }
   }, [center])
 
   const handleLoad = () => {
@@ -45,16 +50,37 @@ export default function PresetSelector({
     let mapping = preset.report_type_mapping
     if (reportTypes) {
       const filtered: Record<string, string[]> = {}
+      const matched: string[] = []
+      const skipped: string[] = []
       for (const rt of reportTypes) {
         if (mapping[rt]) {
           filtered[rt] = mapping[rt]
+          matched.push(rt)
+        } else {
+          skipped.push(rt)
         }
       }
+
+      if (matched.length === 0) {
+        setMessage(null)
+        setWarning(`None of this preset's report types match the current session. Preset has: ${Object.keys(mapping).join(', ')}`)
+        setTimeout(() => setWarning(null), 5000)
+        return
+      }
+
       mapping = filtered
+      if (skipped.length > 0) {
+        setMessage(`Loaded "${preset.name}" for ${matched.length} matching type(s). Skipped: ${skipped.join(', ')}`)
+      } else {
+        setMessage(`Loaded preset "${preset.name}"`)
+      }
+    } else {
+      setMessage(`Loaded preset "${preset.name}"`)
     }
+
+    setWarning(null)
     onLoadPreset(mapping)
-    setMessage(`Loaded preset "${preset.name}"`)
-    setTimeout(() => setMessage(null), 3000)
+    setTimeout(() => setMessage(null), 4000)
   }
 
   const handleSave = async () => {
@@ -101,11 +127,18 @@ export default function PresetSelector({
           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="">Select a preset...</option>
-          {presets.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name} ({Object.keys(p.report_type_mapping).length} report types)
-            </option>
-          ))}
+          {presets.map((p) => {
+            const presetRTs = Object.keys(p.report_type_mapping)
+            const matchCount = reportTypes
+              ? reportTypes.filter((rt) => presetRTs.includes(rt)).length
+              : presetRTs.length
+            const totalSessionRTs = reportTypes?.length ?? presetRTs.length
+            return (
+              <option key={p.id} value={p.id}>
+                {p.name} ({matchCount}/{totalSessionRTs} types match)
+              </option>
+            )
+          })}
         </select>
         <button
           type="button"
@@ -145,10 +178,15 @@ export default function PresetSelector({
         </div>
       )}
 
-      {/* Feedback message */}
+      {/* Feedback messages */}
       {message && (
         <div className="mt-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">
           {message}
+        </div>
+      )}
+      {warning && (
+        <div className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+          {warning}
         </div>
       )}
     </div>

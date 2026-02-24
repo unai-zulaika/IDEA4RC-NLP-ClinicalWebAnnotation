@@ -1,3 +1,3 @@
-patient_id,record_id,DrugsForTreatments.drug,DrugsForTreatments.systemicTreatment,DrugsForTreatments.otherLocalTreatment,DrugsForTreatments.isolatedLimbPerfusion
+patient_id,record_id,DrugsForTreatments.drug,DrugsForTreatments.systemicTreatment,DrugsForTreatments.isolatedLimbPerfusion,DrugsForTreatments.otherLocalTreatment
 3,10,21603732,8,,
 3,11,21601394,8,,

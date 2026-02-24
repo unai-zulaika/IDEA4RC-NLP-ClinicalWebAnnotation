@@ -1,70 +1,131 @@
-Variable,Importance,First phase,MissingPercent,TEST001
-MissingPercentPerPatient,,,,83.05
-Total High at diagnosis,High,,75.61,75.61
-Total High at progression,High,,0.0,0.0
-Total High at recurrence,High,,0.0,0.0
-Total Medium at diagnosis,Medium,,100.0,100.0
-Total Medium at progression,Medium,,0.0,0.0
-Total Medium at recurrence,Medium,,0.0,0.0
-Total Low at diagnosis,Low,,100.0,100.0
-Total Low at progression,Low,,0.0,0.0
-Total Low at recurrence,Low,,0.0,0.0
-Patient.sex,High,Diagnosis,0.0,
-Patient.race,Low,Diagnosis,100.0,Missing
-Patient.birthYear,High,Diagnosis,0.0,
-Patient.countryOfResidence,Low,Diagnosis,100.0,Missing
-Patient.smoking,Low,Diagnosis,100.0,Missing
-Patient.cigarettesPackYearsSmokedDuringLife,Low,Diagnosis,100.0,Missing
-Patient.alcohol,Low,Diagnosis,100.0,Missing
-Patient.charlsonComorbidityIndex,Medium,Diagnosis,100.0,Missing
-Patient.noGeneticSyndrome,High,Diagnosis,100.0,Missing
-Patient.olliersDisease,High,Diagnosis,100.0,Missing
-Patient.maffuciSyndrome,High,Diagnosis,100.0,Missing
-Patient.liFraumeniSyndrome,High,Diagnosis,100.0,Missing
-Patient.mccuneAlbrightSyndrome,High,Diagnosis,100.0,Missing
-Patient.multipleOsteochondromas,High,Diagnosis,100.0,Missing
-Patient.neurofibromatosisType1,High,Diagnosis,100.0,Missing
-Patient.rothmundThomsonSyndrome,High,Diagnosis,100.0,Missing
-Patient.wernerSyndrome,High,Diagnosis,100.0,Missing
-Patient.retinoblastoma,High,Diagnosis,100.0,Missing
-Patient.pagetDisease,High,Diagnosis,100.0,Missing
-Patient.otherGeneticSyndrome,High,Diagnosis,100.0,Missing
-Patient.previousMalignantCancerSite,Medium,Diagnosis,100.0,Missing
-Patient.previousCancerTreatment,Medium,Diagnosis,100.0,Missing
-CancerEpisode.patient,High,Diagnosis,0.0,
-CancerEpisode.cancerStartDate,High,Diagnosis,0.0,
-Diagnosis.cancerepisode,High,Diagnosis,100.0,Missing
-Diagnosis.dateOfDiagnosis,High,Diagnosis,0.0,
-Diagnosis.typeOfBiopsy,High,Diagnosis,100.0,Missing
-Diagnosis.biopsyDoneBy,Low,Diagnosis,100.0,Missing
-Diagnosis.ageAtDiagnosis,High,Diagnosis,0.0,
-Diagnosis.radiotherapyInducedSarcoma,Low,Diagnosis,100.0,Missing
-Diagnosis.biopsyGrading,Low,Diagnosis,100.0,Missing
-Diagnosis.histologyGroup,Low,Diagnosis,100.0,Missing
-Diagnosis.site,Low,Diagnosis,100.0,Missing
-Diagnosis.histologySubgroup,High,Diagnosis,100.0,Missing
-Diagnosis.subsite,High,Diagnosis,100.0,Missing
-Diagnosis.diagnosisCode,High,Diagnosis,100.0,Missing
-Diagnosis.tumorSize,High,Diagnosis,100.0,Missing
-Diagnosis.superficialDepth,High,Diagnosis,100.0,Missing
-Diagnosis.deepDepth,High,Diagnosis,100.0,Missing
-Diagnosis.biopsyMitoticCount,Low,Diagnosis,100.0,Missing
-Diagnosis.mitoticIndex,Low,Diagnosis,100.0,Missing
-EpisodeEvent.cancerEpisode,High,Diagnosis,0.0,
-EpisodeEvent.diseaseStatus,High,Diagnosis,0.0,
-EpisodeEvent.definedAt,Low,Diagnosis,100.0,Missing
-EpisodeEvent.dateOfEpisode,High,Diagnosis,100.0,Missing
-Surgery.diagnosisReference,High,Diagnosis,100.0,Missing
-Surgery.episodeEvent,High,Diagnosis,0.0,
-Surgery.surgeryType,High,Diagnosis,100.0,Missing
-Surgery.dateOfSurgery,High,Diagnosis,0.0,
-Surgery.surgeryIntention,Low,Diagnosis,100.0,Missing
-Surgery.marginsAfterSurgery,High,Diagnosis,100.0,Missing
-Surgery.tumorRupture,High,Diagnosis,100.0,Missing
-Surgery.surgicalSpecimenMitoticCount,Low,Diagnosis,100.0,Missing
-Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours,High,Diagnosis,100.0,Missing
-PatientFollowUp.patient,High,,100.0,Missing
-PatientFollowUp.statusOfPatientAtLastFollowUp,High,,100.0,Missing
-PatientFollowUp.statusOfDiseaseAtLastFollowUp,High,,100.0,Missing
-PatientFollowUp.patientFollowUpDate,High,,100.0,Missing
-PatientFollowUp.lastContact,High,,100.0,Missing
+Variable,Importance,First phase,MissingPercent,3,nan
+MissingPercentPerPatient,,,,35.0,38.33
+Total High at diagnosis,High,,7.46,14.93,0.0
+Total High at progression,High,,0.0,0.0,0.0
+Total High at recurrence,High,,0.0,0.0,0.0
+Total Medium at diagnosis,Medium,,43.75,87.5,0.0
+Total Medium at progression,Medium,,0.0,0.0,0.0
+Total Medium at recurrence,Medium,,0.0,0.0,0.0
+Total Low at diagnosis,Low,,9.53,19.05,0.0
+Total Low at progression,Low,,0.0,0.0,0.0
+Total Low at recurrence,Low,,0.0,0.0,0.0
+Patient.sex,High,Diagnosis,50.0,,Missing
+Patient.race,Low,Diagnosis,50.0,,Missing
+Patient.birthYear,High,Diagnosis,50.0,,Missing
+Patient.countryOfResidence,Low,Diagnosis,50.0,,Missing
+Patient.smoking,Low,Diagnosis,50.0,,Missing
+Patient.cigarettesPackYearsSmokedDuringLife,Low,Diagnosis,50.0,,Missing
+Patient.alcohol,Low,Diagnosis,50.0,,Missing
+Patient.charlsonComorbidityIndex,Medium,Diagnosis,50.0,,Missing
+Patient.noGeneticSyndrome,High,Diagnosis,50.0,,Missing
+Patient.olliersDisease,High,Diagnosis,50.0,,Missing
+Patient.maffuciSyndrome,High,Diagnosis,50.0,,Missing
+Patient.liFraumeniSyndrome,High,Diagnosis,50.0,,Missing
+Patient.mccuneAlbrightSyndrome,High,Diagnosis,50.0,,Missing
+Patient.multipleOsteochondromas,High,Diagnosis,50.0,,Missing
+Patient.neurofibromatosisType1,High,Diagnosis,50.0,,Missing
+Patient.rothmundThomsonSyndrome,High,Diagnosis,50.0,,Missing
+Patient.wernerSyndrome,High,Diagnosis,50.0,,Missing
+Patient.retinoblastoma,High,Diagnosis,50.0,,Missing
+Patient.pagetDisease,High,Diagnosis,50.0,,Missing
+Patient.otherGeneticSyndrome,High,Diagnosis,50.0,,Missing
+Patient.previousMalignantCancerSite,Medium,Diagnosis,50.0,,Missing
+Patient.previousCancerTreatment,Medium,Diagnosis,50.0,,Missing
+CancerEpisode.patient,High,Diagnosis,50.0,,Missing
+CancerEpisode.cancerStartDate,High,Diagnosis,50.0,,Missing
+Diagnosis.cancerepisode,High,Diagnosis,50.0,,Missing
+Diagnosis.dateOfDiagnosis,High,Diagnosis,50.0,,Missing
+Diagnosis.typeOfBiopsy,High,Diagnosis,50.0,,Missing
+Diagnosis.biopsyDoneBy,Low,Diagnosis,50.0,,Missing
+Diagnosis.ageAtDiagnosis,High,Diagnosis,50.0,,Missing
+Diagnosis.radiotherapyInducedSarcoma,Low,Diagnosis,50.0,,Missing
+Diagnosis.biopsyGrading,Low,Diagnosis,50.0,,Missing
+Diagnosis.histologyGroup,Low,Diagnosis,50.0,,Missing
+Diagnosis.site,Low,Diagnosis,50.0,,Missing
+Diagnosis.histologySubgroup,High,Diagnosis,50.0,,Missing
+Diagnosis.subsite,High,Diagnosis,50.0,,Missing
+Diagnosis.diagnosisCode,High,Diagnosis,50.0,,Missing
+Diagnosis.tumorSize,High,Diagnosis,50.0,,Missing
+Diagnosis.superficialDepth,High,Diagnosis,50.0,,Missing
+Diagnosis.deepDepth,High,Diagnosis,50.0,,Missing
+Diagnosis.biopsyMitoticCount,Low,Diagnosis,50.0,,Missing
+Diagnosis.mitoticIndex,Low,Diagnosis,50.0,,Missing
+PathologicalStage.imagingForPrimarySite,High,Diagnosis,50.0,Missing,Not present
+PathologicalStage.ctForPrimarySite,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.mriForPrimarySite,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.usForPrimarySite,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.otherImagingForPrimarySite,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.imagingForNeck,High,Diagnosis,50.0,Missing,Not present
+PathologicalStage.ctForNeck,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.mriForNeck,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.usForNeck,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.otherImagingForNeck,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.imagingForMetastasis,High,Diagnosis,50.0,Missing,Not present
+PathologicalStage.ctForMetastasis,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.mriForMetastasis,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.usForMetastasis,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.otherImagingForMetastasis,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.localised,High,Diagnosis,0.0,,Not present
+PathologicalStage.numberOfTumorNodules,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.locoRegional,High,Diagnosis,0.0,,Not present
+PathologicalStage.regionalNodalMetastases,High,Diagnosis,0.0,,Not present
+PathologicalStage.softTissue,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.distantLymphNode,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.lung,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.metastasisatbone,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.liver,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.pleura,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.peritoneum,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.brain,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.otherViscera,Medium,Diagnosis,50.0,Missing,Not present
+PathologicalStage.unknown,Medium,Diagnosis,50.0,Missing,Not present
+EpisodeEvent.cancerEpisode,High,Diagnosis,0.0,,Not present
+EpisodeEvent.diseaseStatus,High,Diagnosis,0.0,,Not present
+EpisodeEvent.definedAt,Low,Diagnosis,0.0,,Not present
+EpisodeEvent.dateOfEpisode,High,Diagnosis,0.0,,Not present
+Surgery.diagnosisReference,High,Diagnosis,50.0,Missing,Not present
+Surgery.episodeEvent,High,Diagnosis,0.0,,Not present
+Surgery.surgeryType,High,Diagnosis,0.0,,Not present
+Surgery.dateOfSurgery,High,Diagnosis,0.0,,Not present
+Surgery.surgeryIntention,Low,Diagnosis,0.0,,Not present
+Surgery.marginsAfterSurgery,High,Diagnosis,0.0,,Not present
+Surgery.tumorRupture,High,Diagnosis,0.0,,Not present
+Surgery.surgicalSpecimenMitoticCount,Low,Diagnosis,0.0,,Not present
+Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours,High,Diagnosis,50.0,Missing,Not present
+Radiotherapy.episodeEvent,High,Diagnosis,0.0,,Not present
+Radiotherapy.radiotherapyHospital,Low,Diagnosis,50.0,Missing,Not present
+Radiotherapy.intent,High,Diagnosis,0.0,,Not present
+Radiotherapy.setting,High,Diagnosis,0.0,,Not present
+Radiotherapy.totalDoseGy,High,Diagnosis,0.0,,Not present
+Radiotherapy.numberOfFractions,High,Diagnosis,0.0,,Not present
+Radiotherapy.startDate,High,Diagnosis,0.0,,Not present
+Radiotherapy.endDate,High,Diagnosis,0.0,,Not present
+Radiotherapy.metastaticTreatmentSiteLung,Medium,Diagnosis,50.0,Missing,Not present
+Radiotherapy.metastaticTreatmentSiteMediastinum,Medium,Diagnosis,50.0,Missing,Not present
+Radiotherapy.metastaticTreatmentSiteBone,Medium,Diagnosis,50.0,Missing,Not present
+Radiotherapy.metastaticTreatmentSiteSoftTissue,Medium,Diagnosis,50.0,Missing,Not present
+Radiotherapy.metastaticTreatmentSiteLiver,Medium,Diagnosis,50.0,Missing,Not present
+Radiotherapy.rtTreatmentCompletedAsPlanned?,High,Diagnosis,50.0,Missing,Not present
+Radiotherapy.regionalDeepHyperthemia,High,Diagnosis,0.0,,Not present
+Radiotherapy.treatmentResponse,Medium,Diagnosis,0.0,,Not present
+Radiotherapy.diagnosisReference,High,Diagnosis,50.0,Missing,Not present
+SystemicTreatment.diagnosisReference,High,Diagnosis,50.0,Missing,Not present
+SystemicTreatment.episodeEvent,High,Diagnosis,0.0,,Not present
+SystemicTreatment.systemictreatmentHospital,Low,Diagnosis,50.0,Missing,Not present
+SystemicTreatment.typeOfSystemicTreatment,High,Diagnosis,0.0,,Not present
+SystemicTreatment.chemotherapyInfo,Low,Diagnosis,0.0,,Not present
+SystemicTreatment.startDateSystemicTreatment,High,Diagnosis,0.0,,Not present
+SystemicTreatment.endDateSystemicTreatment,High,Diagnosis,0.0,,Not present
+SystemicTreatment.numberOfCycles/Administrations,Low,Diagnosis,50.0,Missing,Not present
+SystemicTreatment.regimen,Low,Diagnosis,50.0,Missing,Not present
+SystemicTreatment.reasonForEndOfTreatment,Low,Diagnosis,0.0,,Not present
+SystemicTreatment.treatmentResponse,High,Diagnosis,0.0,,Not present
+PatientFollowUp.patient,High,Diagnosis,50.0,,Missing
+PatientFollowUp.statusOfPatientAtLastFollowUp,High,Diagnosis,50.0,,Missing
+PatientFollowUp.statusOfDiseaseAtLastFollowUp,High,Diagnosis,50.0,,Missing
+PatientFollowUp.patientFollowUpDate,High,Diagnosis,50.0,,Missing
+PatientFollowUp.lastContact,High,Diagnosis,50.0,,Missing
+DrugsForTreatments.systemicTreatment,High,Diagnosis,0.0,,Not present
+DrugsForTreatments.otherLocalTreatment,High,Diagnosis,50.0,Missing,Not present
+DrugsForTreatments.isolatedLimbPerfusion,High,Diagnosis,50.0,Missing,Not present
+DrugsForTreatments.drug,High,Diagnosis,0.0,,Not present

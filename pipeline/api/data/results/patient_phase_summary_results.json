@@ -1,10 +1,18 @@
 [
     {
-        "PatientID": "TEST001",
+        "PatientID": "3",
         "Phase": "Diagnosis",
-        "Present": 10,
+        "Present": 49,
         "Missing": 0,
-        "Total": 10,
+        "Total": 49,
         "MissingPercent": 0.0
+    },
+    {
+        "PatientID": NaN,
+        "Phase": NaN,
+        "Present": 0,
+        "Missing": 3,
+        "Total": 3,
+        "MissingPercent": 100.0
     }
 ]

@@ -1,9 +1,9 @@
 [
     {
         "Phase": "Diagnosis",
-        "Total": 10,
+        "Total": 49,
         "Missing": 0,
-        "Present": 10,
+        "Present": 49,
         "MissingPercent_Variable": 0.0,
         "MissingPercent_Patient": 0.0
     },

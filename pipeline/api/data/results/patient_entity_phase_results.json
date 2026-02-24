@@ -1,16 +1,25 @@
 [
     {
-        "PatientID": "TEST001",
+        "PatientID": "3",
         "Entity": "Patient1",
         "Phase": "Diagnosis",
-        "Total": 2,
-        "Present": 2,
+        "Total": 5,
+        "Present": 5,
         "Missing": [],
         "Complete": true
     },
     {
-        "PatientID": "TEST001",
-        "Entity": "CancerEpisode2",
+        "PatientID": "3",
+        "Entity": "PatientFollowUp2",
+        "Phase": "Diagnosis",
+        "Total": 4,
+        "Present": 4,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "3",
+        "Entity": "CancerEpisode13",
         "Phase": "Diagnosis",
         "Total": 2,
         "Present": 2,
@@ -18,8 +27,26 @@
         "Complete": true
     },
     {
-        "PatientID": "TEST001",
+        "PatientID": "3",
         "Entity": "Diagnosis3",
+        "Phase": "Diagnosis",
+        "Total": 8,
+        "Present": 8,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "3",
+        "Entity": "EpisodeEvent5",
+        "Phase": "Diagnosis",
+        "Total": 4,
+        "Present": 4,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "3",
+        "Entity": "PathologicalStage6",
         "Phase": "Diagnosis",
         "Total": 3,
         "Present": 3,
@@ -27,8 +54,35 @@
         "Complete": true
     },
     {
-        "PatientID": "TEST001",
-        "Entity": "EpisodeEvent4",
+        "PatientID": "3",
+        "Entity": "Surgery7",
+        "Phase": "Diagnosis",
+        "Total": 8,
+        "Present": 8,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "3",
+        "Entity": "SystemicTreatment8",
+        "Phase": "Diagnosis",
+        "Total": 8,
+        "Present": 8,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "3",
+        "Entity": "Radiotherapy9",
+        "Phase": "Diagnosis",
+        "Total": 15,
+        "Present": 15,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "3",
+        "Entity": "DrugsForTreatments10",
         "Phase": "Diagnosis",
         "Total": 2,
         "Present": 2,
@@ -36,11 +90,20 @@
         "Complete": true
     },
     {
-        "PatientID": "TEST001",
-        "Entity": "Surgery5",
+        "PatientID": "3",
+        "Entity": "DrugsForTreatments11",
         "Phase": "Diagnosis",
         "Total": 2,
         "Present": 2,
+        "Missing": [],
+        "Complete": true
+    },
+    {
+        "PatientID": "3",
+        "Entity": "TreatmentResponse12",
+        "Phase": "Diagnosis",
+        "Total": 3,
+        "Present": 3,
         "Missing": [],
         "Complete": true
     }
