@@ -1,3 +1,7 @@
+small_testing_data/
+backend/data/presets/*
+pipeline/api/data/results/*
+
 data/diagnosis_codes/diagnosis-codes-list.csv
 test_data/
 
