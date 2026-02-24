@@ -5,13 +5,20 @@ Annotation processing routes
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Dict, Any, Optional
 from pathlib import Path
+import asyncio
+import os
 import sys
 import time
 import re
 
 # Import from local modules
 from services.vllm_client import get_vllm_client
+from lib.timing import TimingBreakdown
 from typing import Tuple
+
+# Configurable concurrency for parallel vLLM calls
+VLLM_CONCURRENCY = int(os.environ.get("VLLM_CONCURRENCY", "8"))
+_vllm_semaphore = asyncio.Semaphore(VLLM_CONCURRENCY)
 
 try:
     from lib.fewshot_builder import FewshotBuilder, map_annotation_to_prompt
@@ -427,16 +434,302 @@ def _parse_annotation_values(annotation_text: str, note_text: str, prompt_type: 
     return values
 
 
+# Pre-compiled regex patterns used in prompt processing
+_RE_UNUSED_TOKEN = re.compile(r'^<unused\d+>\w+\s*', re.IGNORECASE)
+_RE_REASONING_PREFIX = re.compile(
+    r'^(The user wants me to|I need to|They have provided).*?\.\s*',
+    re.IGNORECASE | re.DOTALL
+)
+_RE_ANNOTATION_PREFIX = re.compile(r'^\s*annotation\s*:\s*', re.IGNORECASE)
+
+
+async def _process_single_prompt(
+    prompt_type: str,
+    note_text: str,
+    csv_date: Optional[str],
+    vllm_client: Any,
+    use_structured: bool,
+    request_use_fewshots: bool,
+    request_fewshot_k: int,
+    evaluation_mode: str = "validation",
+    session_data: Optional[Dict] = None,
+    note_id: Optional[str] = None,
+) -> AnnotationResult:
+    """
+    Process a single prompt type for a note, with timing instrumentation.
+    Designed to run concurrently via asyncio.gather.
+    """
+    timer = TimingBreakdown()
+    timer.start_total()
+
+    try:
+        # --- Fewshot retrieval ---
+        with timer.measure("fewshot_retrieval"):
+            if request_use_fewshots:
+                fewshot_examples = _get_fewshot_examples(
+                    prompt_type, note_text, k=request_fewshot_k
+                )
+            else:
+                fewshot_examples = []
+
+        # --- Prompt building ---
+        with timer.measure("prompt_building"):
+            prompt = _get_prompt(
+                task_key=prompt_type,
+                fewshots=fewshot_examples,
+                note_text=note_text,
+                csv_date=csv_date
+            )
+            raw_prompt = prompt
+            template = _PROMPTS[prompt_type]["template"]
+            is_simple = _is_simple_prompt(template)
+
+        # --- vLLM inference (dominant cost) ---
+        raw_response = None
+        with timer.measure("vllm_inference"):
+            async with _vllm_semaphore:
+                if is_simple:
+                    output = await vllm_client.agenerate(
+                        prompt=prompt, max_new_tokens=512,
+                        temperature=0.0, return_logprobs=False
+                    )
+                    raw_output = output.get("raw", output.get("normalized", ""))
+                    raw_response = raw_output
+                elif use_structured:
+                    try:
+                        from services.structured_generator import generate_structured_annotation
+                        structured_ann, raw_response = generate_structured_annotation(
+                            prompt=prompt,
+                            vllm_endpoint=vllm_client.config["vllm_endpoint"],
+                            model_name=vllm_client.config["model_name"],
+                            csv_date=csv_date,
+                            max_new_tokens=1024,
+                            temperature=0.0
+                        )
+                    except Exception:
+                        # Outlines not available — fall through to fallback below
+                        use_structured = False
+
+                if not is_simple and not use_structured:
+                    output = await vllm_client.agenerate(
+                        prompt=prompt, max_new_tokens=512,
+                        temperature=0.0, return_logprobs=False
+                    )
+                    raw_output = output.get("raw", output.get("normalized", ""))
+                    raw_response = raw_output
+
+        # --- Post-processing ---
+        with timer.measure("post_processing"):
+            from lib.annotation_normalizer import normalize_annotation_output
+            from models.annotation_models import StructuredAnnotation as SA
+            from services.structured_generator import generate_structured_annotation_fallback
+
+            if is_simple:
+                cleaned_output = raw_output.strip()
+                cleaned_output = _RE_UNUSED_TOKEN.sub('', cleaned_output)
+                cleaned_output = _RE_REASONING_PREFIX.sub('', cleaned_output)
+                cleaned_output = cleaned_output.strip()
+                if not cleaned_output or len(cleaned_output) < 5:
+                    cleaned_output = raw_output.strip()
+                structured_ann = SA(
+                    evidence="",
+                    reasoning="Simple completion prompt - no structured parsing applied",
+                    final_output=cleaned_output,
+                    is_negated=False,
+                    date=None
+                )
+            elif use_structured:
+                # structured_ann was already set by generate_structured_annotation
+                pass
+            else:
+                # Fallback parsing from raw LLM output
+                structured_ann = generate_structured_annotation_fallback(
+                    prompt=prompt, raw_output=raw_output, csv_date=csv_date
+                )
+
+            annotation_text = normalize_annotation_output(
+                structured_ann.final_output,
+                prompt_type=prompt_type,
+                normalize_absence=True
+            )
+            if not is_simple and not use_structured:
+                annotation_text = _RE_ANNOTATION_PREFIX.sub('', annotation_text).strip()
+
+            reasoning = structured_ann.reasoning
+            evidence = structured_ann.evidence
+            is_negated = structured_ann.is_negated
+            date_info = structured_ann.date
+
+            evidence_spans = _extract_evidence_spans(note_text, evidence, prompt_type)
+            values = _parse_annotation_values(annotation_text, note_text, prompt_type)
+
+        # --- ICD-O-3 extraction ---
+        icdo3_code_info = None
+        with timer.measure("icdo3_extraction"):
+            try:
+                from lib.icdo3_extractor import extract_icdo3_from_text, is_histology_or_site_prompt
+                if is_histology_or_site_prompt(prompt_type):
+                    icdo3_code_info = extract_icdo3_from_text(
+                        annotation_text, prompt_type,
+                        note_text=note_text, vllm_client=vllm_client
+                    )
+                    if icdo3_code_info:
+                        from models.schemas import ICDO3CodeInfo
+                        if isinstance(icdo3_code_info, dict):
+                            icdo3_code_info = ICDO3CodeInfo(**icdo3_code_info)
+            except Exception as e:
+                print(f"[ERROR] Failed to extract ICD-O-3 code for {prompt_type}: {e}")
+
+        # --- Evaluation ---
+        evaluation_result = None
+        with timer.measure("evaluation"):
+            if evaluation_mode == "evaluation" and EVALUATION_SERVICE_AVAILABLE and session_data and note_id:
+                try:
+                    expected_annotation = None
+                    for note in session_data.get("notes", []):
+                        if note.get("note_id") == note_id:
+                            annotations_str = note.get("annotations")
+                            if annotations_str:
+                                parts = str(annotations_str).split('|')
+                                for part in parts:
+                                    part = part.strip()
+                                    if ':' in part:
+                                        key_part, value_part = part.split(':', 1)
+                                        key_part = key_part.strip()
+                                        if prompt_type.lower() in key_part.lower() or key_part.lower() in prompt_type.lower():
+                                            expected_annotation = value_part.strip()
+                                            break
+                                if not expected_annotation:
+                                    pattern = re.compile(rf'{re.escape(prompt_type)}\s*:\s*([^|]+)', re.IGNORECASE | re.DOTALL)
+                                    match = pattern.search(str(annotations_str))
+                                    if match:
+                                        expected_annotation = match.group(1).strip()
+                            break
+
+                    tmpl = None
+                    if prompt_type in _PROMPTS:
+                        prompt_info = _PROMPTS[prompt_type]
+                        tmpl = prompt_info.get("template", "") if isinstance(prompt_info, dict) else prompt_info
+
+                    if tmpl and evaluate_annotation_with_template:
+                        evaluation_result = evaluate_annotation_with_template(
+                            expected=expected_annotation or "",
+                            predicted=annotation_text,
+                            template=tmpl,
+                            note_id=note_id,
+                            prompt_type=prompt_type
+                        )
+                    elif evaluate_annotation_with_special_cases:
+                        evaluation_result = evaluate_annotation_with_special_cases(
+                            expected=expected_annotation or "",
+                            predicted=annotation_text,
+                            note_id=note_id,
+                            prompt_type=prompt_type
+                        )
+                except Exception as e:
+                    print(f"[ERROR] Failed to evaluate annotation: {e}")
+
+        # --- Build result ---
+        # Convert date_info
+        date_info_dict = None
+        if date_info:
+            if hasattr(date_info, 'dict'):
+                date_info_dict = date_info.dict()
+            elif isinstance(date_info, dict):
+                date_info_dict = date_info
+            else:
+                date_info_dict = {
+                    "date_value": getattr(date_info, 'date_value', None),
+                    "source": getattr(date_info, 'source', None),
+                    "csv_date": getattr(date_info, 'csv_date', None)
+                }
+        if not date_info_dict and csv_date:
+            date_info_dict = {
+                "date_value": csv_date,
+                "source": "derived_from_csv",
+                "csv_date": csv_date
+            }
+
+        # Convert ICD-O-3 code
+        icdo3_code_dict = None
+        if icdo3_code_info:
+            if hasattr(icdo3_code_info, 'dict'):
+                icdo3_code_dict = icdo3_code_info.dict()
+            elif isinstance(icdo3_code_info, dict):
+                icdo3_code_dict = icdo3_code_info
+
+        # Determine status
+        status = "success"
+        if annotation_text.startswith("ERROR:"):
+            status = "error"
+        elif reasoning and (reasoning.endswith("...") or len(reasoning) > 900):
+            status = "incomplete"
+        elif not annotation_text or annotation_text.strip() == "":
+            if reasoning:
+                reasoning_lower = reasoning.lower()
+                no_info_indicators = [
+                    "not available", "not mentioned", "not stated", "not provided",
+                    "unknown", "cannot be determined", "cannot be determined from",
+                    "does not state", "does not provide", "does not mention",
+                    "information is not available", "no information", "not found"
+                ]
+                if any(indicator in reasoning_lower for indicator in no_info_indicators):
+                    status = "success"
+                else:
+                    status = "error"
+            else:
+                status = "error"
+
+        return AnnotationResult(
+            prompt_type=prompt_type,
+            annotation_text=annotation_text,
+            values=values,
+            confidence_score=None,
+            evidence_spans=evidence_spans,
+            reasoning=reasoning,
+            is_negated=is_negated,
+            date_info=date_info_dict,
+            evidence_text=evidence,
+            raw_prompt=raw_prompt,
+            raw_response=raw_response if raw_response is not None else "No response generated",
+            status=status,
+            evaluation_result=evaluation_result,
+            icdo3_code=icdo3_code_dict,
+            timing_breakdown=timer.to_dict(),
+        )
+
+    except Exception as e:
+        print(f"[ERROR] Failed to process {prompt_type}: {e}")
+        import traceback
+        traceback.print_exc()
+        return AnnotationResult(
+            prompt_type=prompt_type,
+            annotation_text=f"ERROR: {str(e)}",
+            values=[],
+            evidence_spans=[],
+            reasoning=None,
+            is_negated=None,
+            date_info=None,
+            evidence_text=None,
+            raw_prompt=prompt if 'prompt' in locals() else "Prompt not available",
+            raw_response=raw_response if 'raw_response' in locals() and raw_response else f"Error occurred: {str(e)}",
+            status="error",
+            timing_breakdown=timer.to_dict(),
+        )
+
+
 @router.post("/process", response_model=ProcessNoteResponse)
 async def process_note(request: ProcessNoteRequest, session_id: str, note_text: str):
-    """Process a single note with selected prompts using structured generation"""
+    """Process a single note with selected prompts using parallel structured generation"""
     _ensure_prompts_loaded()
-    
+    total_timer = TimingBreakdown()
+    total_timer.start_total()
+
     # Get vLLM client
     vllm_client = get_vllm_client()
     if not vllm_client.is_available():
         raise HTTPException(status_code=503, detail="VLLM server not available")
-    
+
     # Get CSV date and session info (including evaluation mode) from session
     csv_date = None
     session_data = None
@@ -453,7 +746,6 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
             session_data = sessions_module._load_session(session_id)
             evaluation_mode = session_data.get("evaluation_mode", "validation")
             report_type_mapping = session_data.get("report_type_mapping")
-            # Find the note in session to get its date, report_type, and annotations
             for note in session_data.get("notes", []):
                 if note.get("note_id") == request.note_id:
                     csv_date = note.get("date")
@@ -461,423 +753,71 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
                     break
     except Exception as e:
         print(f"[WARN] Could not load session: {e}")
-    
-    start_time = time.time()
-    note_annotations = []
-    
+
     # Filter prompt types based on report_type_mapping if available
     prompt_types_to_process = request.prompt_types
     if report_type_mapping and report_type:
-        # Get allowed prompt types for this report type
         allowed_prompt_types = report_type_mapping.get(report_type, [])
         if allowed_prompt_types:
-            # Filter to only process prompts that are allowed for this report type
             prompt_types_to_process = [pt for pt in request.prompt_types if pt in allowed_prompt_types]
             print(f"[INFO] Filtered prompts for report_type '{report_type}': {len(prompt_types_to_process)}/{len(request.prompt_types)} prompts will be processed")
         else:
-            # If no mapping exists for this report type, don't process any prompts
             print(f"[INFO] No prompt types mapped for report_type '{report_type}', skipping all prompts")
             prompt_types_to_process = []
-    
-    # Try to use structured generation with Outlines
+
+    # Check structured generation availability
     try:
-        from services.structured_generator import (
-            generate_structured_annotation,
-            generate_structured_annotation_fallback,
-            OUTLINES_AVAILABLE
-        )
+        from services.structured_generator import OUTLINES_AVAILABLE
         use_structured = OUTLINES_AVAILABLE
     except ImportError:
         use_structured = False
-        print("[WARN] Structured generation not available, using fallback")
-    
-    # Process each prompt type
-    for prompt_type in prompt_types_to_process:
-        try:
-            # Get fewshot examples
-            if request.use_fewshots:
-                fewshot_examples = _get_fewshot_examples(
-                    prompt_type,
-                    note_text,
-                    k=request.fewshot_k
-                )
-            else:
-                fewshot_examples = []
-            
-            # Build prompt (now includes JSON format instructions)
-            prompt = _get_prompt(
-                task_key=prompt_type,
-                fewshots=fewshot_examples,
-                note_text=note_text,
-                csv_date=csv_date
-            )
-            
-            # Always store the raw prompt for debugging
-            raw_prompt = prompt
-            print(f"[DEBUG] Prompt for {prompt_type} (length: {len(prompt)}): {prompt[:300]}...")
-            
-            # Check if this is a simple prompt (no structured output needed)
-            template = _PROMPTS[prompt_type]["template"]
-            is_simple = _is_simple_prompt(template)
-            
-            # Generate structured annotation
-            raw_response = None
-            if is_simple:
-                # For simple prompts, just get raw output without structured parsing
-                output = vllm_client.generate(
-                    prompt=prompt,
-                    max_new_tokens=512,
-                    temperature=0.0,  # Deterministic output
-                    return_logprobs=False
-                )
-                # Use "raw" output, not "normalized" (normalized only takes first line)
-                raw_output = output.get("raw", output.get("normalized", ""))
-                raw_response = raw_output
-                print(f"[DEBUG] Simple prompt raw output: {raw_output[:200]}")
-                
-                # Clean up the output - remove special tokens and extra reasoning
-                cleaned_output = raw_output.strip()
-                # Remove special tokens like <unused94>thought at the start
-                cleaned_output = re.sub(r'^<unused\d+>\w+\s*', '', cleaned_output, flags=re.IGNORECASE)
-                # Remove any "The user wants me to..." type reasoning that models sometimes add
-                cleaned_output = re.sub(r'^(The user wants me to|I need to|They have provided).*?\.\s*', '', cleaned_output, flags=re.IGNORECASE | re.DOTALL)
-                cleaned_output = cleaned_output.strip()
-                
-                # If cleaned output is empty or very short, use original
-                if not cleaned_output or len(cleaned_output) < 5:
-                    cleaned_output = raw_output.strip()
-                
-                # Create a simple structured annotation from raw output
-                from models.annotation_models import StructuredAnnotation
-                structured_ann = StructuredAnnotation(
-                    evidence="",
-                    reasoning="Simple completion prompt - no structured parsing applied",
-                    final_output=cleaned_output,
-                    is_negated=False,
-                    date=None
-                )
-                # Normalize absence indicators to standard format
-                from lib.annotation_normalizer import normalize_annotation_output
-                annotation_text = normalize_annotation_output(
-                    structured_ann.final_output,
-                    prompt_type=prompt_type,
-                    normalize_absence=True
-                )
-                reasoning = structured_ann.reasoning
-                evidence = structured_ann.evidence
-                is_negated = structured_ann.is_negated
-                date_info = structured_ann.date
-            elif use_structured:
-                try:
-                    structured_ann, raw_response = generate_structured_annotation(
-                        prompt=prompt,
-                        vllm_endpoint=vllm_client.config["vllm_endpoint"],
-                        model_name=vllm_client.config["model_name"],
-                        csv_date=csv_date,
-                        max_new_tokens=1024,  # Increased for longer reasoning
-                        temperature=0.0  # Deterministic output
-                    )
-                    
-                    # Extract annotation text from structured output
-                    # Normalize absence indicators to standard format
-                    from lib.annotation_normalizer import normalize_annotation_output
-                    annotation_text = normalize_annotation_output(
-                        structured_ann.final_output,
-                        prompt_type=prompt_type,
-                        normalize_absence=True
-                    )
-                    reasoning = structured_ann.reasoning
-                    evidence = structured_ann.evidence
-                    is_negated = structured_ann.is_negated
-                    date_info = structured_ann.date
-                    
-                except Exception as e:
-                    print(f"[WARN] Structured generation failed for {prompt_type}: {e}, using fallback")
-                    import traceback
-                    traceback.print_exc()
-                    # Fallback to regular generation
-                    output = vllm_client.generate(
-                        prompt=prompt,
-                        max_new_tokens=512,
-                        temperature=0.1,
-                        return_logprobs=False
-                    )
-                    # Use "raw" output, not "normalized" (normalized only takes first line)
-                    raw_output = output.get("raw", output.get("normalized", ""))
-                    raw_response = raw_output
-                    print(f"[DEBUG] Raw LLM output for {prompt_type} (length: {len(raw_output)}): {raw_output[:500]}")
-                    structured_ann = generate_structured_annotation_fallback(
-                        prompt=prompt,
-                        raw_output=raw_output,
-                        csv_date=csv_date
-                    )
-                    # Normalize absence indicators to standard format
-                    from lib.annotation_normalizer import normalize_annotation_output
-                    annotation_text = normalize_annotation_output(
-                        structured_ann.final_output,
-                        prompt_type=prompt_type,
-                        normalize_absence=True
-                    )
-                    reasoning = structured_ann.reasoning
-                    evidence = structured_ann.evidence
-                    is_negated = structured_ann.is_negated
-                    date_info = structured_ann.date
-                    print(f"[DEBUG] Parsed annotation_text: {annotation_text[:200] if annotation_text else 'EMPTY'}")
-            else:
-                # Fallback: regular generation
-                output = vllm_client.generate(
-                    prompt=prompt,
-                    max_new_tokens=512,
-                    temperature=0.0,  # Deterministic output
-                    return_logprobs=False
-                )
-                # Use "raw" output, not "normalized" (normalized only takes first line)
-                raw_output = output.get("raw", output.get("normalized", ""))
-                raw_response = raw_output
-                print(f"[DEBUG] Fallback raw LLM output for {prompt_type} (length: {len(raw_output)}): {raw_output[:500]}")
-                structured_ann = generate_structured_annotation_fallback(
-                    prompt=prompt,
-                    raw_output=raw_output,
-                    csv_date=csv_date
-                )
-                # Normalize absence indicators to standard format
-                from lib.annotation_normalizer import normalize_annotation_output
-                annotation_text = normalize_annotation_output(
-                    structured_ann.final_output,
-                    prompt_type=prompt_type,
-                    normalize_absence=True
-                )
-                reasoning = structured_ann.reasoning
-                evidence = structured_ann.evidence
-                is_negated = structured_ann.is_negated
-                date_info = structured_ann.date
-                
-                # Clean annotation (remove "Annotation: " prefix if present)
-                annotation_text = re.sub(r'^\s*annotation\s*:\s*', '', annotation_text, flags=re.IGNORECASE).strip()
-            
-            # Extract evidence spans from evidence field using improved matching
-            evidence_spans = _extract_evidence_spans(note_text, evidence, prompt_type)
-            
-            # Parse into values
-            values = _parse_annotation_values(annotation_text, note_text, prompt_type)
-            
-            # Extract ICD-O-3 codes for histology/site prompts
-            icdo3_code_info = None
-            try:
-                from lib.icdo3_extractor import extract_icdo3_from_text, is_histology_or_site_prompt
-                if is_histology_or_site_prompt(prompt_type):
-                    print(f"[INFO] Extracting ICD-O-3 code for prompt_type={prompt_type}, annotation_length={len(annotation_text)}, note_length={len(note_text) if note_text else 0}")
-                    # Pass both annotation text and note text for better extraction
-                    # Also pass vLLM client for LLM-based extraction
-                    icdo3_code_info = extract_icdo3_from_text(
-                        annotation_text, 
-                        prompt_type, 
-                        note_text=note_text,
-                        vllm_client=vllm_client
-                    )
-                    if icdo3_code_info:
-                        print(f"[INFO] Successfully extracted ICD-O-3 code: {icdo3_code_info.get('code')}, query_code={icdo3_code_info.get('query_code')}, match_method={icdo3_code_info.get('match_method')}")
-                        # Convert to Pydantic model if needed
-                        from models.schemas import ICDO3CodeInfo
-                        if isinstance(icdo3_code_info, dict):
-                            icdo3_code_info = ICDO3CodeInfo(**icdo3_code_info)
-                    else:
-                        print(f"[WARN] No ICD-O-3 code extracted for {prompt_type} (extraction returned None)")
-            except Exception as e:
-                print(f"[ERROR] Failed to extract ICD-O-3 code for {prompt_type}: {e}")
-                import traceback
-                traceback.print_exc()
-            
-            # Convert date_info to dict if it's a Pydantic model
-            date_info_dict = None
-            if date_info:
-                if hasattr(date_info, 'dict'):
-                    date_info_dict = date_info.dict()
-                elif isinstance(date_info, dict):
-                    date_info_dict = date_info
-                else:
-                    date_info_dict = {
-                        "date_value": getattr(date_info, 'date_value', None),
-                        "source": getattr(date_info, 'source', None),
-                        "csv_date": getattr(date_info, 'csv_date', None)
-                    }
-            
-            # Fallback: If date_info is None but csv_date is available, use csv_date
-            if not date_info_dict and csv_date:
-                date_info_dict = {
-                    "date_value": csv_date,
-                    "source": "derived_from_csv",
-                    "csv_date": csv_date
-                }
-            
-            # Determine status: check if annotation is incomplete or failed
-            status = "success"
-            if annotation_text.startswith("ERROR:"):
-                status = "error"
-            elif reasoning and (reasoning.endswith("...") or len(reasoning) > 900):  # Likely truncated
-                status = "incomplete"
-            elif not annotation_text or annotation_text.strip() == "":
-                # Check if empty because information is not available (vs actual error)
-                # If reasoning indicates "not available", "unknown", "not mentioned", etc., it's a valid "no annotation" case
-                if reasoning:
-                    reasoning_lower = reasoning.lower()
-                    no_info_indicators = [
-                        "not available", "not mentioned", "not stated", "not provided",
-                        "unknown", "cannot be determined", "cannot be determined from",
-                        "does not state", "does not provide", "does not mention",
-                        "information is not available", "no information", "not found"
-                    ]
-                    if any(indicator in reasoning_lower for indicator in no_info_indicators):
-                        # This is a valid "no annotation" case, not an error
-                        status = "success"
-                    else:
-                        status = "error"
-                else:
-                    status = "error"
-            
-            # Evaluate annotation if in evaluation mode
-            evaluation_result = None
-            if evaluation_mode == "evaluation":
-                if not EVALUATION_SERVICE_AVAILABLE or not evaluate_annotation_with_special_cases:
-                    print(f"[WARN] Evaluation mode enabled but evaluation_service not available")
-                elif not session_data:
-                    print(f"[WARN] Evaluation mode enabled but session_data not loaded")
-                else:
-                    # Get expected annotation for this note and prompt type
-                    expected_annotation = None
-                    for note in session_data.get("notes", []):
-                        if note.get("note_id") == request.note_id:
-                            annotations_str = note.get("annotations")
-                            if annotations_str:
-                                # Try to extract expected annotation using pattern matching
-                                # Use a more robust pattern that captures everything until the next prompt_type or end of string
-                                # First, split by pipe to get individual annotation parts
-                                parts = str(annotations_str).split('|')
-                                for part in parts:
-                                    part = part.strip()
-                                    # Check if this part starts with the prompt type
-                                    if ':' in part:
-                                        # Split on first colon
-                                        key_part, value_part = part.split(':', 1)
-                                        key_part = key_part.strip()
-                                        # Check if the key matches (case-insensitive, handle variations)
-                                        if prompt_type.lower() in key_part.lower() or key_part.lower() in prompt_type.lower():
-                                            expected_annotation = value_part.strip()
-                                            break
-                                # Fallback: try regex if split didn't work
-                                if not expected_annotation:
-                                    pattern = re.compile(rf'{re.escape(prompt_type)}\s*:\s*([^|]+)', re.IGNORECASE | re.DOTALL)
-                                    match = pattern.search(str(annotations_str))
-                                    if match:
-                                        expected_annotation = match.group(1).strip()
-                            break
-                    
-                    # Perform evaluation (even if expected_annotation is None - means no annotation expected)
-                    try:
-                        # Get template for field-level evaluation
-                        template = None
-                        if prompt_type in _PROMPTS:
-                            prompt_info = _PROMPTS[prompt_type]
-                            if isinstance(prompt_info, dict):
-                                template = prompt_info.get("template", "")
-                            else:
-                                template = prompt_info
 
-                        # Use template-aware evaluation if template available
-                        if template and evaluate_annotation_with_template:
-                            evaluation_result = evaluate_annotation_with_template(
-                                expected=expected_annotation or "",
-                                predicted=annotation_text,
-                                template=template,
-                                note_id=request.note_id,
-                                prompt_type=prompt_type
-                            )
-                        else:
-                            evaluation_result = evaluate_annotation_with_special_cases(
-                                expected=expected_annotation or "",
-                                predicted=annotation_text,
-                                note_id=request.note_id,
-                                prompt_type=prompt_type
-                            )
-                        print(f"[DEBUG] Evaluation result for {prompt_type}: overall_match={evaluation_result.get('overall_match')}, similarity={evaluation_result.get('similarity_score')}, field_eval={evaluation_result.get('field_evaluation', {}).get('field_evaluation_available', False)}")
-                    except Exception as e:
-                        print(f"[ERROR] Failed to evaluate annotation: {e}")
-                        import traceback
-                        traceback.print_exc()
-            
-            # Convert ICD-O-3 code to dict if it's a Pydantic model
-            icdo3_code_dict = None
-            if icdo3_code_info:
-                if hasattr(icdo3_code_info, 'dict'):
-                    icdo3_code_dict = icdo3_code_info.dict()
-                elif isinstance(icdo3_code_info, dict):
-                    icdo3_code_dict = icdo3_code_info
-                else:
-                    icdo3_code_dict = {
-                        "code": getattr(icdo3_code_info, 'code', None),
-                        "topography_code": getattr(icdo3_code_info, 'topography_code', None),
-                        "morphology_code": getattr(icdo3_code_info, 'morphology_code', None),
-                        "histology_code": getattr(icdo3_code_info, 'histology_code', None),
-                        "behavior_code": getattr(icdo3_code_info, 'behavior_code', None),
-                        "description": getattr(icdo3_code_info, 'description', None),
-                        "confidence": getattr(icdo3_code_info, 'confidence', None),
-                        "query_code": getattr(icdo3_code_info, 'query_code', None),
-                        "match_method": getattr(icdo3_code_info, 'match_method', None),
-                        "match_score": getattr(icdo3_code_info, 'match_score', None)
-                    }
-            
-            note_annotations.append(AnnotationResult(
-                prompt_type=prompt_type,
-                annotation_text=annotation_text,
-                values=values,
-                confidence_score=None,
-                evidence_spans=evidence_spans,
-                reasoning=reasoning,
-                is_negated=is_negated,
-                date_info=date_info_dict,
-                evidence_text=evidence,  # Store raw evidence text
-                raw_prompt=raw_prompt if 'raw_prompt' in locals() else prompt,  # Store raw prompt
-                raw_response=raw_response if raw_response is not None else "No response generated",  # Store raw response
-                status=status,
-                evaluation_result=evaluation_result,  # Store evaluation results
-                icdo3_code=icdo3_code_dict  # Store ICD-O-3 code information
-            ))
-            
-        except Exception as e:
-            print(f"[ERROR] Failed to process {prompt_type}: {e}")
-            import traceback
-            traceback.print_exc()
-            # Always capture raw prompt and response even on error
-            error_prompt = prompt if 'prompt' in locals() else "Prompt not available"
-            error_response = raw_response if 'raw_response' in locals() and raw_response else f"Error occurred: {str(e)}"
-            note_annotations.append(AnnotationResult(
-                prompt_type=prompt_type,
-                annotation_text=f"ERROR: {str(e)}",
-                values=[],
-                evidence_spans=[],
-                reasoning=None,
-                is_negated=None,
-                date_info=None,
-                evidence_text=None,
-                raw_prompt=error_prompt,
-                raw_response=error_response,
-                status="error"
-            ))
-    
+    # Process all prompt types in PARALLEL
+    print(f"[INFO] Processing {len(prompt_types_to_process)} prompts in parallel (concurrency={VLLM_CONCURRENCY})")
+    tasks = [
+        _process_single_prompt(
+            prompt_type=pt,
+            note_text=note_text,
+            csv_date=csv_date,
+            vllm_client=vllm_client,
+            use_structured=use_structured,
+            request_use_fewshots=request.use_fewshots,
+            request_fewshot_k=request.fewshot_k,
+            evaluation_mode=evaluation_mode,
+            session_data=session_data,
+            note_id=request.note_id,
+        )
+        for pt in prompt_types_to_process
+    ]
+    note_annotations = list(await asyncio.gather(*tasks))
+
+    processing_time = total_timer.get_total()
+    # Aggregate timing: sum per-step times across all prompts
+    agg_timing: Dict[str, float] = {}
+    for ann in note_annotations:
+        if ann.timing_breakdown:
+            for step, dur in ann.timing_breakdown.items():
+                agg_timing[step] = agg_timing.get(step, 0.0) + dur
+    agg_timing["wall_clock_total"] = processing_time
+    agg_timing["prompt_count"] = float(len(prompt_types_to_process))
+
     return ProcessNoteResponse(
         note_id=request.note_id,
         note_text=note_text,
         annotations=note_annotations,
-        processing_time_seconds=time.time() - start_time
+        processing_time_seconds=processing_time,
+        timing_breakdown=agg_timing,
     )
 
 
 @router.post("/batch", response_model=BatchProcessResponse)
 async def batch_process(request: BatchProcessRequest, session_id: str = Query(...)):
-    """Batch process multiple notes"""
+    """Batch process multiple notes with parallel vLLM calls"""
     _ensure_prompts_loaded()
-    
-    # Load session - import here to avoid circular dependency
+    batch_timer = TimingBreakdown()
+    batch_timer.start_total()
+
+    # Load session
     import importlib.util
     sessions_path = Path(__file__).parent / "sessions.py"
     spec = importlib.util.spec_from_file_location("sessions", sessions_path)
@@ -885,459 +825,127 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
         raise HTTPException(status_code=500, detail="Failed to load sessions module")
     sessions_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(sessions_module)
-    
+
     try:
         session = sessions_module._load_session(session_id)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
-    
-    # Get evaluation mode from session (default to validation if not set)
+
     evaluation_mode = session.get('evaluation_mode', 'validation')
-    print(f"[DEBUG] Batch processing: evaluation_mode={evaluation_mode}")
-    
+
     # Get vLLM client
     vllm_client = get_vllm_client()
     if not vllm_client.is_available():
-        # Get status for better error message
         status = vllm_client.get_status()
         error_detail = status.get("error", "Unknown error")
         endpoint = vllm_client.config.get("vllm_endpoint", "not configured")
         raise HTTPException(
-            status_code=503, 
+            status_code=503,
             detail=f"VLLM server not available. Endpoint: {endpoint}, Error: {error_detail}. "
                    f"Please ensure the VLLM server is running and restart the backend if you moved the project directory."
         )
-    
-    # Get CSV dates for notes and evaluation mode
+
     note_dates = {}
     report_type_mapping = session.get('report_type_mapping')
-    evaluation_mode = session.get('evaluation_mode', 'validation')
     for note in session.get('notes', []):
         note_dates[note.get('note_id')] = note.get('date')
-    
-    # Try to use structured generation with Outlines
+
     try:
-        from services.structured_generator import (
-            generate_structured_annotation,
-            generate_structured_annotation_fallback,
-            OUTLINES_AVAILABLE
-        )
+        from services.structured_generator import OUTLINES_AVAILABLE
         use_structured = OUTLINES_AVAILABLE
     except ImportError:
         use_structured = False
-        print("[WARN] Structured generation not available, using fallback")
-    
-    # Process each note
-    results = []
-    start_time = time.time()
-    
+
+    # Collect all (note, prompt_type) pairs for parallel execution
+    all_tasks = []  # List of (note_id, note_text, prompt_type, csv_date)
+    note_order = []  # Track which notes we're processing
+
     for note_id in request.note_ids:
-        # Find note in session
         note_data = None
         for note in session['notes']:
             if note['note_id'] == note_id:
                 note_data = note
                 break
-        
         if not note_data:
             continue
-        
+
         note_text = note_data['text']
         csv_date = note_dates.get(note_id)
         report_type = note_data.get('report_type')
-        note_annotations = []
-        
-        # Filter prompt types based on report_type_mapping if available
+
         prompt_types_to_process = request.prompt_types
         if report_type_mapping and report_type:
-            # Get allowed prompt types for this report type
-            allowed_prompt_types = report_type_mapping.get(report_type, [])
-            if allowed_prompt_types:
-                # Filter to only process prompts that are allowed for this report type
-                prompt_types_to_process = [pt for pt in request.prompt_types if pt in allowed_prompt_types]
+            allowed = report_type_mapping.get(report_type, [])
+            if allowed:
+                prompt_types_to_process = [pt for pt in request.prompt_types if pt in allowed]
             else:
-                # If no mapping exists for this report type, don't process any prompts
                 prompt_types_to_process = []
-        
-        # Process each prompt type
-        for prompt_type in prompt_types_to_process:
-            prompt_start = time.time()
-            
-            try:
-                # Get fewshot examples
-                if request.use_fewshots:
-                    fewshot_examples = _get_fewshot_examples(
-                        prompt_type,
-                        note_text,
-                        k=request.fewshot_k
-                    )
-                else:
-                    fewshot_examples = []
-                
-                # Build prompt (now includes JSON format instructions)
-                prompt = _get_prompt(
-                    task_key=prompt_type,
-                    fewshots=fewshot_examples,
-                    note_text=note_text,
-                    csv_date=csv_date
-                )
-                
-                # Always store the raw prompt for debugging
-                raw_prompt = prompt
-                print(f"[DEBUG] Prompt for {prompt_type} (length: {len(prompt)}): {prompt[:300]}...")
-                
-                # Check if this is a simple prompt (no structured output needed)
-                template = _PROMPTS[prompt_type]["template"]
-                is_simple = _is_simple_prompt(template)
-                
-                # Generate structured annotation
-                raw_response = None
-                if is_simple:
-                    # For simple prompts, just get raw output without structured parsing
-                    output = vllm_client.generate(
-                        prompt=prompt,
-                        max_new_tokens=512,
-                        temperature=0.1,
-                        return_logprobs=False
-                    )
-                    # Use "raw" output, not "normalized" (normalized only takes first line)
-                    raw_output = output.get("raw", output.get("normalized", ""))
-                    raw_response = raw_output
-                    print(f"[DEBUG] Simple prompt raw output: {raw_output[:200]}")
-                    
-                    # Clean up the output - remove special tokens and extra reasoning
-                    cleaned_output = raw_output.strip()
-                    # Remove special tokens like <unused94>thought at the start
-                    cleaned_output = re.sub(r'^<unused\d+>\w+\s*', '', cleaned_output, flags=re.IGNORECASE)
-                    # Remove any "The user wants me to..." type reasoning that models sometimes add
-                    cleaned_output = re.sub(r'^(The user wants me to|I need to|They have provided).*?\.\s*', '', cleaned_output, flags=re.IGNORECASE | re.DOTALL)
-                    cleaned_output = cleaned_output.strip()
-                    
-                    # If cleaned output is empty or very short, use original
-                    if not cleaned_output or len(cleaned_output) < 5:
-                        cleaned_output = raw_output.strip()
-                    
-                    # Create a simple structured annotation from raw output
-                    from models.annotation_models import StructuredAnnotation
-                    structured_ann = StructuredAnnotation(
-                        evidence="",
-                        reasoning="Simple completion prompt - no structured parsing applied",
-                        final_output=cleaned_output,
-                        is_negated=False,
-                        date=None
-                    )
-                    # Normalize absence indicators to standard format
-                    from lib.annotation_normalizer import normalize_annotation_output
-                    annotation_text = normalize_annotation_output(
-                        structured_ann.final_output,
-                        prompt_type=prompt_type,
-                        normalize_absence=True
-                    )
-                    reasoning = structured_ann.reasoning
-                    evidence = structured_ann.evidence
-                    is_negated = structured_ann.is_negated
-                    date_info = structured_ann.date
-                elif use_structured:
-                    try:
-                        structured_ann, raw_response = generate_structured_annotation(
-                            prompt=prompt,
-                            vllm_endpoint=vllm_client.config["vllm_endpoint"],
-                            model_name=vllm_client.config["model_name"],
-                            csv_date=csv_date,
-                            max_new_tokens=1024,  # Increased for longer reasoning
-                            temperature=0.1
-                        )
-                        
-                        # Extract annotation text from structured output
-                        # Normalize absence indicators to standard format
-                        from lib.annotation_normalizer import normalize_annotation_output
-                        annotation_text = normalize_annotation_output(
-                            structured_ann.final_output,
-                            prompt_type=prompt_type,
-                            normalize_absence=True
-                        )
-                        reasoning = structured_ann.reasoning
-                        evidence = structured_ann.evidence
-                        is_negated = structured_ann.is_negated
-                        date_info = structured_ann.date
-                        
-                    except Exception as e:
-                        print(f"[WARN] Structured generation failed for {prompt_type}: {e}, using fallback")
-                        import traceback
-                        traceback.print_exc()
-                        # Fallback to regular generation
-                        output = vllm_client.generate(
-                            prompt=prompt,
-                            max_new_tokens=512,
-                            temperature=0.1,
-                            return_logprobs=False
-                        )
-                        # Use "raw" output, not "normalized" (normalized only takes first line)
-                        raw_output = output.get("raw", output.get("normalized", ""))
-                        raw_response = raw_output
-                        print(f"[DEBUG] Fallback raw LLM output for {prompt_type} (length: {len(raw_output)}): {raw_output[:500]}")
-                        structured_ann = generate_structured_annotation_fallback(
-                            prompt=prompt,
-                            raw_output=raw_output,
-                            csv_date=csv_date
-                        )
-                        # Normalize absence indicators to standard format
-                        from lib.annotation_normalizer import normalize_annotation_output
-                        annotation_text = normalize_annotation_output(
-                            structured_ann.final_output,
-                            prompt_type=prompt_type,
-                            normalize_absence=True
-                        )
-                        reasoning = structured_ann.reasoning
-                        evidence = structured_ann.evidence
-                        is_negated = structured_ann.is_negated
-                        date_info = structured_ann.date
-                else:
-                    # Fallback: regular generation
-                    output = vllm_client.generate(
-                        prompt=prompt,
-                        max_new_tokens=512,
-                        temperature=0.1,
-                        return_logprobs=False
-                    )
-                    # Use "raw" output, not "normalized" (normalized only takes first line)
-                    raw_output = output.get("raw", output.get("normalized", ""))
-                    raw_response = raw_output
-                    print(f"[DEBUG] Fallback raw LLM output for {prompt_type} (length: {len(raw_output)}): {raw_output[:500]}")
-                    structured_ann = generate_structured_annotation_fallback(
-                        prompt=prompt,
-                        raw_output=raw_output,
-                        csv_date=csv_date
-                    )
-                    # Normalize absence indicators to standard format
-                    from lib.annotation_normalizer import normalize_annotation_output
-                    annotation_text = normalize_annotation_output(
-                        structured_ann.final_output,
-                        prompt_type=prompt_type,
-                        normalize_absence=True
-                    )
-                    reasoning = structured_ann.reasoning
-                    evidence = structured_ann.evidence
-                    is_negated = structured_ann.is_negated
-                    date_info = structured_ann.date
-                
-                # Clean annotation (remove "Annotation: " prefix if present)
-                annotation_text = re.sub(r'^\s*annotation\s*:\s*', '', annotation_text, flags=re.IGNORECASE).strip()
-                
-                # Extract evidence spans from evidence field using improved matching
-                evidence_spans = _extract_evidence_spans(note_text, evidence, prompt_type)
-                
-                # Parse into values
-                values = _parse_annotation_values(annotation_text, note_text, prompt_type)
-                
-                # Extract ICD-O-3 codes for histology/site prompts
-                icdo3_code_info = None
-                try:
-                    from lib.icdo3_extractor import extract_icdo3_from_text, is_histology_or_site_prompt
-                    if is_histology_or_site_prompt(prompt_type):
-                        print(f"[INFO] Extracting ICD-O-3 code for prompt_type={prompt_type}, note_id={note_id}, annotation_length={len(annotation_text)}, note_length={len(note_text) if note_text else 0}")
-                        # Pass both annotation text and note text for better extraction
-                        # Also pass vLLM client for LLM-based extraction
-                        icdo3_code_info = extract_icdo3_from_text(
-                            annotation_text, 
-                            prompt_type, 
-                            note_text=note_text,
-                            vllm_client=vllm_client
-                        )
-                        if icdo3_code_info:
-                            print(f"[INFO] Successfully extracted ICD-O-3 code for {prompt_type} (note {note_id}): code={icdo3_code_info.get('code')}, query_code={icdo3_code_info.get('query_code')}, match_method={icdo3_code_info.get('match_method')}")
-                            # Convert to Pydantic model if needed
-                            from models.schemas import ICDO3CodeInfo
-                            if isinstance(icdo3_code_info, dict):
-                                icdo3_code_info = ICDO3CodeInfo(**icdo3_code_info)
-                        else:
-                            print(f"[WARN] No ICD-O-3 code extracted for {prompt_type} (note {note_id}) - extraction returned None")
-                except Exception as e:
-                    print(f"[ERROR] Failed to extract ICD-O-3 code for {prompt_type} (note {note_id}): {e}")
-                    import traceback
-                    traceback.print_exc()
-                
-                # Convert date_info to dict if it's a Pydantic model
-                date_info_dict = None
-                if date_info:
-                    if hasattr(date_info, 'dict'):
-                        date_info_dict = date_info.dict()
-                    elif isinstance(date_info, dict):
-                        date_info_dict = date_info
-                    else:
-                        date_info_dict = {
-                            "date_value": getattr(date_info, 'date_value', None),
-                            "source": getattr(date_info, 'source', None),
-                            "csv_date": getattr(date_info, 'csv_date', None)
-                        }
-                
-                # Fallback: If date_info is None but csv_date is available, use csv_date
-                if not date_info_dict and csv_date:
-                    date_info_dict = {
-                        "date_value": csv_date,
-                        "source": "derived_from_csv",
-                        "csv_date": csv_date
-                    }
-                
-                # Convert ICD-O-3 code to dict if it's a Pydantic model
-                icdo3_code_dict = None
-                if icdo3_code_info:
-                    if hasattr(icdo3_code_info, 'dict'):
-                        icdo3_code_dict = icdo3_code_info.dict()
-                    elif isinstance(icdo3_code_info, dict):
-                        icdo3_code_dict = icdo3_code_info
-                    else:
-                        icdo3_code_dict = {
-                            "code": getattr(icdo3_code_info, 'code', None),
-                            "topography_code": getattr(icdo3_code_info, 'topography_code', None),
-                            "morphology_code": getattr(icdo3_code_info, 'morphology_code', None),
-                            "histology_code": getattr(icdo3_code_info, 'histology_code', None),
-                            "behavior_code": getattr(icdo3_code_info, 'behavior_code', None),
-                            "description": getattr(icdo3_code_info, 'description', None),
-                            "confidence": getattr(icdo3_code_info, 'confidence', None),
-                            "query_code": getattr(icdo3_code_info, 'query_code', None),
-                            "match_method": getattr(icdo3_code_info, 'match_method', None),
-                            "match_score": getattr(icdo3_code_info, 'match_score', None)
-                        }
-                
-                # Determine status: check if annotation is incomplete or failed
-                status = "success"
-                if annotation_text.startswith("ERROR:"):
-                    status = "error"
-                elif reasoning and (reasoning.endswith("...") or len(reasoning) > 900):  # Likely truncated
-                    status = "incomplete"
-                elif not annotation_text or annotation_text.strip() == "":
-                    # Check if empty because information is not available (vs actual error)
-                    # If reasoning indicates "not available", "unknown", "not mentioned", etc., it's a valid "no annotation" case
-                    if reasoning:
-                        reasoning_lower = reasoning.lower()
-                        no_info_indicators = [
-                            "not available", "not mentioned", "not stated", "not provided",
-                            "unknown", "cannot be determined", "cannot be determined from",
-                            "does not state", "does not provide", "does not mention",
-                            "information is not available", "no information", "not found"
-                        ]
-                        if any(indicator in reasoning_lower for indicator in no_info_indicators):
-                            # This is a valid "no annotation" case, not an error
-                            status = "success"
-                        else:
-                            status = "error"
-                    else:
-                        status = "error"
-                
-                # Evaluate annotation if in evaluation mode
-                evaluation_result = None
-                if evaluation_mode == "evaluation":
-                    if not EVALUATION_SERVICE_AVAILABLE or not evaluate_annotation_with_special_cases:
-                        print(f"[WARN] Evaluation mode enabled but evaluation_service not available")
-                    else:
-                        # Get expected annotation for this note and prompt type
-                        expected_annotation = None
-                        if note_data:
-                            annotations_str = note_data.get("annotations")
-                            if annotations_str:
-                                # Use a more robust extraction: split by pipe first
-                                parts = str(annotations_str).split('|')
-                                for part in parts:
-                                    part = part.strip()
-                                    # Check if this part starts with the prompt type
-                                    if ':' in part:
-                                        # Split on first colon
-                                        key_part, value_part = part.split(':', 1)
-                                        key_part = key_part.strip()
-                                        # Check if the key matches (case-insensitive, handle variations)
-                                        if prompt_type.lower() in key_part.lower() or key_part.lower() in prompt_type.lower():
-                                            expected_annotation = value_part.strip()
-                                            break
-                                # Fallback: try regex if split didn't work
-                                if not expected_annotation:
-                                    pattern = re.compile(rf'{re.escape(prompt_type)}\s*:\s*([^|]+)', re.IGNORECASE | re.DOTALL)
-                                    match = pattern.search(str(annotations_str))
-                                    if match:
-                                        expected_annotation = match.group(1).strip()
-                        
-                        # Perform evaluation (even if expected_annotation is None - means no annotation expected)
-                        try:
-                            # Get template for field-level evaluation
-                            template = None
-                            if prompt_type in _PROMPTS:
-                                prompt_info = _PROMPTS[prompt_type]
-                                if isinstance(prompt_info, dict):
-                                    template = prompt_info.get("template", "")
-                                else:
-                                    template = prompt_info
 
-                            # Use template-aware evaluation if template available
-                            if template and evaluate_annotation_with_template:
-                                evaluation_result = evaluate_annotation_with_template(
-                                    expected=expected_annotation or "",
-                                    predicted=annotation_text,
-                                    template=template,
-                                    note_id=note_id,
-                                    prompt_type=prompt_type
-                                )
-                            else:
-                                evaluation_result = evaluate_annotation_with_special_cases(
-                                    expected=expected_annotation or "",
-                                    predicted=annotation_text,
-                                    note_id=note_id,
-                                    prompt_type=prompt_type
-                                )
-                            print(f"[DEBUG] Evaluation result for {prompt_type} (note {note_id}): overall_match={evaluation_result.get('overall_match')}, similarity={evaluation_result.get('similarity_score')}, field_eval={evaluation_result.get('field_evaluation', {}).get('field_evaluation_available', False)}")
-                        except Exception as e:
-                            print(f"[ERROR] Failed to evaluate annotation: {e}")
-                            import traceback
-                            traceback.print_exc()
+        note_order.append((note_id, note_text, prompt_types_to_process))
+        for pt in prompt_types_to_process:
+            all_tasks.append((note_id, note_text, pt, csv_date))
 
-                note_annotations.append(AnnotationResult(
-                    prompt_type=prompt_type,
-                    annotation_text=annotation_text,
-                    values=values,
-                    confidence_score=None,
-                    evidence_spans=evidence_spans,
-                    reasoning=reasoning,
-                    is_negated=is_negated,
-                    date_info=date_info_dict,
-                    evidence_text=evidence,
-                    raw_prompt=raw_prompt if 'raw_prompt' in locals() else prompt,
-                    raw_response=raw_response if raw_response is not None else "No response generated",
-                    status=status,
-                    evaluation_result=evaluation_result,  # Store evaluation results
-                    icdo3_code=icdo3_code_dict  # Store ICD-O-3 code information
-                ))
-                
-            except Exception as e:
-                print(f"[ERROR] Failed to process {prompt_type} for {note_id}: {e}")
-                import traceback
-                traceback.print_exc()
-                # Always capture raw prompt and response even on error
-                error_prompt = prompt if 'prompt' in locals() else "Prompt not available"
-                error_response = raw_response if 'raw_response' in locals() and raw_response else f"Error occurred: {str(e)}"
-                # Add error annotation
-                note_annotations.append(AnnotationResult(
-                    prompt_type=prompt_type,
-                    annotation_text=f"ERROR: {str(e)}",
-                    values=[],
-                    evidence_spans=[],
-                    reasoning=None,
-                    is_negated=None,
-                    date_info=None,
-                    evidence_text=None,
-                    raw_prompt=error_prompt,
-                    raw_response=error_response,
-                    status="error"
-                ))
-        
+    total_prompts = len(all_tasks)
+    print(f"[INFO] Batch: {len(note_order)} notes, {total_prompts} total prompts, parallel concurrency={VLLM_CONCURRENCY}")
+
+    # Run ALL prompts across ALL notes in parallel
+    coros = [
+        _process_single_prompt(
+            prompt_type=pt,
+            note_text=nt,
+            csv_date=cd,
+            vllm_client=vllm_client,
+            use_structured=use_structured,
+            request_use_fewshots=request.use_fewshots,
+            request_fewshot_k=request.fewshot_k,
+            evaluation_mode=evaluation_mode,
+            session_data=session,
+            note_id=nid,
+        )
+        for nid, nt, pt, cd in all_tasks
+    ]
+    all_results = list(await asyncio.gather(*coros))
+
+    # Group results by note_id
+    result_idx = 0
+    results = []
+    for note_id, note_text, prompt_types_to_process in note_order:
+        count = len(prompt_types_to_process)
+        note_annotations = all_results[result_idx:result_idx + count]
+        result_idx += count
+
+        # Aggregate timing per note
+        note_timing: Dict[str, float] = {}
+        for ann in note_annotations:
+            if ann.timing_breakdown:
+                for step, dur in ann.timing_breakdown.items():
+                    note_timing[step] = note_timing.get(step, 0.0) + dur
+
+        # Calculate note processing time from annotation timings
+        note_time = max(
+            (ann.timing_breakdown.get("total", 0.0) for ann in note_annotations if ann.timing_breakdown),
+            default=0.0
+        )
+
         results.append(ProcessNoteResponse(
             note_id=note_id,
             note_text=note_text,
             annotations=note_annotations,
-            processing_time_seconds=time.time() - prompt_start if note_annotations else 0
+            processing_time_seconds=note_time,
+            timing_breakdown=note_timing,
         ))
-    
+
+    batch_time = batch_timer.get_total()
+    batch_timing = {
+        "wall_clock_total": batch_time,
+        "note_count": float(len(note_order)),
+        "prompt_count": float(total_prompts),
+    }
+
     return BatchProcessResponse(
         results=results,
-        total_time_seconds=time.time() - start_time
+        total_time_seconds=batch_time,
+        timing_breakdown=batch_timing,
     )
 
 

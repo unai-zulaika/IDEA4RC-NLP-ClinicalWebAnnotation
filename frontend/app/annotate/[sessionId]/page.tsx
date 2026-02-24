@@ -1,232 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { sessionsApi, annotateApi, promptsApi, presetsApi } from '@/lib/api'
 import { useDefaultCenter } from '@/lib/useDefaultCenter'
 import type { SessionData, AnnotationResult, EvidenceSpan, PromptInfo, ICDO3CodeInfo, UnifiedICDO3Code } from '@/lib/api'
-import PresetSelector from '@/components/PresetSelector'
+import ManagePromptTypesModal from '@/components/ManagePromptTypesModal'
 import TextHighlighter from '@/components/TextHighlighter'
 import AnnotationViewer from '@/components/AnnotationViewer'
 import { extractExpectedAnnotation } from '@/lib/annotationUtils'
-
-function ManagePromptTypesModal({
-  session,
-  availablePrompts,
-  onClose,
-  onSave,
-  error,
-  center,
-}: {
-  session: SessionData
-  availablePrompts: PromptInfo[]
-  onClose: () => void
-  onSave: (reportTypeMapping: Record<string, string[]>) => Promise<void>
-  error: string | null
-  center: string
-}) {
-  const allPromptTypes = availablePrompts.map((p) => p.prompt_type)
-  const [saving, setSaving] = useState(false)
-
-  // Report type mapping is the single source of truth for prompt selection
-  const reportTypes = Array.from(new Set(session.notes.map((n) => n.report_type).filter(Boolean))).sort()
-  const currentMapping = session.report_type_mapping || {}
-  const [mapping, setMapping] = useState<Record<string, string[]>>(() => {
-    const m: Record<string, string[]> = {}
-    for (const rt of reportTypes) {
-      // Default to current session prompt_types if no mapping exists for this report type
-      m[rt] = currentMapping[rt] ? [...currentMapping[rt]] : [...session.prompt_types]
-    }
-    return m
-  })
-
-  const setMappingForRT = (rt: string, pts: string[]) => {
-    setMapping((prev) => ({ ...prev, [rt]: pts }))
-  }
-
-  const selectAllForRT = (rt: string) => {
-    setMappingForRT(rt, [...allPromptTypes])
-  }
-
-  const deselectAllForRT = (rt: string) => {
-    setMappingForRT(rt, [])
-  }
-
-  // Apply the same change across all report types at once
-  const selectAllGlobal = () => {
-    const m: Record<string, string[]> = {}
-    for (const rt of reportTypes) {
-      m[rt] = [...allPromptTypes]
-    }
-    setMapping(m)
-  }
-
-  const deselectAllGlobal = () => {
-    const m: Record<string, string[]> = {}
-    for (const rt of reportTypes) {
-      m[rt] = []
-    }
-    setMapping(m)
-  }
-
-  // Derive the effective prompt types from the mapping union
-  const effectivePromptTypes = new Set<string>()
-  for (const pts of Object.values(mapping)) {
-    pts.forEach((pt) => effectivePromptTypes.add(pt))
-  }
-
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      await onSave(mapping)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const hasChanges = (() => {
-    for (const rt of reportTypes) {
-      const prev = (currentMapping[rt] || session.prompt_types).slice().sort()
-      const next = (mapping[rt] || []).slice().sort()
-      if (prev.length !== next.length || prev.some((v, i) => v !== next[i])) return true
-    }
-    return false
-  })()
-
-  // Check which prompt types will be removed (have annotations that will be deleted)
-  const removedTypes = session.prompt_types.filter((pt) => !effectivePromptTypes.has(pt))
-  const removedWithAnnotations = removedTypes.filter((pt) =>
-    Object.values(session.annotations).some((noteAnns) => pt in noteAnns)
-  )
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col">
-        <div className="p-6 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
-          <h2 className="text-xl font-bold text-gray-900">Manage Report Type → Prompt Mapping</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">
-            ✕
-          </button>
-        </div>
-
-        <div className="p-6 overflow-y-auto flex-1">
-          <p className="text-xs text-gray-500 mb-3">
-            Select which prompt types apply to each report type. The session&apos;s prompt types are determined by the union of all selections below.
-          </p>
-
-          {/* Global controls */}
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm text-gray-700">
-              <strong>{effectivePromptTypes.size}</strong> prompt type{effectivePromptTypes.size !== 1 ? 's' : ''} active across {reportTypes.length} report type{reportTypes.length !== 1 ? 's' : ''}
-            </span>
-            <div className="flex gap-2">
-              <button onClick={selectAllGlobal} className="text-xs text-blue-600 hover:text-blue-800 font-medium">Select All Everywhere</button>
-              <button onClick={deselectAllGlobal} className="text-xs text-gray-500 hover:text-gray-700 font-medium">Clear All</button>
-            </div>
-          </div>
-
-          {/* Preset Selector */}
-          {reportTypes.length > 0 && (
-            <div className="mb-4">
-              <PresetSelector
-                center={center}
-                currentMapping={mapping}
-                onLoadPreset={(presetMapping) => {
-                  const updated: Record<string, string[]> = { ...mapping }
-                  for (const rt of reportTypes) {
-                    if (presetMapping[rt]) {
-                      updated[rt] = presetMapping[rt]
-                    }
-                  }
-                  setMapping(updated)
-                }}
-                reportTypes={reportTypes}
-              />
-            </div>
-          )}
-
-          {reportTypes.length > 0 ? (
-            <div className="space-y-4">
-              {reportTypes.map((rt) => {
-                const selectedForRT = mapping[rt] || []
-                return (
-                  <div key={rt} className="border border-gray-200 rounded p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-medium text-gray-800">{rt}</h4>
-                      <div className="flex gap-2 items-center">
-                        <span className="text-xs text-gray-500">{selectedForRT.length} selected</span>
-                        <button onClick={() => selectAllForRT(rt)} className="text-xs text-blue-600 hover:text-blue-800">All</button>
-                        <button onClick={() => deselectAllForRT(rt)} className="text-xs text-gray-500 hover:text-gray-700">None</button>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {allPromptTypes.map((pt) => {
-                        const isOn = selectedForRT.includes(pt)
-                        return (
-                          <button
-                            key={pt}
-                            onClick={() => {
-                              if (isOn) {
-                                setMappingForRT(rt, selectedForRT.filter((x) => x !== pt))
-                              } else {
-                                setMappingForRT(rt, [...selectedForRT, pt])
-                              }
-                            }}
-                            className={`text-xs px-2 py-1 rounded-full border transition-colors ${
-                              isOn
-                                ? 'bg-blue-100 border-blue-300 text-blue-800'
-                                : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300'
-                            }`}
-                          >
-                            {pt}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="text-sm text-gray-500 border border-gray-200 rounded p-4 text-center">
-              No report types found in this session&apos;s notes.
-            </div>
-          )}
-
-          {/* Warning about annotation deletion */}
-          {removedWithAnnotations.length > 0 && (
-            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded text-sm">
-              Saving will remove <strong>{removedWithAnnotations.length}</strong> prompt type{removedWithAnnotations.length !== 1 ? 's' : ''} that have existing annotations: {removedWithAnnotations.join(', ')}. Their annotations will be deleted.
-            </div>
-          )}
-
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
-              {error}
-            </div>
-          )}
-        </div>
-
-        {/* Footer with Save */}
-        <div className="p-4 border-t border-gray-200 flex justify-end gap-3 flex-shrink-0">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!hasChanges || saving}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function formatTimeRemaining(seconds: number): string {
   if (seconds < 60) {
@@ -272,6 +54,10 @@ export default function AnnotatePage() {
   const [exporting, setExporting] = useState<'labels' | 'codes' | null>(null)
   // Track unified ICD-O-3 codes per note
   const [unifiedCodes, setUnifiedCodes] = useState<Record<string, UnifiedICDO3Code>>({})
+  // AbortController for cancelling in-flight requests
+  const abortControllerRef = useRef<AbortController | null>(null)
+  // Last batch timing breakdown
+  const [lastTimingBreakdown, setLastTimingBreakdown] = useState<Record<string, number> | null>(null)
 
   useEffect(() => {
     loadSession()
@@ -308,8 +94,16 @@ export default function AnnotatePage() {
     if (mapping && note.report_type && mapping[note.report_type]) {
       return mapping[note.report_type]
     }
-    return session.prompt_types
+    // No mapping exists for this report type — return empty so only explicitly selected prompts run
+    return []
   }
+
+  const handleCancelProcessing = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+  }, [])
 
   const handleProcessNote = async () => {
     if (!session) return
@@ -322,11 +116,15 @@ export default function AnnotatePage() {
 
     setProcessing(true)
     setError(null)
+    setLastTimingBreakdown(null)
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     setNoteProgress({
       current: 0,
       total: totalPrompts,
-      currentPrompt: '',
-      percentage: 0,
+      currentPrompt: `Processing ${totalPrompts} prompts in parallel...`,
+      percentage: 10,
     })
 
     try {
@@ -335,48 +133,36 @@ export default function AnnotatePage() {
         updatedAnnotations[note.note_id] = {}
       }
 
-      // Process each prompt type sequentially to show progress
-      for (let i = 0; i < notePromptTypes.length; i++) {
-        const promptType = notePromptTypes[i]
-        
-        setNoteProgress({
-          current: i,
-          total: totalPrompts,
-          currentPrompt: promptType,
-          percentage: Math.round((i / totalPrompts) * 100),
-        })
+      // Send ALL prompts in a single batch call (processed in parallel on backend)
+      const result = await annotateApi.batchProcess(sessionId, {
+        note_ids: [note.note_id],
+        prompt_types: notePromptTypes,
+        fewshot_k: 5,
+        use_fewshots: true,
+      }, controller.signal)
 
-        try {
-          const result = await annotateApi.batchProcess(sessionId, {
-            note_ids: [note.note_id],
-            prompt_types: [promptType],
-            fewshot_k: 5,
-            use_fewshots: true,
-          })
-
-          if (result.results.length > 0 && result.results[0].annotations.length > 0) {
-            const ann = result.results[0].annotations[0]
-            updatedAnnotations[note.note_id][ann.prompt_type] = {
-              note_id: note.note_id,
-              prompt_type: ann.prompt_type,
-              annotation_text: ann.annotation_text,
-              values: ann.values,
-              edited: false,
-              is_negated: ann.is_negated,
-              date_info: ann.date_info,
-              evidence_text: ann.evidence_text,
-              reasoning: ann.reasoning,
-              raw_prompt: ann.raw_prompt,
-              raw_response: ann.raw_response,
-              evidence_spans: ann.evidence_spans || [],
-              status: ann.status || 'success',
-              evaluation_result: ann.evaluation_result,  // Preserve evaluation results
-              icdo3_code: ann.icdo3_code,  // Preserve ICD-O-3 code information
-            }
+      if (result.results.length > 0) {
+        result.results[0].annotations.forEach((ann: AnnotationResult) => {
+          updatedAnnotations[note.note_id][ann.prompt_type] = {
+            note_id: note.note_id,
+            prompt_type: ann.prompt_type,
+            annotation_text: ann.annotation_text,
+            values: ann.values,
+            edited: false,
+            is_negated: ann.is_negated,
+            date_info: ann.date_info,
+            evidence_text: ann.evidence_text,
+            reasoning: ann.reasoning,
+            raw_prompt: ann.raw_prompt,
+            raw_response: ann.raw_response,
+            evidence_spans: ann.evidence_spans || [],
+            status: ann.status || 'success',
+            evaluation_result: ann.evaluation_result,
+            icdo3_code: ann.icdo3_code,
           }
-        } catch (err: any) {
-          console.error(`Failed to process ${promptType}:`, err)
-          // Continue with next prompt type
+        })
+        if (result.results[0].timing_breakdown) {
+          setLastTimingBreakdown(result.results[0].timing_breakdown)
         }
       }
 
@@ -384,26 +170,25 @@ export default function AnnotatePage() {
       setNoteProgress({
         current: totalPrompts,
         total: totalPrompts,
-        currentPrompt: 'Complete!',
+        currentPrompt: `Complete! (${result.total_time_seconds.toFixed(1)}s)`,
         percentage: 100,
       })
 
       const updatedSession = await sessionsApi.update(sessionId, updatedAnnotations)
       setSession(updatedSession)
 
-      // Clear progress after a short delay
       setTimeout(() => {
-        setNoteProgress({
-          current: 0,
-          total: 0,
-          currentPrompt: '',
-          percentage: 0,
-        })
-      }, 1000)
+        setNoteProgress({ current: 0, total: 0, currentPrompt: '', percentage: 0 })
+      }, 3000)
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Processing failed')
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+        setError('Processing cancelled')
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Processing failed')
+      }
     } finally {
       setProcessing(false)
+      abortControllerRef.current = null
     }
   }
 
@@ -416,6 +201,10 @@ export default function AnnotatePage() {
 
     setProcessingAll(true)
     setError(null)
+    setLastTimingBreakdown(null)
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     setProgress({
       current: 0,
       total: totalTasks,
@@ -431,8 +220,10 @@ export default function AnnotatePage() {
       const updatedAnnotations = { ...session.annotations }
       let completedTasks = 0
 
-      // Process notes one by one to show progress
+      // Process notes one by one to show progress (each note processes prompts in parallel on backend)
       for (let i = 0; i < allNoteIds.length; i++) {
+        if (controller.signal.aborted) break
+
         const noteId = allNoteIds[i]
         const note = session.notes[i]
         const noteStartTime = Date.now()
@@ -442,7 +233,7 @@ export default function AnnotatePage() {
           total: totalTasks,
           currentNote: `Note ${i + 1}/${totalNotes}: ${note.note_id}`,
           percentage: Math.round((completedTasks / totalTasks) * 100),
-          timeRemaining: 0, // Will calculate after first note
+          timeRemaining: 0,
         })
 
         const notePromptTypes = getPromptTypesForNote(note)
@@ -453,7 +244,7 @@ export default function AnnotatePage() {
             prompt_types: notePromptTypes,
             fewshot_k: 5,
             use_fewshots: true,
-          })
+          }, controller.signal)
 
           if (result.results.length > 0) {
             if (!updatedAnnotations[noteId]) {
@@ -475,14 +266,13 @@ export default function AnnotatePage() {
                 raw_response: ann.raw_response,
                 evidence_spans: ann.evidence_spans || [],
                 status: ann.status || 'success',
-                evaluation_result: ann.evaluation_result,  // Preserve evaluation results
-                icdo3_code: ann.icdo3_code,  // Preserve ICD-O-3 code information
+                evaluation_result: ann.evaluation_result,
+                icdo3_code: ann.icdo3_code,
               }
             })
 
             completedTasks += notePromptTypes.length
 
-            // Calculate average time per task and estimate remaining
             const noteTime = (Date.now() - noteStartTime) / 1000
             processingTimes.push(noteTime)
             const avgTimePerTask =
@@ -498,35 +288,41 @@ export default function AnnotatePage() {
               timeRemaining: estimatedTimeRemaining,
             })
 
-            // Update session periodically (every 5 notes or at the end)
             if (i % 5 === 0 || i === allNoteIds.length - 1) {
               const updatedSession = await sessionsApi.update(sessionId, updatedAnnotations)
               setSession(updatedSession)
             }
           }
         } catch (err: any) {
+          if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') break
           console.error(`Failed to process note ${noteId}:`, err)
-          // Continue with next note
           completedTasks += notePromptTypes.length
         }
       }
 
       // Final update
-      const updatedSession = await sessionsApi.update(sessionId, updatedAnnotations)
-      setSession(updatedSession)
+      if (!controller.signal.aborted) {
+        const updatedSession = await sessionsApi.update(sessionId, updatedAnnotations)
+        setSession(updatedSession)
+      }
 
       const totalTime = ((Date.now() - startTime) / 1000).toFixed(1)
       setProgress({
-        current: totalTasks,
+        current: controller.signal.aborted ? completedTasks : totalTasks,
         total: totalTasks,
-        currentNote: 'Complete!',
-        percentage: 100,
+        currentNote: controller.signal.aborted ? `Cancelled after ${totalTime}s` : `Complete! (${totalTime}s)`,
+        percentage: Math.round((completedTasks / totalTasks) * 100),
         timeRemaining: 0,
       })
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Batch processing failed')
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+        setError('Batch processing cancelled')
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Batch processing failed')
+      }
     } finally {
       setProcessingAll(false)
+      abortControllerRef.current = null
     }
   }
 
@@ -844,13 +640,23 @@ export default function AnnotatePage() {
                 </div>
               )}
             </div>
-            <button
-              onClick={handleProcessAll}
-              disabled={processingAll || session.notes.length === 0}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-            >
-              {processingAll ? 'Processing...' : 'Process All Notes'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleProcessAll}
+                disabled={processingAll || session.notes.length === 0}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              >
+                {processingAll ? 'Processing...' : 'Process All Notes'}
+              </button>
+              {processingAll && (
+                <button
+                  onClick={handleCancelProcessing}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
 
           {processingAll && (
@@ -888,13 +694,23 @@ export default function AnnotatePage() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="mb-4 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-900">Clinical Note</h2>
-            <button
-              onClick={handleProcessNote}
-              disabled={processing || processingAll}
-              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              {processing ? 'Processing...' : 'Process Note'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleProcessNote}
+                disabled={processing || processingAll}
+                className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {processing ? 'Processing...' : 'Process Note'}
+              </button>
+              {processing && (
+                <button
+                  onClick={handleCancelProcessing}
+                  className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Progress feedback for single note processing */}
@@ -913,6 +729,30 @@ export default function AnnotatePage() {
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${noteProgress.percentage}%` }}
                 />
+              </div>
+            </div>
+          )}
+
+          {/* Timing breakdown (shown after processing completes) */}
+          {!processing && lastTimingBreakdown && (
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
+              <button
+                onClick={() => setLastTimingBreakdown(null)}
+                className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-800 mb-1"
+              >
+                Timing Breakdown
+                <span className="text-gray-400 ml-1">(click to dismiss)</span>
+              </button>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-gray-600">
+                {Object.entries(lastTimingBreakdown)
+                  .filter(([k]) => k !== 'prompt_count')
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([step, duration]) => (
+                    <div key={step} className="flex justify-between">
+                      <span className="text-gray-500">{step.replace(/_/g, ' ')}:</span>
+                      <span className="font-mono font-medium">{duration.toFixed(2)}s</span>
+                    </div>
+                  ))}
               </div>
             </div>
           )}

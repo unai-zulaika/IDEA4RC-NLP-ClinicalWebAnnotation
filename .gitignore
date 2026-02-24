@@ -1,4 +1,4 @@
-small_testing_data/
+small_testing_data/*
 backend/data/presets/*
 pipeline/api/data/results/*
 

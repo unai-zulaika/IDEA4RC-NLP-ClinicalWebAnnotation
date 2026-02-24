@@ -14,6 +14,12 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+try:
+    import httpx
+    HTTPX_AVAILABLE = True
+except ImportError:
+    HTTPX_AVAILABLE = False
+
 
 # Global VLLM client state
 _VLLM_CLIENT: Optional['VLLMClient'] = None
@@ -245,6 +251,91 @@ class VLLMClient:
             # For other errors, raise as before
             raise RuntimeError(f"VLLM API request failed: {e}")
     
+    async def agenerate(self,
+                       prompt: str,
+                       max_new_tokens: int = 128,
+                       temperature: float = 0.1,
+                       logprobs: Optional[int] = None,
+                       **kwargs) -> Dict[str, Any]:
+        """
+        Async version of generate() using httpx.AsyncClient.
+
+        Args:
+            prompt: Input prompt
+            max_new_tokens: Maximum tokens to generate
+            temperature: Sampling temperature
+            logprobs: Number of logprobs to return per token (None to disable)
+
+        Returns:
+            Dictionary with 'raw', 'normalized' output, and optionally 'logprobs'
+        """
+        if not HTTPX_AVAILABLE:
+            raise RuntimeError("httpx is required for async generation. Install with: pip install httpx")
+
+        url = f"{self.endpoint}/chat/completions"
+
+        is_simple_prompt = (
+            len(prompt.strip()) < 100 and
+            "annotation" not in prompt.lower() and
+            "medical" not in prompt.lower() and
+            "extract" not in prompt.lower() and
+            "task" not in prompt.lower()
+        )
+
+        messages = []
+        if not is_simple_prompt:
+            messages.append({
+                "role": "system",
+                "content": "You are a medical text annotation assistant. Follow the instructions carefully and provide concise, focused responses in the exact format requested. Be especially concise in the reasoning field - provide only essential points in 2-3 sentences maximum."
+            })
+        messages.append({"role": "user", "content": prompt})
+
+        payload = {
+            "model": self.model_name,
+            "messages": messages,
+            "max_tokens": max_new_tokens,
+            "temperature": temperature,
+            **kwargs
+        }
+        if logprobs is not None:
+            payload["logprobs"] = logprobs
+
+        async with httpx.AsyncClient(timeout=httpx.Timeout(self.timeout, connect=10.0)) as client:
+            response = await client.post(url, json=payload)
+            response.raise_for_status()
+
+        result = response.json()
+        raw_output = result["choices"][0]["message"]["content"]
+        first_line = raw_output.strip().splitlines()[0].strip()
+
+        logprobs_data = None
+        if logprobs is not None:
+            choice = result["choices"][0]
+            if "logprobs" in choice:
+                logprobs_data = choice["logprobs"]
+            elif "message" in choice and isinstance(choice["message"], dict) and "logprobs" in choice["message"]:
+                logprobs_data = choice["message"]["logprobs"]
+
+            # Extract from content array if needed
+            if isinstance(logprobs_data, dict) and "content" in logprobs_data:
+                content_logprobs = logprobs_data["content"]
+                if isinstance(content_logprobs, list) and len(content_logprobs) > 0:
+                    extracted = []
+                    for item in content_logprobs:
+                        if isinstance(item, dict):
+                            if "logprob" in item:
+                                extracted.append(item["logprob"])
+                            elif "token_logprob" in item:
+                                extracted.append(item["token_logprob"])
+                    if extracted:
+                        logprobs_data = {"token_logprobs": extracted}
+
+        return {
+            "raw": raw_output,
+            "normalized": first_line,
+            "logprobs": logprobs_data
+        }
+
     def generate_batch(self,
                        prompts: List[str],
                        max_new_tokens: int = 128,

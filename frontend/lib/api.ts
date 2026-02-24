@@ -8,9 +8,24 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 180_000, // 3 minutes default
   headers: {
     'Content-Type': 'application/json',
   },
+})
+
+// Retry interceptor for 502/503/504 errors (2 retries with exponential backoff)
+api.interceptors.response.use(undefined, async (error) => {
+  const config = error.config
+  if (!config || config.__retryCount >= 2) return Promise.reject(error)
+  const status = error.response?.status
+  if (status === 502 || status === 503 || status === 504) {
+    config.__retryCount = (config.__retryCount || 0) + 1
+    const delay = 1000 * Math.pow(2, config.__retryCount - 1) // 1s, 2s
+    await new Promise((r) => setTimeout(r, delay))
+    return api(config)
+  }
+  return Promise.reject(error)
 })
 
 // Types
@@ -248,6 +263,7 @@ export interface AnnotationResult {
   status?: 'success' | 'error' | 'incomplete'  // Annotation status
   evaluation_result?: EvaluationResult  // Evaluation metrics (only in evaluation mode)
   icdo3_code?: ICDO3CodeInfo  // ICD-O-3 code information (for histology/site prompts)
+  timing_breakdown?: Record<string, number>  // Per-step timing breakdown
 }
 
 export interface ProcessNoteResponse {
@@ -255,6 +271,7 @@ export interface ProcessNoteResponse {
   note_text: string
   annotations: AnnotationResult[]
   processing_time_seconds: number
+  timing_breakdown?: Record<string, number>  // Aggregate timing breakdown
 }
 
 export interface BatchProcessRequest {
@@ -267,6 +284,7 @@ export interface BatchProcessRequest {
 export interface BatchProcessResponse {
   results: ProcessNoteResponse[]
   total_time_seconds: number
+  timing_breakdown?: Record<string, number>  // Aggregate timing breakdown
 }
 
 export interface SessionInfo {
@@ -463,16 +481,18 @@ export const uploadApi = {
     return response.data
   },
 
-  getReportTypeMappings: async (): Promise<Record<string, string[]>> => {
-    const response = await api.get('/api/upload/report-type-mappings')
+  getReportTypeMappings: async (center?: string): Promise<Record<string, string[]>> => {
+    const params = center ? { center } : {}
+    const response = await api.get('/api/upload/report-type-mappings', { params })
     return response.data
   },
 
-  saveReportTypeMappings: async (mapping: Record<string, string[]>): Promise<{
+  saveReportTypeMappings: async (mapping: Record<string, string[]>, center?: string): Promise<{
     success: boolean
     message: string
   }> => {
-    const response = await api.post('/api/upload/report-type-mappings', mapping)
+    const params = center ? { center } : {}
+    const response = await api.post('/api/upload/report-type-mappings', mapping, { params })
     return response.data
   },
 }
@@ -484,7 +504,8 @@ export const annotateApi = {
     note_text: string,
     prompt_types: string[],
     fewshot_k: number = 5,
-    use_fewshots: boolean = true
+    use_fewshots: boolean = true,
+    signal?: AbortSignal
   ): Promise<ProcessNoteResponse> => {
     const response = await api.post(
       `/api/annotate/process?session_id=${session_id}&note_text=${encodeURIComponent(note_text)}`,
@@ -493,20 +514,24 @@ export const annotateApi = {
         prompt_types,
         fewshot_k,
         use_fewshots,
-      }
+      },
+      { signal }
     )
     return response.data
   },
 
   batchProcess: async (
     session_id: string,
-    request: BatchProcessRequest
+    request: BatchProcessRequest,
+    signal?: AbortSignal
   ): Promise<BatchProcessResponse> => {
     const response = await api.post(
       `/api/annotate/batch`,
       request,
       {
         params: { session_id },
+        timeout: 300_000, // 5 minutes for batch operations
+        signal,
       }
     )
     return response.data

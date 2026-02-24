@@ -9,6 +9,7 @@ Compares LLM outputs with expected annotations using:
 
 import re
 import unicodedata
+from functools import lru_cache
 from typing import Dict, List, Tuple, Optional
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -78,6 +79,7 @@ def exact_match(expected: str, predicted: str, flexible_punctuation: bool = True
     return False
 
 
+@lru_cache(maxsize=512)
 def cosine_similarity_score(expected: str, predicted: str) -> float:
     """
     Calculate TF-IDF cosine similarity between two strings.

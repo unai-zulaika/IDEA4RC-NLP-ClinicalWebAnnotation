@@ -126,7 +126,7 @@ export default function UploadPage() {
 
   const loadSavedMappings = async () => {
     try {
-      const mappings = await uploadApi.getReportTypeMappings()
+      const mappings = await uploadApi.getReportTypeMappings(selectedCenter)
       setSavedMappings(mappings)
     } catch (err) {
       console.error('Failed to load saved mappings:', err)
@@ -147,8 +147,8 @@ export default function UploadPage() {
       setUploadResult(result)
       setSessionName(file.name.replace('.csv', ''))
       
-      // Load saved mappings first
-      const mappings = await uploadApi.getReportTypeMappings()
+      // Load saved mappings for the selected center
+      const mappings = await uploadApi.getReportTypeMappings(selectedCenter)
       setSavedMappings(mappings)
       
       // Initialize mapping: if we have saved mappings for these report types, use them
@@ -159,8 +159,8 @@ export default function UploadPage() {
           if (mappings[reportType]) {
             initialMapping[reportType] = mappings[reportType]
           } else {
-            // Default: all prompts selected
-            initialMapping[reportType] = prompts.map(p => p.prompt_type)
+            // Default: no prompts selected — user must explicitly choose
+            initialMapping[reportType] = []
           }
         }
       }
@@ -209,8 +209,8 @@ export default function UploadPage() {
         promptTypes.forEach(pt => allPromptTypes.add(pt))
       })
       
-      // Save the mapping for future use
-      await uploadApi.saveReportTypeMappings(reportTypeMapping)
+      // Save the mapping for future use, scoped to selected center
+      await uploadApi.saveReportTypeMappings(reportTypeMapping, selectedCenter)
       
       const session = await sessionsApi.create(
         sessionName || file?.name?.replace('.csv', '') || 'Untitled Session',
@@ -370,13 +370,15 @@ export default function UploadPage() {
                 center={selectedCenter}
                 currentMapping={reportTypeMapping}
                 onLoadPreset={(presetMapping) => {
-                  const merged: Record<string, string[]> = { ...reportTypeMapping }
-                  for (const rt of uploadResult.report_types || []) {
-                    if (presetMapping[rt]) {
-                      merged[rt] = presetMapping[rt]
+                  setReportTypeMapping((prev) => {
+                    const merged = { ...prev }
+                    for (const rt of uploadResult.report_types || []) {
+                      if (presetMapping[rt]) {
+                        merged[rt] = presetMapping[rt]
+                      }
                     }
-                  }
-                  setReportTypeMapping(merged)
+                    return merged
+                  })
                 }}
                 reportTypes={uploadResult.report_types}
               />
@@ -403,18 +405,14 @@ export default function UploadPage() {
                         <button
                           type="button"
                           onClick={() => {
-                            const currentPrompts = reportTypeMapping[reportType] || []
-                            if (currentPrompts.length === prompts.length) {
-                              setReportTypeMapping({
-                                ...reportTypeMapping,
-                                [reportType]: []
-                              })
-                            } else {
-                              setReportTypeMapping({
-                                ...reportTypeMapping,
-                                [reportType]: prompts.map(p => p.prompt_type)
-                              })
-                            }
+                            setReportTypeMapping((prev) => {
+                              const currentPrompts = prev[reportType] || []
+                              if (currentPrompts.length === prompts.length) {
+                                return { ...prev, [reportType]: [] }
+                              } else {
+                                return { ...prev, [reportType]: prompts.map(p => p.prompt_type) }
+                              }
+                            })
                           }}
                           className="text-xs text-primary-600 hover:text-primary-700 font-medium"
                         >
@@ -431,18 +429,15 @@ export default function UploadPage() {
                               type="checkbox"
                               checked={reportTypeMapping[reportType]?.includes(prompt.prompt_type) || false}
                               onChange={(e) => {
-                                const currentPrompts = reportTypeMapping[reportType] || []
-                                if (e.target.checked) {
-                                  setReportTypeMapping({
-                                    ...reportTypeMapping,
-                                    [reportType]: [...currentPrompts, prompt.prompt_type]
-                                  })
-                                } else {
-                                  setReportTypeMapping({
-                                    ...reportTypeMapping,
-                                    [reportType]: currentPrompts.filter((p) => p !== prompt.prompt_type)
-                                  })
-                                }
+                                const checked = e.target.checked
+                                setReportTypeMapping((prev) => {
+                                  const currentPrompts = prev[reportType] || []
+                                  if (checked) {
+                                    return { ...prev, [reportType]: [...currentPrompts, prompt.prompt_type] }
+                                  } else {
+                                    return { ...prev, [reportType]: currentPrompts.filter((p) => p !== prompt.prompt_type) }
+                                  }
+                                })
                               }}
                               className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                             />
