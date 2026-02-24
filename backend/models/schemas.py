@@ -149,6 +149,7 @@ class AnnotationResult(BaseModel):
     status: Optional[str] = "success"  # "success", "error", "incomplete" - indicates annotation status
     evaluation_result: Optional[Dict[str, Any]] = None  # Evaluation metrics (only in evaluation mode)
     icdo3_code: Optional[ICDO3CodeInfo] = None  # ICD-O-3 code information (for histology/site prompts)
+    timing_breakdown: Optional[Dict[str, float]] = None  # Per-step timing breakdown
 
 
 class ProcessNoteRequest(BaseModel):
@@ -163,6 +164,7 @@ class ProcessNoteResponse(BaseModel):
     note_text: str
     annotations: List[AnnotationResult]
     processing_time_seconds: float
+    timing_breakdown: Optional[Dict[str, float]] = None  # Aggregate timing breakdown
 
 
 class BatchProcessRequest(BaseModel):
@@ -175,6 +177,7 @@ class BatchProcessRequest(BaseModel):
 class BatchProcessResponse(BaseModel):
     results: List[ProcessNoteResponse]
     total_time_seconds: float
+    timing_breakdown: Optional[Dict[str, float]] = None  # Aggregate timing breakdown
 
 
 # Session Schemas

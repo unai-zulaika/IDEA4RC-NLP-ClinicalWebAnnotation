@@ -2,8 +2,24 @@
 Structured generation service using Outlines and Pydantic
 """
 import json
+import re
 from typing import Optional, Dict, Any, Tuple
 from pathlib import Path
+
+# Pre-compiled regex patterns for JSON extraction
+_RE_MARKDOWN_JSON = re.compile(r'```(?:json)?\s*\n?(.*?)\n?```', re.DOTALL)
+_RE_JSON_OBJ = re.compile(r'\{.*?"evidence".*?"reasoning".*?"final_output".*?\}', re.DOTALL)
+_RE_JSON_ARRAY = re.compile(r'\[\s*\{.*?"evidence".*?"reasoning".*?"final_output".*?\}.*?\]', re.DOTALL)
+_RE_JSON_OBJ_SINGLE = re.compile(r'\{[^{}]*"evidence"[^{}]*"reasoning"[^{}]*"final_output"[^{}]*\}', re.DOTALL)
+_RE_EVIDENCE = re.compile(r'Evidence:\s*(.+?)(?:\.|$|Reasoning:)', re.IGNORECASE | re.DOTALL)
+_RE_EVIDENCE_QUOTED = re.compile(r'"([^"]+)"')
+_RE_REASONING = re.compile(r'Reasoning:\s*(.+?)(?:\.|$|Final)', re.IGNORECASE | re.DOTALL)
+_RE_REASONING_INF = re.compile(r'Inference:\s*(.+?)(?:\.|$)', re.IGNORECASE | re.DOTALL)
+_RE_ANNOTATION = re.compile(r'Annotation:\s*(.+?)(?:\.|$)', re.IGNORECASE | re.DOTALL)
+_RE_FINAL_OUTPUT = re.compile(r'Final output:\s*(.+?)(?:\.|$)', re.IGNORECASE | re.DOTALL)
+_RE_DATE_SLASH = re.compile(r'\d{2}/\d{2}/\d{4}')
+_RE_DATE_ISO = re.compile(r'\d{4}-\d{2}-\d{2}')
+_RE_DATE_FLEX = re.compile(r'\d{1,2}/\d{1,2}/\d{4}')
 
 try:
     import outlines
@@ -125,13 +141,12 @@ def generate_structured_annotation(
         elif isinstance(result, str):
             # Try to extract JSON from markdown code blocks first
             json_str = result
-            import re
             # Look for ```json ... ``` or ``` ... ```
-            markdown_match = re.search(r'```(?:json)?\s*\n?(.*?)\n?```', result, re.DOTALL)
+            markdown_match = _RE_MARKDOWN_JSON.search(result)
             if markdown_match:
                 json_str = markdown_match.group(1).strip()
             # Also try to find JSON object directly
-            json_obj_match = re.search(r'\{.*?"evidence".*?"reasoning".*?"final_output".*?\}', json_str, re.DOTALL)
+            json_obj_match = _RE_JSON_OBJ.search(json_str)
             if json_obj_match:
                 json_str = json_obj_match.group(0)
             
@@ -227,14 +242,10 @@ def generate_structured_annotation_fallback(
     """
     # Try to extract JSON from output
     json_match = None
-    
-    # First, try to extract JSON from markdown code blocks
-    import re
-    json_match = None
     json_str = None
-    
-    # Look for ```json ... ``` or ``` ... ```
-    markdown_match = re.search(r'```(?:json)?\s*\n?(.*?)\n?```', raw_output, re.DOTALL)
+
+    # First, try to extract JSON from markdown code blocks
+    markdown_match = _RE_MARKDOWN_JSON.search(raw_output)
     if markdown_match:
         json_str = markdown_match.group(1).strip()
         try:
@@ -243,33 +254,27 @@ def generate_structured_annotation_fallback(
             print(f"[DEBUG] Failed to parse JSON from markdown block: {e}")
             print(f"[DEBUG] JSON string was: {json_str[:200]}")
             json_str = None
-    
+
     # If markdown extraction didn't work, try direct JSON patterns
     if not json_match:
         # Try to match JSON array first (in case LLM returns array)
-        array_pattern = r'\[\s*\{.*?"evidence".*?"reasoning".*?"final_output".*?\}.*?\]'
-        array_match = re.search(array_pattern, raw_output, re.DOTALL)
+        array_match = _RE_JSON_ARRAY.search(raw_output)
         if array_match:
             try:
                 json_match = json.loads(array_match.group(0))
             except json.JSONDecodeError as e:
                 print(f"[DEBUG] Failed to parse JSON array from pattern: {e}")
-        
+
         # If no array found, try single object patterns
         if not json_match:
-            json_patterns = [
-                r'\{.*?"evidence".*?"reasoning".*?"final_output".*?\}',  # Multi-line JSON (more flexible)
-                r'\{[^{}]*"evidence"[^{}]*"reasoning"[^{}]*"final_output"[^{}]*\}',  # Single-line JSON
-            ]
-            
-            for pattern in json_patterns:
-                match = re.search(pattern, raw_output, re.DOTALL)
+            for compiled_re in [_RE_JSON_OBJ, _RE_JSON_OBJ_SINGLE]:
+                match = compiled_re.search(raw_output)
                 if match:
                     try:
                         json_match = json.loads(match.group(0))
                         break
                     except json.JSONDecodeError as e:
-                        print(f"[DEBUG] Failed to parse JSON from pattern {pattern}: {e}")
+                        print(f"[DEBUG] Failed to parse JSON from pattern: {e}")
                         continue
     
     # If JSON found, use it
@@ -300,59 +305,38 @@ def generate_structured_annotation_fallback(
     
     # Try to extract evidence (look for quoted text or "Evidence:" pattern)
     evidence = ""
-    evidence_patterns = [
-        r'Evidence:\s*(.+?)(?:\.|$|Reasoning:)',
-        r'"([^"]+)"',
-    ]
-    for pattern in evidence_patterns:
-        import re
-        match = re.search(pattern, raw_output, re.IGNORECASE | re.DOTALL)
+    for compiled_re in [_RE_EVIDENCE, _RE_EVIDENCE_QUOTED]:
+        match = compiled_re.search(raw_output)
         if match:
             evidence = match.group(1).strip()
             break
-    
+
     # Extract reasoning
     reasoning = ""
-    reasoning_patterns = [
-        r'Reasoning:\s*(.+?)(?:\.|$|Final)',
-        r'Inference:\s*(.+?)(?:\.|$)',
-    ]
-    for pattern in reasoning_patterns:
-        import re
-        match = re.search(pattern, raw_output, re.IGNORECASE | re.DOTALL)
+    for compiled_re in [_RE_REASONING, _RE_REASONING_INF]:
+        match = compiled_re.search(raw_output)
         if match:
             reasoning = match.group(1).strip()
             break
-    
+
     # Extract final output (look for "Annotation:" or template format)
     final_output = raw_output
-    final_patterns = [
-        r'Annotation:\s*(.+?)(?:\.|$)',
-        r'Final output:\s*(.+?)(?:\.|$)',
-    ]
-    for pattern in final_patterns:
-        import re
-        match = re.search(pattern, raw_output, re.IGNORECASE | re.DOTALL)
+    for compiled_re in [_RE_ANNOTATION, _RE_FINAL_OUTPUT]:
+        match = compiled_re.search(raw_output)
         if match:
             final_output = match.group(1).strip()
             break
-    
+
     # Check for negation
     is_negated = any(neg_word in raw_output.lower() for neg_word in [
         'no ', 'not ', 'absence of', 'ruled out', 'negative', 'none',
         'no evidence', 'without', 'excluded'
     ])
-    
+
     # Try to extract date
     date_info = None
-    date_patterns = [
-        r'\d{2}/\d{2}/\d{4}',
-        r'\d{4}-\d{2}-\d{2}',
-        r'\d{1,2}/\d{1,2}/\d{4}',
-    ]
-    import re
-    for pattern in date_patterns:
-        match = re.search(pattern, raw_output)
+    for compiled_re in [_RE_DATE_SLASH, _RE_DATE_ISO, _RE_DATE_FLEX]:
+        match = compiled_re.search(raw_output)
         if match:
             date_info = {
                 "date_value": match.group(0),

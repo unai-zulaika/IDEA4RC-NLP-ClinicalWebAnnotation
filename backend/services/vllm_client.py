@@ -203,13 +203,26 @@ class EnhancedVLLMClient:
         self._init_client()
         return True
     
-    def generate(self, prompt: str, max_new_tokens: int = 128, 
+    def generate(self, prompt: str, max_new_tokens: int = 128,
                  temperature: float = 0.0, return_logprobs: bool = False) -> Dict[str, Any]:
         """Generate text using VLLM"""
         if not self._client:
             raise RuntimeError("VLLM client not initialized")
-        
+
         return self._client.generate(
+            prompt=prompt,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            logprobs=1 if return_logprobs else None
+        )
+
+    async def agenerate(self, prompt: str, max_new_tokens: int = 128,
+                        temperature: float = 0.0, return_logprobs: bool = False) -> Dict[str, Any]:
+        """Async generate text using VLLM (httpx-based)"""
+        if not self._client:
+            raise RuntimeError("VLLM client not initialized")
+
+        return await self._client.agenerate(
             prompt=prompt,
             max_new_tokens=max_new_tokens,
             temperature=temperature,

@@ -2,9 +2,10 @@
 CSV upload and processing routes
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from typing import List, Dict, Tuple
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query
+from typing import List, Dict, Tuple, Optional
 import pandas as pd
+import csv
 import io
 import json
 from pathlib import Path
@@ -53,6 +54,119 @@ def _save_fewshots_to_disk(fewshots: Dict[str, List[Tuple[str, str]]]):
         raise
 
 
+def _parse_csv_with_reconstruction(contents_str: str, required_columns: List[str]) -> Optional[pd.DataFrame]:
+    """
+    Parse CSV by splitting on ; and reconstructing fields when text contains the delimiter.
+    Handles the ""value"" quoting convention by stripping quotes after splitting.
+    """
+    lines = contents_str.strip().split('\n')
+    if len(lines) < 2:
+        return None
+
+    # Parse header
+    header = [h.strip().strip('"').strip() for h in lines[0].split(';')]
+
+    # Check required columns
+    if not all(col in header for col in required_columns):
+        return None
+
+    expected_cols = len(header)
+
+    rows = []
+    for line in lines[1:]:
+        line = line.strip()
+        if not line:
+            continue
+
+        parts = line.split(';')
+
+        if len(parts) == expected_cols:
+            rows.append([p.strip().strip('"').strip() for p in parts])
+        elif len(parts) > expected_cols:
+            # Text field (first column) was split by internal ;
+            # Take the last (expected_cols - 1) parts as the non-text columns
+            # Everything else is the text field
+            excess = len(parts) - expected_cols
+            text_parts = parts[:excess + 1]
+            rest_parts = parts[excess + 1:]
+
+            text_value = ';'.join(text_parts)
+            all_parts = [text_value] + list(rest_parts)
+            rows.append([p.strip().strip('"').strip() for p in all_parts])
+        else:
+            # Fewer fields than expected — pad with empty strings
+            padded = parts + [''] * (expected_cols - len(parts))
+            rows.append([p.strip().strip('"').strip() for p in padded])
+
+    if not rows:
+        return None
+
+    return pd.DataFrame(rows, columns=header)
+
+
+def _parse_csv_flexible(contents_str: str, required_columns: List[str]) -> pd.DataFrame:
+    """
+    Try multiple CSV parsing strategies to handle different delimiter/quoting formats.
+    Returns the first successfully parsed DataFrame that contains all required columns.
+    Raises HTTPException(400) if no strategy works.
+    """
+    common_kwargs = dict(dtype=str, keep_default_na=False)
+
+    strategies = [
+        # 1. Semicolon, standard quoting (current happy path)
+        dict(sep=';', **common_kwargs),
+        # 2. Comma, standard quoting
+        dict(sep=',', **common_kwargs),
+        # 3. Tab, standard quoting
+        dict(sep='\t', **common_kwargs),
+        # 4. Auto-detect delimiter
+        dict(sep=None, engine='python', **common_kwargs),
+        # 5. Semicolon with QUOTE_NONE (fixes broken-quoting format)
+        dict(sep=';', quoting=csv.QUOTE_NONE, **common_kwargs),
+        # 6. Comma with QUOTE_NONE
+        dict(sep=',', quoting=csv.QUOTE_NONE, **common_kwargs),
+    ]
+
+    for strategy in strategies[:4]:
+        try:
+            df = pd.read_csv(io.StringIO(contents_str), **strategy)
+            df.columns = [col.strip().strip('"').strip() for col in df.columns]
+            missing = [c for c in required_columns if c not in df.columns]
+            if missing:
+                continue
+            return df
+        except Exception:
+            continue
+
+    # Try column-reconstruction strategy for files with ; in text fields
+    try:
+        df = _parse_csv_with_reconstruction(contents_str, required_columns)
+        if df is not None:
+            return df
+    except Exception:
+        pass
+
+    # Fallback: QUOTE_NONE strategies
+    for strategy in strategies[4:]:
+        try:
+            df = pd.read_csv(io.StringIO(contents_str), **strategy)
+            df.columns = [col.strip().strip('"').strip() for col in df.columns]
+            missing = [c for c in required_columns if c not in df.columns]
+            if missing:
+                continue
+            if strategy.get('quoting') == csv.QUOTE_NONE:
+                for col in df.columns:
+                    df[col] = df[col].astype(str).str.strip().str.strip('"').str.strip()
+            return df
+        except Exception:
+            continue
+
+    raise HTTPException(
+        status_code=400,
+        detail=f"Failed to parse CSV. No delimiter/quoting strategy produced the required columns: {required_columns}"
+    )
+
+
 @router.post("/csv", response_model=CSVUploadResponse)
 async def upload_csv(file: UploadFile = File(...)):
     """Upload and parse CSV file"""
@@ -62,37 +176,9 @@ async def upload_csv(file: UploadFile = File(...)):
     # Read CSV content
     contents = await file.read()
     
-    try:
-        # Parse CSV (handle semicolon delimiter as in first_patient_notes.csv)
-        # Use dtype=str to prevent any truncation and preserve full text
-        df = pd.read_csv(
-            io.StringIO(contents.decode('utf-8')), 
-            delimiter=';', 
-            encoding='utf-8',
-            dtype=str,  # Read all columns as strings to preserve full content
-            keep_default_na=False  # Don't convert empty strings to NaN
-        )
-    except Exception as e:
-        # Try comma delimiter as fallback
-        try:
-            df = pd.read_csv(
-                io.StringIO(contents.decode('utf-8')), 
-                delimiter=',', 
-                encoding='utf-8',
-                dtype=str,  # Read all columns as strings to preserve full content
-                keep_default_na=False  # Don't convert empty strings to NaN
-            )
-        except Exception as e2:
-            raise HTTPException(status_code=400, detail=f"Failed to parse CSV: {str(e2)}")
-    
-    # Validate required columns
+    contents_str = contents.decode('utf-8')
     required_columns = ['text', 'date', 'p_id', 'note_id', 'report_type']
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    if missing_columns:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Missing required columns: {missing_columns}"
-        )
+    df = _parse_csv_flexible(contents_str, required_columns)
     
     # Convert to list of CSVRow objects
     # Use .fillna('') to handle any NaN values and ensure we get full strings
@@ -161,35 +247,9 @@ async def upload_fewshots(file: UploadFile = File(...)):
     
     contents = await file.read()
     
-    try:
-        # Use dtype=str to prevent any truncation and preserve full text
-        df = pd.read_csv(
-            io.StringIO(contents.decode('utf-8')), 
-            delimiter=';', 
-            encoding='utf-8',
-            dtype=str,  # Read all columns as strings to preserve full content
-            keep_default_na=False  # Don't convert empty strings to NaN
-        )
-    except Exception as e:
-        try:
-            df = pd.read_csv(
-                io.StringIO(contents.decode('utf-8')), 
-                delimiter=',', 
-                encoding='utf-8',
-                dtype=str,  # Read all columns as strings to preserve full content
-                keep_default_na=False  # Don't convert empty strings to NaN
-            )
-        except Exception as e2:
-            raise HTTPException(status_code=400, detail=f"Failed to parse CSV: {str(e2)}")
-    
-    # Validate required columns
+    contents_str = contents.decode('utf-8')
     required_columns = ['prompt_type', 'note_text', 'annotation']
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    if missing_columns:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Missing required columns: {missing_columns}. Expected: {required_columns}"
-        )
+    df = _parse_csv_flexible(contents_str, required_columns)
     
     # Import the few-shot storage from annotate module (lazy import to avoid circular dependency)
     import importlib
@@ -225,37 +285,72 @@ async def upload_fewshots(file: UploadFile = File(...)):
 
 
 @router.get("/report-type-mappings")
-async def get_report_type_mappings():
-    """Get saved report type to prompt type mappings"""
+async def get_report_type_mappings(center: Optional[str] = Query(None)):
+    """Get saved report type to prompt type mappings, scoped by center.
+
+    The file stores mappings nested by center:
+      { "INT": { "Pathology": ["biopsygrading-int", ...] }, "MSCI": { ... } }
+
+    If center is provided, returns only that center's mappings (flat dict).
+    If center is omitted, returns the entire nested structure.
+    """
     mappings_file = _get_sessions_dir() / "report_type_mappings.json"
-    if mappings_file.exists():
+    if not mappings_file.exists():
+        return {}
+    try:
+        with open(mappings_file, 'r', encoding='utf-8') as f:
+            all_mappings = json.load(f)
+    except Exception as e:
+        print(f"[WARN] Failed to load report type mappings: {e}")
+        return {}
+
+    # Migrate old flat format: if top-level values are lists, it's the old format — discard it
+    if all_mappings and any(isinstance(v, list) for v in all_mappings.values()):
+        print("[INFO] Discarding old flat report_type_mappings.json (not center-scoped)")
+        all_mappings = {}
         try:
-            with open(mappings_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"[WARN] Failed to load report type mappings: {e}")
-            return {}
-    return {}
+            with open(mappings_file, 'w', encoding='utf-8') as f:
+                json.dump(all_mappings, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
+
+    if center:
+        return all_mappings.get(center, {})
+    return all_mappings
 
 
 @router.post("/report-type-mappings")
-async def save_report_type_mappings(mapping: Dict[str, List[str]]):
-    """Save report type to prompt type mapping"""
+async def save_report_type_mappings(
+    mapping: Dict[str, List[str]],
+    center: Optional[str] = Query(None),
+):
+    """Save report type to prompt type mapping, scoped by center.
+
+    If center is provided, saves under that center key.
+    If center is omitted, treats mapping as a flat update (legacy behavior).
+    """
     mappings_file = _get_sessions_dir() / "report_type_mappings.json"
     try:
-        # Load existing mappings
-        existing_mappings = {}
+        all_mappings: Dict = {}
         if mappings_file.exists():
             with open(mappings_file, 'r', encoding='utf-8') as f:
-                existing_mappings = json.load(f)
-        
-        # Update with new mapping
-        existing_mappings.update(mapping)
-        
-        # Save back
+                all_mappings = json.load(f)
+
+        # Migrate old flat format
+        if all_mappings and any(isinstance(v, list) for v in all_mappings.values()):
+            print("[INFO] Discarding old flat report_type_mappings.json during save")
+            all_mappings = {}
+
+        if center:
+            if center not in all_mappings:
+                all_mappings[center] = {}
+            all_mappings[center].update(mapping)
+        else:
+            all_mappings.update(mapping)
+
         with open(mappings_file, 'w', encoding='utf-8') as f:
-            json.dump(existing_mappings, f, indent=2, ensure_ascii=False)
-        
+            json.dump(all_mappings, f, indent=2, ensure_ascii=False)
+
         return {"success": True, "message": "Report type mapping saved successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save mapping: {str(e)}")

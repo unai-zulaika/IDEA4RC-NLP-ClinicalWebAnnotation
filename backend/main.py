@@ -7,6 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import sys
 
+# Install uvloop for faster async event loop (if available)
+try:
+    import uvloop
+    uvloop.install()
+    print("[INFO] uvloop installed — using optimized event loop")
+except ImportError:
+    pass
+
 # No need to add parent directory - all modules are now local
 
 from routes import server, prompts, upload, annotate, sessions, presets
@@ -47,6 +55,15 @@ app.include_router(upload.router, prefix="/api/upload", tags=["upload"])
 app.include_router(annotate.router, prefix="/api/annotate", tags=["annotate"])
 app.include_router(sessions.router, prefix="/api/sessions", tags=["sessions"])
 app.include_router(presets.router, prefix="/api/presets", tags=["presets"])
+
+
+# Prometheus metrics instrumentation
+try:
+    from prometheus_fastapi_instrumentator import Instrumentator
+    Instrumentator().instrument(app).expose(app, endpoint="/metrics")
+    print("[INFO] Prometheus metrics enabled at /metrics")
+except ImportError:
+    print("[WARN] prometheus-fastapi-instrumentator not available, /metrics endpoint disabled")
 
 
 @app.get("/")

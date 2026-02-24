@@ -19,6 +19,21 @@ from lib.evaluation_engine import (
     extract_values_from_annotation
 )
 
+# Pre-compiled "no annotation" patterns (avoids re-compiling on every call)
+_NO_ANNOTATION_PATTERNS = [
+    re.compile(r'\b(none|n/a|na)\b', re.IGNORECASE),
+    re.compile(r'\bno\s+(annotation|information|data|result|finding|value)\b', re.IGNORECASE),
+    re.compile(r'\bnot\s+(applicable|available|found|specified|mentioned|present|applicable)\b', re.IGNORECASE),
+    re.compile(r'\bno\s+annotation\s+expected\b', re.IGNORECASE),
+    re.compile(r'\binformation\s+not\s+available\b', re.IGNORECASE),
+    re.compile(r'\bno\s+relevant\s+information\b', re.IGNORECASE),
+    re.compile(r'\bunknown\b', re.IGNORECASE),
+    re.compile(r'\bnot\s+available\s+in\s+the\s+note\b', re.IGNORECASE),
+    re.compile(r'\bselect\s+(result|value|intent|regimen|reason|where|date)\b', re.IGNORECASE),
+    re.compile(r'^\[.*\]$', re.IGNORECASE),
+    re.compile(r'^$', re.IGNORECASE),
+]
+
 
 def is_no_annotation_indicator(text: str) -> bool:
     """
@@ -58,30 +73,14 @@ def is_no_annotation_indicator(text: str) -> bool:
             # Take last 1-3 words as potential value
             value_part = ' '.join(words[-3:])
     
-    # Patterns that indicate "no annotation" - check both full text and value part
-    # Use word boundaries to avoid false positives
-    no_annotation_patterns = [
-        r'\b(none|n/a|na)\b',  # Simple absence words
-        r'\bno\s+(annotation|information|data|result|finding|value)\b',
-        r'\bnot\s+(applicable|available|found|specified|mentioned|present|applicable)\b',
-        r'\bno\s+annotation\s+expected\b',
-        r'\binformation\s+not\s+available\b',
-        r'\bno\s+relevant\s+information\b',
-        r'\bunknown\b',  # "Unknown" indicates absence
-        r'\bnot\s+available\s+in\s+the\s+note\b',
-        r'\bselect\s+(result|value|intent|regimen|reason|where|date)\b',  # Placeholder values like "[select result]"
-        r'^\[.*\]$',  # Placeholder in brackets like "[select result]", "[put date]"
-        r'^$',  # Empty string
-    ]
-    
     # Check both the full normalized text and the extracted value part
     texts_to_check = [normalized, value_part]
-    
+
     for check_text in texts_to_check:
-        for pattern in no_annotation_patterns:
-            if re.search(pattern, check_text, re.IGNORECASE):
+        for pattern in _NO_ANNOTATION_PATTERNS:
+            if pattern.search(check_text):
                 return True
-    
+
     return False
 
 
