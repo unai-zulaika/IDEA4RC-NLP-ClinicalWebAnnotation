@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { sessionsApi, annotateApi, promptsApi, presetsApi } from '@/lib/api'
 import { useDefaultCenter } from '@/lib/useDefaultCenter'
-import type { SessionData, AnnotationResult, EvidenceSpan, PromptInfo, ICDO3CodeInfo, UnifiedICDO3Code } from '@/lib/api'
+import type { SessionData, AnnotationResult, EvidenceSpan, PromptInfo, ICDO3CodeInfo, UnifiedICDO3Code, BatchProcessResponse } from '@/lib/api'
 import ManagePromptTypesModal from '@/components/ManagePromptTypesModal'
 import TextHighlighter from '@/components/TextHighlighter'
 import AnnotationViewer from '@/components/AnnotationViewer'
@@ -52,6 +52,7 @@ export default function AnnotatePage() {
   const [showPromptTypesModal, setShowPromptTypesModal] = useState(false)
   const [availablePrompts, setAvailablePrompts] = useState<PromptInfo[]>([])
   const [exporting, setExporting] = useState<'labels' | 'codes' | 'session' | null>(null)
+  const [exclusionReport, setExclusionReport] = useState<import('@/lib/api').ExcludedRow[] | null>(null)
   // Track unified ICD-O-3 codes per note
   const [unifiedCodes, setUnifiedCodes] = useState<Record<string, UnifiedICDO3Code>>({})
   // AbortController for cancelling in-flight requests
@@ -134,12 +135,33 @@ export default function AnnotatePage() {
       }
 
       // Send ALL prompts in a single batch call (processed in parallel on backend)
-      const result = await annotateApi.batchProcess(sessionId, {
+      // Use SSE streaming to avoid reverse-proxy idle timeouts, with fallback
+      const batchRequest = {
         note_ids: [note.note_id],
         prompt_types: notePromptTypes,
         fewshot_k: 5,
         use_fewshots: true,
-      }, controller.signal)
+      }
+      let result: BatchProcessResponse
+      try {
+        result = await annotateApi.batchProcessStream(
+          sessionId,
+          batchRequest,
+          (prog) => {
+            setNoteProgress({
+              current: prog.completed,
+              total: prog.total,
+              currentPrompt: `Processing ${prog.prompt_type} (${prog.completed}/${prog.total})`,
+              percentage: prog.percentage,
+            })
+          },
+          controller.signal,
+        )
+      } catch (streamErr: any) {
+        if (streamErr.name === 'AbortError' || streamErr.code === 'ERR_CANCELED') throw streamErr
+        console.warn('SSE streaming failed, falling back to standard batch:', streamErr)
+        result = await annotateApi.batchProcess(sessionId, batchRequest, controller.signal)
+      }
 
       if (result.results.length > 0) {
         result.results[0].annotations.forEach((ann: AnnotationResult) => {
@@ -239,12 +261,30 @@ export default function AnnotatePage() {
         const notePromptTypes = getPromptTypesForNote(note)
 
         try {
-          const result = await annotateApi.batchProcess(sessionId, {
+          const batchReq = {
             note_ids: [noteId],
             prompt_types: notePromptTypes,
             fewshot_k: 5,
             use_fewshots: true,
-          }, controller.signal)
+          }
+          let result: BatchProcessResponse
+          try {
+            result = await annotateApi.batchProcessStream(
+              sessionId,
+              batchReq,
+              (prog) => {
+                setProgress((prev) => ({
+                  ...prev,
+                  currentNote: `Note ${i + 1}/${totalNotes}: ${note.note_id} — ${prog.prompt_type} (${prog.completed}/${prog.total})`,
+                }))
+              },
+              controller.signal,
+            )
+          } catch (streamErr: any) {
+            if (streamErr.name === 'AbortError' || streamErr.code === 'ERR_CANCELED') throw streamErr
+            console.warn('SSE streaming failed, falling back to standard batch:', streamErr)
+            result = await annotateApi.batchProcess(sessionId, batchReq, controller.signal)
+          }
 
           if (result.results.length > 0) {
             if (!updatedAnnotations[noteId]) {
@@ -412,11 +452,16 @@ export default function AnnotatePage() {
     try {
       let blob: Blob
       let filename: string
+      let excludedRows: import('@/lib/api').ExcludedRow[] = []
       if (mode === 'labels') {
-        blob = await sessionsApi.exportLabels(sessionId)
+        const result = await sessionsApi.exportLabels(sessionId)
+        blob = result.blob
+        excludedRows = result.excludedRows
         filename = `${sessionId}_validated.csv`
       } else if (mode === 'codes') {
-        blob = await sessionsApi.exportCodes(sessionId)
+        const result = await sessionsApi.exportCodes(sessionId)
+        blob = result.blob
+        excludedRows = result.excludedRows
         filename = `${sessionId}_coded.csv`
       } else {
         blob = await sessionsApi.exportSession(sessionId)
@@ -430,6 +475,11 @@ export default function AnnotatePage() {
       a.click()
       a.remove()
       window.URL.revokeObjectURL(url)
+
+      // Show exclusion report modal if any rows were filtered out
+      if (excludedRows.length > 0) {
+        setExclusionReport(excludedRows)
+      }
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || `Export failed`)
     } finally {
@@ -898,6 +948,90 @@ export default function AnnotatePage() {
           }}
           error={error}
         />
+      )}
+
+      {/* Exclusion Report Modal */}
+      {exclusionReport && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Export Exclusion Report</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  {exclusionReport.length} row(s) excluded from the export
+                </p>
+              </div>
+              <button
+                onClick={() => setExclusionReport(null)}
+                className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="px-6 py-4 overflow-y-auto flex-1">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500 border-b">
+                    <th className="pb-2 pr-3">Patient</th>
+                    <th className="pb-2 pr-3">Variable</th>
+                    <th className="pb-2 pr-3">Value</th>
+                    <th className="pb-2">Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {exclusionReport.map((row, i) => (
+                    <tr key={i} className="border-b border-gray-100">
+                      <td className="py-2 pr-3 font-mono text-xs">{row.patient_id}</td>
+                      <td className="py-2 pr-3">{row.variable}</td>
+                      <td className="py-2 pr-3 text-gray-600 italic">
+                        {row.value || '(empty)'}
+                      </td>
+                      <td className="py-2 text-gray-500 text-xs">{row.reason}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="px-6 py-3 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  const lines = [
+                    `Export Exclusion Report`,
+                    `Generated: ${new Date().toISOString()}`,
+                    `Total excluded: ${exclusionReport.length}`,
+                    ``,
+                    `${'Patient'.padEnd(15)} ${'Variable'.padEnd(50)} ${'Value'.padEnd(25)} Reason`,
+                    `${'─'.repeat(15)} ${'─'.repeat(50)} ${'─'.repeat(25)} ${'─'.repeat(40)}`,
+                    ...exclusionReport.map(
+                      (r) =>
+                        `${(r.patient_id || '').padEnd(15)} ${r.variable.padEnd(50)} ${(r.value || '(empty)').padEnd(25)} ${r.reason}`
+                    ),
+                  ]
+                  const blob = new Blob([lines.join('\n')], { type: 'text/plain' })
+                  const url = window.URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `exclusion_report_${sessionId}.txt`
+                  document.body.appendChild(a)
+                  a.click()
+                  a.remove()
+                  window.URL.revokeObjectURL(url)
+                }}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Download as TXT
+              </button>
+              <button
+                onClick={() => setExclusionReport(null)}
+                className="px-4 py-2 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

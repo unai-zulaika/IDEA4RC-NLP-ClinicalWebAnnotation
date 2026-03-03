@@ -28,6 +28,16 @@ api.interceptors.response.use(undefined, async (error) => {
   return Promise.reject(error)
 })
 
+// Helpers
+function parseExcludedRowsHeader(header: string | undefined): ExcludedRow[] {
+  if (!header) return []
+  try {
+    return JSON.parse(header) as ExcludedRow[]
+  } catch {
+    return []
+  }
+}
+
 // Types
 export interface ServerStatus {
   status: string
@@ -79,6 +89,13 @@ export interface CSVRow {
   note_id: string
   report_type: string
   annotations?: string
+}
+
+export interface ExcludedRow {
+  patient_id: string
+  variable: string
+  value: string
+  reason: string
 }
 
 export interface CSVUploadResponse {
@@ -541,6 +558,80 @@ export const annotateApi = {
     return response.data
   },
 
+  /**
+   * SSE-streaming batch process. Sends progress events as each prompt
+   * completes, preventing reverse-proxy idle timeouts.
+   * Falls back to standard batchProcess on failure.
+   */
+  batchProcessStream: async (
+    session_id: string,
+    request: BatchProcessRequest,
+    onProgress?: (data: {
+      completed: number
+      total: number
+      note_id: string
+      prompt_type: string
+      percentage: number
+    }) => void,
+    signal?: AbortSignal
+  ): Promise<BatchProcessResponse> => {
+    const url = `${API_BASE_URL}/api/annotate/batch/stream?session_id=${encodeURIComponent(session_id)}`
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request),
+      signal,
+    })
+
+    if (!response.ok) {
+      // Try to parse error detail, then throw
+      let detail = `Batch streaming failed (${response.status})`
+      try {
+        const err = await response.json()
+        if (err.detail) detail = err.detail
+      } catch { /* ignore parse errors */ }
+      throw new Error(detail)
+    }
+
+    const reader = response.body!.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let finalResult: BatchProcessResponse | null = null
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+
+      // Parse SSE events from buffer
+      const parts = buffer.split('\n\n')
+      buffer = parts.pop() || '' // last part may be incomplete
+
+      for (const part of parts) {
+        let eventType = ''
+        let eventData = ''
+        for (const line of part.split('\n')) {
+          if (line.startsWith('event: ')) {
+            eventType = line.slice(7).trim()
+          } else if (line.startsWith('data: ')) {
+            eventData += line.slice(6)
+          }
+        }
+        if (!eventData) continue
+
+        if (eventType === 'progress' && onProgress) {
+          try { onProgress(JSON.parse(eventData)) } catch { /* skip bad events */ }
+        } else if (eventType === 'complete') {
+          try { finalResult = JSON.parse(eventData) } catch { /* skip bad events */ }
+        }
+      }
+    }
+
+    if (!finalResult) throw new Error('Stream ended without a complete event')
+    return finalResult
+  },
+
   selectICDO3Candidate: async (
     sessionId: string,
     noteId: string,
@@ -700,18 +791,20 @@ export const sessionsApi = {
     return response.data
   },
 
-  exportLabels: async (session_id: string): Promise<Blob> => {
+  exportLabels: async (session_id: string): Promise<{ blob: Blob; excludedRows: ExcludedRow[] }> => {
     const response = await api.get(`/api/sessions/${session_id}/export`, {
       responseType: 'blob',
     })
-    return response.data
+    const excludedRows = parseExcludedRowsHeader(response.headers['x-excluded-rows'])
+    return { blob: response.data, excludedRows }
   },
 
-  exportCodes: async (session_id: string): Promise<Blob> => {
+  exportCodes: async (session_id: string): Promise<{ blob: Blob; excludedRows: ExcludedRow[] }> => {
     const response = await api.get(`/api/sessions/${session_id}/export/codes`, {
       responseType: 'blob',
     })
-    return response.data
+    const excludedRows = parseExcludedRowsHeader(response.headers['x-excluded-rows'])
+    return { blob: response.data, excludedRows }
   },
 
   exportSession: async (session_id: string): Promise<Blob> => {

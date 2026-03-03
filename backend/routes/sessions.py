@@ -4,7 +4,7 @@ Session management routes
 
 from fastapi import APIRouter, HTTPException, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from pathlib import Path
 import json
 import io
@@ -453,7 +453,7 @@ def _build_prompt_to_core_variable_mapping() -> Dict[str, str]:
     # Try to load mappings from prompts.json entity_mapping
     try:
         prompts = load_prompts_json()
-        for category in ['INT', 'MSCI']:
+        for category in ['INT', 'MSCI', 'VGR']:
             if category not in prompts:
                 continue
             for prompt_key, prompt_data in prompts[category].items():
@@ -473,13 +473,13 @@ def _build_prompt_to_core_variable_mapping() -> Dict[str, str]:
     # Predefined mapping for common prompt types that may not have entity_mapping yet
     # Based on IDEA4RC data model and sarcoma_dictionary.json
     predefined_mapping = {
-        # Diagnosis entity
+        # Diagnosis entity (names match SARC_V2(in).csv)
         "histological-tipo-int": "Diagnosis.histologySubgroup",
         "histological": "Diagnosis.histologySubgroup",
         "tumorsite-int": "Diagnosis.subsite",
         "tumorsite": "Diagnosis.subsite",
-        "biopsygrading-int": "Diagnosis.grading",
-        "biopsygrading": "Diagnosis.grading",
+        "biopsygrading-int": "Diagnosis.biopsyGrading",
+        "biopsygrading": "Diagnosis.biopsyGrading",
         "ageatdiagnosis-int": "Diagnosis.ageAtDiagnosis",
         "ageatdiagnosis": "Diagnosis.ageAtDiagnosis",
         "tumorbiopsytype-int": "Diagnosis.typeOfBiopsy",
@@ -487,8 +487,8 @@ def _build_prompt_to_core_variable_mapping() -> Dict[str, str]:
         "biopsymitoticcount-int": "Diagnosis.biopsyMitoticCount",
         "biopsymitoticcount": "Diagnosis.biopsyMitoticCount",
         "tumordepth-int": "Diagnosis.tumourDepth",
-        "tumordiameter-int": "Diagnosis.tumourLongestDiameterClinical",
-        "tumordiameter": "Diagnosis.tumourLongestDiameterClinical",
+        "tumordiameter-int": "Diagnosis.tumorSize",
+        "tumordiameter": "Diagnosis.tumorSize",
         "necrosis_in_biopsy-int": "Diagnosis.necrosisInBiopsy",
         "necrosis_in_biopsy": "Diagnosis.necrosisInBiopsy",
         "stage_at_diagnosis-int": "Diagnosis.stageAtDiagnosis",
@@ -500,34 +500,37 @@ def _build_prompt_to_core_variable_mapping() -> Dict[str, str]:
         "patient-bmi": "Patient.bmi",
         "patient-weightheight": "Patient.bmi",
 
-        # PatientFollowUp entity
-        "patient-status-int": "PatientFollowUp.statusAtLastFollowUp",
-        "patient-status": "PatientFollowUp.statusAtLastFollowUp",
+        # PatientFollowUp entity (SARC_V2 uses statusOfPatientAtLastFollowUp)
+        "patient-status-int": "PatientFollowUp.statusOfPatientAtLastFollowUp",
+        "patient-status": "PatientFollowUp.statusOfPatientAtLastFollowUp",
         "last_contact_date": "PatientFollowUp.lastContact",
 
-        # Surgery entity
+        # Surgery entity (SARC_V2 uses surgicalSpecimenGradingOnlyInUntreatedTumours)
         "surgerymargins-int": "Surgery.marginsAfterSurgery",
         "surgerymargins": "Surgery.marginsAfterSurgery",
         "surgerytype-fs30-int": "Surgery.surgeryType",
         "surgerytype": "Surgery.surgeryType",
-        "surgical-specimen-grading-int": "Surgery.surgicalSpecimenGrading",
+        "surgical-specimen-grading-int": "Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours",
         "surgical-mitotic-count-int": "Surgery.surgicalSpecimenMitoticCount",
         "necrosis_in_surgical-int": "Surgery.necrosisInSurgicalSpecimen",
         "necrosis_in_surgical": "Surgery.necrosisInSurgicalSpecimen",
         "reexcision-int": "Surgery.reExcision",
 
         # SystemicTreatment entity
-        "chemotherapy_start-int": "SystemicTreatment.startDateSystemicTreatment",
-        "chemotherapy_start": "SystemicTreatment.startDateSystemicTreatment",
-        "chemotherapy_end-int": "SystemicTreatment.endDateSystemicTreatment",
-        "chemotherapy_end": "SystemicTreatment.endDateSystemicTreatment",
+        "chemotherapy_start-int": "SystemicTreatment.intent",
+        "chemotherapy_start": "SystemicTreatment.intent",
+        "chemotherapy_end-int": "SystemicTreatment.reasonForEndOfTreatment",
+        "chemotherapy_end": "SystemicTreatment.reasonForEndOfTreatment",
         "response-to-int": "SystemicTreatment.treatmentResponse",
+        "response-to": "SystemicTreatment.treatmentResponse",
+        "other-systemic-therapy-int": "SystemicTreatment.typeOfSystemicTreatment",
+        "other-systemic-therapy": "SystemicTreatment.typeOfSystemicTreatment",
 
-        # Radiotherapy entity
-        "radiotherapy_start-int": "Radiotherapy.startDate",
-        "radiotherapy_start": "Radiotherapy.startDate",
-        "radiotherapy_end-int": "Radiotherapy.endDate",
-        "radiotherapy_end": "Radiotherapy.endDate",
+        # Radiotherapy entity (SARC_V2 uses rtTreatmentCompletedAsPlanned)
+        "radiotherapy_start-int": "Radiotherapy.intent",
+        "radiotherapy_start": "Radiotherapy.intent",
+        "radiotherapy_end-int": "Radiotherapy.rtTreatmentCompletedAsPlanned",
+        "radiotherapy_end": "Radiotherapy.rtTreatmentCompletedAsPlanned",
 
         # EpisodeEvent entity
         "recur_or_prog-int": "EpisodeEvent.diseaseStatus",
@@ -640,11 +643,37 @@ def _normalize_date(date_str: str) -> str:
     return date_str
 
 
-def _build_export_rows(session: Dict) -> List[Dict]:
+_ABSENCE_PATTERNS = [
+    re.compile(r'\bnot\s+(specified|available|applicable|mentioned|present|found)\b', re.IGNORECASE),
+    re.compile(r'^unknown\b', re.IGNORECASE),
+    re.compile(r'\bno\s+(information|data|result|finding|value)\b', re.IGNORECASE),
+    re.compile(r'\binformation\s+not\s+available\b', re.IGNORECASE),
+    re.compile(r'^\[.*\]$'),
+]
+
+
+def _classify_absence(value: str) -> str:
+    """Return the reason a value is an absence indicator, or empty string if it's not."""
+    if not value or not value.strip():
+        return "Empty value"
+    v = value.strip()
+    for pat in _ABSENCE_PATTERNS:
+        m = pat.search(v)
+        if m:
+            matched = m.group(0).strip()
+            return f"Absence indicator detected: \"{matched}\""
+    return ""
+
+
+def _build_export_rows(session: Dict) -> Tuple[List[Dict], List[Dict]]:
     """Build export rows from session annotations.
 
     Shared logic used by both the label export and coded export endpoints.
     Each row includes a '_note_id' field for internal tracking (stripped before CSV output).
+
+    Returns:
+        Tuple of (rows, excluded_rows) where excluded_rows contains rows that were
+        filtered out due to absence values (Not applicable, Unknown, etc.)
     """
     prompt_mapping = _build_prompt_to_core_variable_mapping()
     notes_by_id = {n.get('note_id', ''): n for n in session.get('notes', [])}
@@ -653,6 +682,7 @@ def _build_export_rows(session: Dict) -> List[Dict]:
     current_record_id = 0
 
     rows = []
+    excluded_rows = []
     for note_id, prompt_annotations in session.get('annotations', {}).items():
         note = notes_by_id.get(note_id)
 
@@ -695,6 +725,19 @@ def _build_export_rows(session: Dict) -> List[Dict]:
             else:
                 date_ref = note_date
 
+            # Filter out absence/not-applicable values
+            absence_reason = _classify_absence(extracted_value)
+            if absence_reason:
+                excluded_rows.append({
+                    'patient_id': patient_id,
+                    'core_variable': core_variable,
+                    'prompt_type': prompt_type,
+                    'note_id': note_id,
+                    'original_value': extracted_value or annotation_text,
+                    'reason': absence_reason,
+                })
+                continue
+
             data_type = _get_data_type_for_variable(core_variable)
 
             record_key = (patient_id, entity, date_ref)
@@ -720,38 +763,65 @@ def _build_export_rows(session: Dict) -> List[Dict]:
                 'entity': entity
             })
 
-    return rows
+    return rows, excluded_rows
+
+
+_SARC_COLUMNS = [
+    'patient_id', 'original_source', 'core_variable', 'date_ref',
+    'value', 'record_id', 'linked_to', 'quality'
+]
+
+
+def _build_excluded_summary(excluded_rows: List[Dict]) -> str:
+    """Build a JSON summary of excluded rows for the response header."""
+    return json.dumps([
+        {
+            "patient_id": e.get("patient_id", ""),
+            "variable": e.get("core_variable", ""),
+            "value": e.get("original_value", ""),
+            "reason": e.get("reason", ""),
+        }
+        for e in excluded_rows
+    ], ensure_ascii=False)
 
 
 @router.get("/{session_id}/export")
 async def export_session_for_pipeline(session_id: str):
-    """Export validated annotations in pipeline-compatible CSV format (labels)."""
+    """Export validated annotations in pipeline-compatible CSV format (labels).
+
+    Format matches SARC_V2(in).csv: semicolon-delimited, 8 columns.
+    Rows with absence values (Not applicable, Unknown, etc.) are excluded.
+    """
     try:
         session = _load_session(session_id)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
-    rows = _build_export_rows(session)
+    rows, excluded = _build_export_rows(session)
 
     # Strip internal fields before CSV output
     for row in rows:
         row.pop('_note_id', None)
         row.pop('_prompt_type', None)
+        row.pop('types', None)
+        row.pop('icdo3_code', None)
+        row.pop('entity', None)
 
-    columns = [
-        'patient_id', 'original_source', 'core_variable', 'date_ref',
-        'value', 'record_id', 'linked_to', 'quality', 'types',
-        'icdo3_code', 'entity'
-    ]
-
-    df = pd.DataFrame(rows, columns=columns)
+    df = pd.DataFrame(rows, columns=_SARC_COLUMNS)
     csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
+    df.to_csv(csv_buffer, index=False, sep=';')
+
+    headers = {
+        "Content-Disposition": f"attachment; filename={session_id}_validated.csv",
+        "Access-Control-Expose-Headers": "X-Excluded-Rows",
+    }
+    if excluded:
+        headers["X-Excluded-Rows"] = _build_excluded_summary(excluded)
 
     return StreamingResponse(
         iter([csv_buffer.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={session_id}_validated.csv"}
+        headers=headers,
     )
 
 
@@ -792,7 +862,7 @@ async def export_session_coded(session_id: str):
     except Exception as e:
         print(f"[WARN] Failed to load value_code_mappings from prompts.json: {e}")
 
-    rows = _build_export_rows(session)
+    rows, excluded = _build_export_rows(session)
 
     # Load unified ICD-O-3 codes from session
     unified_icdo3_codes: Dict[str, Dict] = session.get('unified_icdo3_codes', {})
@@ -827,12 +897,8 @@ async def export_session_coded(session_id: str):
 
                 if query_code:
                     value = query_code
-                    confidence = 1.0
-                    method = 'unified_icdo3'
                 else:
                     value = 'UNRESOLVED::no_unified_icdo3_code'
-                    confidence = 0.0
-                    method = 'unresolved'
 
                 coded_rows.append({
                     'patient_id': row['patient_id'],
@@ -843,21 +909,15 @@ async def export_session_coded(session_id: str):
                     'record_id': row['record_id'],
                     'linked_to': row['linked_to'],
                     'quality': row['quality'],
-                    'types': 'CodeableConcept',
-                    'icdo3_code': query_code,
-                    'entity': 'Diagnosis',
-                    'match_confidence': confidence,
-                    'match_method': method,
                 })
             # Skip individual histology/topography rows in coded output
             continue
 
-        # Non-CodeableConcept rows pass through unchanged
+        # Non-CodeableConcept rows pass through unchanged (dates, integers, strings, etc.)
         if row['types'] != 'CodeableConcept':
             coded_rows.append({
-                **{k: v for k, v in row.items() if k not in ('_note_id', '_prompt_type')},
-                'match_confidence': '',
-                'match_method': '',
+                k: v for k, v in row.items()
+                if k not in ('_note_id', '_prompt_type', 'types', 'icdo3_code', 'entity')
             })
             continue
 
@@ -869,36 +929,34 @@ async def export_session_coded(session_id: str):
         if vcm and raw_value in vcm:
             # Direct mapping from value_code_mappings
             value = vcm[raw_value]
-            confidence = 1.0
-            method = 'value_code_mapping'
         else:
-            code_id, confidence, method = resolver.resolve(raw_value, cv)
+            code_id, _confidence, _method = resolver.resolve(raw_value, cv)
             if code_id is not None:
                 value = code_id
             else:
                 value = f"UNRESOLVED::{raw_value}"
 
         coded_rows.append({
-            **{k: v for k, v in row.items() if k not in ('_note_id', '_prompt_type')},
+            **{k: v for k, v in row.items()
+               if k not in ('_note_id', '_prompt_type', 'types', 'icdo3_code', 'entity')},
             'value': value,
-            'match_confidence': confidence,
-            'match_method': method,
         })
 
-    columns = [
-        'patient_id', 'original_source', 'core_variable', 'date_ref',
-        'value', 'record_id', 'linked_to', 'quality', 'types',
-        'icdo3_code', 'entity', 'match_confidence', 'match_method'
-    ]
-
-    df = pd.DataFrame(coded_rows, columns=columns)
+    df = pd.DataFrame(coded_rows, columns=_SARC_COLUMNS)
     csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
+    df.to_csv(csv_buffer, index=False, sep=';')
+
+    headers = {
+        "Content-Disposition": f"attachment; filename={session_id}_coded.csv",
+        "Access-Control-Expose-Headers": "X-Excluded-Rows",
+    }
+    if excluded:
+        headers["X-Excluded-Rows"] = _build_excluded_summary(excluded)
 
     return StreamingResponse(
         iter([csv_buffer.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={session_id}_coded.csv"}
+        headers=headers,
     )
 
 
@@ -942,11 +1000,13 @@ def _get_data_type_for_variable(core_variable: str) -> str:
         return 'Integer'
 
     # Float fields
-    if any(x in field_name for x in ['bmi', 'diameter', 'dose', 'fractions']):
+    if any(x in field_name for x in ['bmi', 'diameter', 'dose', 'fractions', 'tumorsize', 'size']):
         return 'float'
 
-    # Boolean fields
-    if any(x in field_name for x in ['rupture', 'hyperthermia', 'completed']):
+    # Boolean fields (exclude rtTreatmentCompletedAsPlanned which is a CodeableConcept)
+    if any(x in field_name for x in ['rupture', 'hyperthermia']) or (
+        'completed' in field_name and 'asplanned' not in field_name
+    ):
         return 'boolean'
 
     # Reference fields
