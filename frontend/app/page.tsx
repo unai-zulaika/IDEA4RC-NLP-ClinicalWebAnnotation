@@ -1,16 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { serverApi, sessionsApi } from '@/lib/api'
 import type { ServerMetrics, SessionInfo } from '@/lib/api'
 import ServerStatus from '@/components/ServerStatus'
 
 export default function Dashboard() {
+  const router = useRouter()
+  const importInputRef = useRef<HTMLInputElement>(null)
   const [metrics, setMetrics] = useState<ServerMetrics | null>(null)
   const [sessions, setSessions] = useState<SessionInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -54,9 +58,42 @@ export default function Dashboard() {
     }
   }
 
+  const handleImportSession = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImporting(true)
+    try {
+      const session = await sessionsApi.importSession(file)
+      router.push(`/annotate/${session.session_id}`)
+    } catch (error: any) {
+      alert(`Failed to import session: ${error.response?.data?.detail || error.message}`)
+    } finally {
+      setImporting(false)
+      e.target.value = ''
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <div>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={handleImportSession}
+          />
+          <button
+            onClick={() => importInputRef.current?.click()}
+            disabled={importing}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+          >
+            {importing ? 'Importing...' : 'Import Session'}
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow p-6">
