@@ -2,7 +2,7 @@
 Session management routes
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
 from typing import List, Dict
 from pathlib import Path
@@ -73,6 +73,52 @@ def _save_session(session_id: str, session_data: Dict):
     
     # Also update in-memory cache
     _sessions[session_id] = session_data
+
+
+@router.post("/import", response_model=SessionInfo)
+async def import_session(file: UploadFile = File(...)):
+    """Import a session from a previously exported JSON file."""
+    import uuid
+
+    if not (file.filename or "").endswith(".json"):
+        raise HTTPException(status_code=400, detail="File must be a .json file")
+
+    content = await file.read()
+    try:
+        session_data = json.loads(content)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON content")
+
+    required_fields = ["name", "notes", "annotations", "prompt_types"]
+    missing = [f for f in required_fields if f not in session_data]
+    if missing:
+        raise HTTPException(status_code=422, detail=f"Missing required fields: {missing}")
+
+    new_session_id = str(uuid.uuid4())
+    now = datetime.now().isoformat()
+
+    imported = {
+        **session_data,
+        "session_id": new_session_id,
+        "created_at": session_data.get("created_at", now),
+        "updated_at": now,
+    }
+    imported.pop("exported_at", None)
+    imported.pop("export_version", None)
+
+    _save_session(new_session_id, imported)
+
+    return SessionInfo(
+        session_id=new_session_id,
+        name=imported["name"],
+        description=imported.get("description"),
+        created_at=imported["created_at"],
+        updated_at=imported["updated_at"],
+        note_count=len(imported.get("notes", [])),
+        prompt_types=imported.get("prompt_types", []),
+        center=imported.get("center"),
+        evaluation_mode=imported.get("evaluation_mode", "validation"),
+    )
 
 
 @router.post("", response_model=SessionInfo)
@@ -820,6 +866,31 @@ async def export_session_coded(session_id: str):
         iter([csv_buffer.getvalue()]),
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={session_id}_coded.csv"}
+    )
+
+
+@router.get("/{session_id}/export/session")
+async def export_session_json(session_id: str):
+    """Export full session as a JSON file for backup/transfer."""
+    try:
+        session = _load_session(session_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+    export_data = {
+        **session,
+        "exported_at": datetime.now().isoformat(),
+        "export_version": "1.0",
+    }
+
+    json_bytes = json.dumps(export_data, indent=2, ensure_ascii=False, default=_json_serial).encode("utf-8")
+    safe_name = re.sub(r"[^\w\-]", "_", session.get("name", session_id))
+    filename = f"{safe_name}_{session_id}.json"
+
+    return StreamingResponse(
+        io.BytesIO(json_bytes),
+        media_type="application/json",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 

@@ -51,7 +51,7 @@ export default function AnnotatePage() {
   const [error, setError] = useState<string | null>(null)
   const [showPromptTypesModal, setShowPromptTypesModal] = useState(false)
   const [availablePrompts, setAvailablePrompts] = useState<PromptInfo[]>([])
-  const [exporting, setExporting] = useState<'labels' | 'codes' | null>(null)
+  const [exporting, setExporting] = useState<'labels' | 'codes' | 'session' | null>(null)
   // Track unified ICD-O-3 codes per note
   const [unifiedCodes, setUnifiedCodes] = useState<Record<string, UnifiedICDO3Code>>({})
   // AbortController for cancelling in-flight requests
@@ -406,19 +406,26 @@ export default function AnnotatePage() {
     }))
   }
 
-  // Handle CSV export download
-  const handleExport = async (mode: 'labels' | 'codes') => {
+  // Handle export download
+  const handleExport = async (mode: 'labels' | 'codes' | 'session') => {
     setExporting(mode)
     try {
-      const blob = mode === 'labels'
-        ? await sessionsApi.exportLabels(sessionId)
-        : await sessionsApi.exportCodes(sessionId)
+      let blob: Blob
+      let filename: string
+      if (mode === 'labels') {
+        blob = await sessionsApi.exportLabels(sessionId)
+        filename = `${sessionId}_validated.csv`
+      } else if (mode === 'codes') {
+        blob = await sessionsApi.exportCodes(sessionId)
+        filename = `${sessionId}_coded.csv`
+      } else {
+        blob = await sessionsApi.exportSession(sessionId)
+        filename = `session_${sessionId}.json`
+      }
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = mode === 'labels'
-        ? `${sessionId}_validated.csv`
-        : `${sessionId}_coded.csv`
+      a.download = filename
       document.body.appendChild(a)
       a.click()
       a.remove()
@@ -580,6 +587,13 @@ export default function AnnotatePage() {
               className="px-3 py-2 border border-indigo-300 text-indigo-700 rounded-md text-sm hover:bg-indigo-50 disabled:opacity-50"
             >
               {exporting === 'codes' ? 'Exporting...' : 'Export Codes CSV'}
+            </button>
+            <button
+              onClick={() => handleExport('session')}
+              disabled={exporting !== null}
+              className="px-3 py-2 border border-green-300 text-green-700 rounded-md text-sm hover:bg-green-50 disabled:opacity-50"
+            >
+              {exporting === 'session' ? 'Exporting...' : 'Export Session JSON'}
             </button>
             <button
               onClick={() => setSelectedNoteIndex(Math.max(0, selectedNoteIndex - 1))}

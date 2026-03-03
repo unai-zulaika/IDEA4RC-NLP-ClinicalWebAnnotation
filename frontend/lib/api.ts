@@ -709,6 +709,22 @@ export const sessionsApi = {
     })
     return response.data
   },
+
+  exportSession: async (session_id: string): Promise<Blob> => {
+    const response = await api.get(`/api/sessions/${session_id}/export/session`, {
+      responseType: 'blob',
+    })
+    return response.data
+  },
+
+  importSession: async (file: File): Promise<SessionInfo> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/api/sessions/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
 }
 
 export const presetsApi = {
