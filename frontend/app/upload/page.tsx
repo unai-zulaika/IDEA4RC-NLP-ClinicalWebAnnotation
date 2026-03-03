@@ -351,6 +351,12 @@ export default function UploadPage() {
               {uploadResult.message}
             </div>
 
+            {uploadResult.duplicate_note_ids_detected && (
+              <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded">
+                <strong>Warning: Duplicate Note IDs detected.</strong> Your CSV contained rows with the same <code>note_id</code> value. Each note ID has been made unique by appending its row index (e.g. <code>1</code> → <code>1_3</code>). Annotations are keyed by Note ID, so duplicates would otherwise cause all affected notes to share the same annotation. Check your CSV file if this is unexpected.
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Session Name

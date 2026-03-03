@@ -13,7 +13,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from models.schemas import SessionCreate, SessionInfo, SessionData, SessionUpdate, SessionMetadataUpdate, SessionPromptTypesUpdate
+from models.schemas import SessionCreate, SessionInfo, SessionData, SessionUpdate, SessionMetadataUpdate, SessionPromptTypesUpdate, CSVRow
 
 router = APIRouter()
 
@@ -126,7 +126,40 @@ async def create_session(session: SessionCreate):
     """Create new annotation session"""
     import uuid
     session_id = str(uuid.uuid4())
-    
+
+    # Ensure note_ids are unique — deduplicate by appending row index when needed
+    seen_ids: set = set()
+    duplicate_ids: set = set()
+    for note in session.csv_data:
+        if note.note_id in seen_ids:
+            duplicate_ids.add(note.note_id)
+        seen_ids.add(note.note_id)
+
+    if duplicate_ids:
+        print(f"[WARN] create_session: duplicate note_ids detected: {duplicate_ids}. Deduplicating.")
+        deduped = []
+        for idx, note in enumerate(session.csv_data):
+            if note.note_id in duplicate_ids:
+                deduped.append(CSVRow(
+                    text=note.text,
+                    date=note.date,
+                    p_id=note.p_id,
+                    note_id=f"{note.note_id}_{idx}",
+                    report_type=note.report_type,
+                    annotations=note.annotations,
+                ))
+            else:
+                deduped.append(note)
+        session = SessionCreate(
+            name=session.name,
+            description=session.description,
+            csv_data=deduped,
+            prompt_types=session.prompt_types,
+            evaluation_mode=session.evaluation_mode,
+            center=session.center,
+            report_type_mapping=session.report_type_mapping,
+        )
+
     # Determine evaluation mode: check if any note has annotations
     evaluation_mode = session.evaluation_mode or "validation"
     if evaluation_mode == "validation":

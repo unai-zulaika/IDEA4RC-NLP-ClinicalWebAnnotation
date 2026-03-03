@@ -91,6 +91,7 @@ export interface CSVUploadResponse {
   session_id?: string  // Deprecated - no longer used
   has_annotations?: boolean  // True if annotations column exists and has values
   report_types?: string[]  // Unique report types found in CSV
+  duplicate_note_ids_detected?: boolean  // True if duplicate note_ids were found and deduplicated
 }
 
 export interface EvidenceSpan {

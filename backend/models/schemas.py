@@ -80,6 +80,7 @@ class CSVUploadResponse(BaseModel):
     session_id: Optional[str] = None  # Deprecated - no longer created here
     has_annotations: Optional[bool] = False  # True if annotations column exists and has values
     report_types: Optional[List[str]] = None  # Unique report types found in CSV
+    duplicate_note_ids_detected: Optional[bool] = False  # True if duplicate note_ids were found and deduplicated
 
 
 class CSVRow(BaseModel):
