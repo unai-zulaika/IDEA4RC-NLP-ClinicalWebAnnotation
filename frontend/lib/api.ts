@@ -92,6 +92,9 @@ export interface CSVUploadResponse {
   has_annotations?: boolean  // True if annotations column exists and has values
   report_types?: string[]  // Unique report types found in CSV
   duplicate_note_ids_detected?: boolean  // True if duplicate note_ids were found and deduplicated
+  duplicate_text_detected?: boolean  // True if rows with duplicate text content were removed
+  duplicate_text_removed_count?: number  // Number of rows removed due to duplicate text
+  duplicate_text_note_ids?: string[]  // note_ids of the removed rows
 }
 
 export interface EvidenceSpan {
