@@ -81,6 +81,9 @@ class CSVUploadResponse(BaseModel):
     has_annotations: Optional[bool] = False  # True if annotations column exists and has values
     report_types: Optional[List[str]] = None  # Unique report types found in CSV
     duplicate_note_ids_detected: Optional[bool] = False  # True if duplicate note_ids were found and deduplicated
+    duplicate_text_detected: bool = False  # True if rows with duplicate text content were removed
+    duplicate_text_removed_count: int = 0  # Number of rows removed due to duplicate text
+    duplicate_text_note_ids: List[str] = []  # note_ids of the removed rows
 
 
 class CSVRow(BaseModel):

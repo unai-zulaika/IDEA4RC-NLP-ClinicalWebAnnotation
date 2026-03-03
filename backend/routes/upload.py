@@ -8,11 +8,17 @@ import pandas as pd
 import csv
 import io
 import json
+import re
 from pathlib import Path
 
 from models.schemas import CSVUploadResponse, CSVRow
 
 router = APIRouter()
+
+
+def _normalize_text(text: str) -> str:
+    """Normalize text for duplicate comparison (does not mutate stored text)."""
+    return re.sub(r'\s+', ' ', text.strip()).lower()
 
 
 def _get_sessions_dir() -> Path:
@@ -232,6 +238,22 @@ async def upload_csv(file: UploadFile = File(...)):
                 deduped.append(row)
         rows = deduped
 
+    # Deduplicate rows by text content: keep first occurrence, remove subsequent
+    seen_texts: set = set()
+    text_deduped: list = []
+    removed_note_ids: list = []
+    for row in rows:
+        fingerprint = _normalize_text(row.text)
+        if fingerprint in seen_texts:
+            removed_note_ids.append(row.note_id)
+        else:
+            seen_texts.add(fingerprint)
+            text_deduped.append(row)
+    had_text_duplicates = bool(removed_note_ids)
+    if had_text_duplicates:
+        print(f"[WARN] Duplicate text content in CSV. Removing {len(removed_note_ids)} rows: {removed_note_ids}")
+        rows = text_deduped
+
     # Convert all rows to dicts
     all_rows_dicts = [row.dict() for row in rows]
 
@@ -253,6 +275,8 @@ async def upload_csv(file: UploadFile = File(...)):
     message = f"CSV uploaded successfully. {len(rows)} rows parsed."
     if had_duplicates:
         message += " Duplicate Note IDs were detected and made unique by appending row indices."
+    if had_text_duplicates:
+        message += f" {len(removed_note_ids)} row(s) with duplicate text content were removed (first occurrence kept)."
     return CSVUploadResponse(
         success=True,
         message=message,
@@ -264,6 +288,9 @@ async def upload_csv(file: UploadFile = File(...)):
         has_annotations=has_annotations,  # Indicates if evaluation mode should be used
         report_types=unique_report_types,  # Unique report types found in CSV
         duplicate_note_ids_detected=had_duplicates,
+        duplicate_text_detected=had_text_duplicates,
+        duplicate_text_removed_count=len(removed_note_ids),
+        duplicate_text_note_ids=removed_note_ids,
     )
 
 

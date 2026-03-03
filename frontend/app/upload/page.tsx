@@ -357,6 +357,25 @@ export default function UploadPage() {
               </div>
             )}
 
+            {uploadResult.duplicate_text_detected && (
+              <div className="bg-orange-50 border border-orange-300 text-orange-800 px-4 py-3 rounded">
+                <strong>Warning: Duplicate text content removed.</strong>{' '}
+                {uploadResult.duplicate_text_removed_count} row
+                {uploadResult.duplicate_text_removed_count !== 1 ? 's were' : ' was'} removed
+                because {uploadResult.duplicate_text_removed_count !== 1 ? 'their' : 'its'} text
+                content was identical to an earlier row (comparison is case-insensitive and
+                whitespace-normalized). The first occurrence of each unique note was kept.
+                {uploadResult.duplicate_text_note_ids && uploadResult.duplicate_text_note_ids.length > 0 && (
+                  <div className="mt-2 text-sm">
+                    <span className="font-medium">Removed Note IDs: </span>
+                    <code className="bg-orange-100 px-1 rounded">
+                      {uploadResult.duplicate_text_note_ids.join(', ')}
+                    </code>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Session Name
