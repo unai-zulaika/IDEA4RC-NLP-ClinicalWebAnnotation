@@ -810,6 +810,16 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
     )
 
 
+async def _tagged_process(
+    note_id: str,
+    prompt_type: str,
+    **kwargs,
+) -> Tuple[str, str, AnnotationResult]:
+    """Wrapper around _process_single_prompt that returns (note_id, prompt_type, result)."""
+    result = await _process_single_prompt(prompt_type=prompt_type, note_id=note_id, **kwargs)
+    return (note_id, prompt_type, result)
+
+
 @router.post("/batch", response_model=BatchProcessResponse)
 async def batch_process(request: BatchProcessRequest, session_id: str = Query(...)):
     """Batch process multiple notes with parallel vLLM calls"""
@@ -947,6 +957,181 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
         total_time_seconds=batch_time,
         timing_breakdown=batch_timing,
     )
+
+
+@router.post("/batch/stream")
+async def batch_process_stream(request: BatchProcessRequest, session_id: str = Query(...)):
+    """Batch process with SSE streaming. Sends progress events as each prompt
+    completes, preventing reverse-proxy idle timeouts."""
+    from sse_starlette.sse import EventSourceResponse
+    import json as _json
+
+    _ensure_prompts_loaded()
+    batch_timer = TimingBreakdown()
+    batch_timer.start_total()
+
+    # --- same setup as batch_process ---
+    import importlib.util
+    sessions_path = Path(__file__).parent / "sessions.py"
+    spec = importlib.util.spec_from_file_location("sessions", sessions_path)
+    if spec is None or spec.loader is None:
+        raise HTTPException(status_code=500, detail="Failed to load sessions module")
+    sessions_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sessions_module)
+
+    try:
+        session = sessions_module._load_session(session_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+    evaluation_mode = session.get('evaluation_mode', 'validation')
+
+    vllm_client = get_vllm_client()
+    if not vllm_client.is_available():
+        status = vllm_client.get_status()
+        error_detail = status.get("error", "Unknown error")
+        endpoint = vllm_client.config.get("vllm_endpoint", "not configured")
+        raise HTTPException(
+            status_code=503,
+            detail=f"VLLM server not available. Endpoint: {endpoint}, Error: {error_detail}. "
+                   f"Please ensure the VLLM server is running and restart the backend if you moved the project directory."
+        )
+
+    note_dates: Dict[str, Optional[str]] = {}
+    report_type_mapping = session.get('report_type_mapping')
+    for note in session.get('notes', []):
+        note_dates[note.get('note_id')] = note.get('date')
+
+    try:
+        from services.structured_generator import OUTLINES_AVAILABLE
+        use_structured = OUTLINES_AVAILABLE
+    except ImportError:
+        use_structured = False
+
+    # Build task list (same logic as batch_process)
+    all_tasks: List[Tuple[str, str, str, Optional[str]]] = []
+    note_order: List[Tuple[str, str, List[str]]] = []
+
+    for note_id in request.note_ids:
+        note_data = None
+        for note in session['notes']:
+            if note['note_id'] == note_id:
+                note_data = note
+                break
+        if not note_data:
+            continue
+
+        note_text = note_data['text']
+        csv_date = note_dates.get(note_id)
+        report_type = note_data.get('report_type')
+
+        prompt_types_to_process = request.prompt_types
+        if report_type_mapping and report_type:
+            allowed = report_type_mapping.get(report_type, [])
+            if allowed:
+                prompt_types_to_process = [pt for pt in request.prompt_types if pt in allowed]
+            else:
+                prompt_types_to_process = []
+
+        note_order.append((note_id, note_text, prompt_types_to_process))
+        for pt in prompt_types_to_process:
+            all_tasks.append((note_id, note_text, pt, csv_date))
+
+    total_prompts = len(all_tasks)
+    print(f"[INFO] Batch-stream: {len(note_order)} notes, {total_prompts} total prompts, parallel concurrency={VLLM_CONCURRENCY}")
+
+    async def _event_generator():
+        # Send initial event immediately (keeps proxy connection alive)
+        yield {
+            "event": "started",
+            "data": _json.dumps({
+                "total_notes": len(note_order),
+                "total_prompts": total_prompts,
+            }),
+        }
+
+        # Create tagged tasks
+        tasks = [
+            asyncio.create_task(
+                _tagged_process(
+                    note_id=nid,
+                    prompt_type=pt,
+                    note_text=nt,
+                    csv_date=cd,
+                    vllm_client=vllm_client,
+                    use_structured=use_structured,
+                    request_use_fewshots=request.use_fewshots,
+                    request_fewshot_k=request.fewshot_k,
+                    evaluation_mode=evaluation_mode,
+                    session_data=session,
+                )
+            )
+            for nid, nt, pt, cd in all_tasks
+        ]
+
+        # Yield progress as each task completes
+        results_by_note: Dict[str, List[AnnotationResult]] = {}
+        completed = 0
+
+        for coro in asyncio.as_completed(tasks):
+            nid, pt, result = await coro
+            completed += 1
+            results_by_note.setdefault(nid, []).append(result)
+
+            yield {
+                "event": "progress",
+                "data": _json.dumps({
+                    "completed": completed,
+                    "total": total_prompts,
+                    "note_id": nid,
+                    "prompt_type": pt,
+                    "percentage": round(completed / total_prompts * 100) if total_prompts else 100,
+                }),
+            }
+
+        # Assemble final response (same structure as BatchProcessResponse)
+        results = []
+        for nid, nt, prompt_types_to_process in note_order:
+            note_annotations = results_by_note.get(nid, [])
+
+            note_timing: Dict[str, float] = {}
+            for ann in note_annotations:
+                if ann.timing_breakdown:
+                    for step, dur in ann.timing_breakdown.items():
+                        note_timing[step] = note_timing.get(step, 0.0) + dur
+
+            note_time = max(
+                (ann.timing_breakdown.get("total", 0.0) for ann in note_annotations if ann.timing_breakdown),
+                default=0.0,
+            )
+
+            results.append(ProcessNoteResponse(
+                note_id=nid,
+                note_text=nt,
+                annotations=note_annotations,
+                processing_time_seconds=note_time,
+                timing_breakdown=note_timing,
+            ))
+
+        batch_time = batch_timer.get_total()
+        batch_timing = {
+            "wall_clock_total": batch_time,
+            "note_count": float(len(note_order)),
+            "prompt_count": float(total_prompts),
+        }
+
+        final = BatchProcessResponse(
+            results=results,
+            total_time_seconds=batch_time,
+            timing_breakdown=batch_timing,
+        )
+
+        yield {
+            "event": "complete",
+            "data": final.model_dump_json(),
+        }
+
+    return EventSourceResponse(_event_generator())
 
 
 @router.post("/icdo3/select")
