@@ -205,13 +205,40 @@ async def upload_csv(file: UploadFile = File(...)):
             annotations=str(row.get('annotations', '')) if 'annotations' in df.columns and pd.notna(row.get('annotations')) else None
         ))
     
+    # Deduplicate note_ids: if duplicates exist, append the row index as suffix
+    seen_ids: set = set()
+    duplicate_ids: set = set()
+    for row in rows:
+        nid = row.note_id
+        if nid in seen_ids:
+            duplicate_ids.add(nid)
+        seen_ids.add(nid)
+
+    had_duplicates = bool(duplicate_ids)
+    if had_duplicates:
+        print(f"[WARN] Duplicate note_ids detected in CSV: {duplicate_ids}. Deduplicating by appending row indices.")
+        deduped = []
+        for idx, row in enumerate(rows):
+            if row.note_id in duplicate_ids:
+                deduped.append(CSVRow(
+                    text=row.text,
+                    date=row.date,
+                    p_id=row.p_id,
+                    note_id=f"{row.note_id}_{idx}",
+                    report_type=row.report_type,
+                    annotations=row.annotations,
+                ))
+            else:
+                deduped.append(row)
+        rows = deduped
+
     # Convert all rows to dicts
     all_rows_dicts = [row.dict() for row in rows]
-    
+
     # Check if annotations column exists and has values (determines evaluation mode)
     has_annotations = 'annotations' in df.columns and any(
-        str(row.get('annotations', '')).strip() 
-        for row in all_rows_dicts 
+        str(row.get('annotations', '')).strip()
+        for row in all_rows_dicts
         if row.get('annotations')
     )
     
@@ -223,16 +250,20 @@ async def upload_csv(file: UploadFile = File(...)):
     
     # Note: Session is NOT created here - it will be created when user clicks "Create Session"
     # This prevents duplicate session creation
+    message = f"CSV uploaded successfully. {len(rows)} rows parsed."
+    if had_duplicates:
+        message += " Duplicate Note IDs were detected and made unique by appending row indices."
     return CSVUploadResponse(
         success=True,
-        message=f"CSV uploaded successfully. {len(rows)} rows parsed.",
+        message=message,
         row_count=len(rows),
         columns=list(df.columns),
         preview=preview,  # First 10 rows for display
         all_rows=all_rows_dicts,  # All rows for session creation
         session_id=None,  # No session created yet
         has_annotations=has_annotations,  # Indicates if evaluation mode should be used
-        report_types=unique_report_types  # Unique report types found in CSV
+        report_types=unique_report_types,  # Unique report types found in CSV
+        duplicate_note_ids_detected=had_duplicates,
     )
 
 
