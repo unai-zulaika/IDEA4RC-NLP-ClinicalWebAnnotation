@@ -17,7 +17,7 @@ from lib.timing import TimingBreakdown
 from typing import Tuple
 
 # Configurable concurrency for parallel vLLM calls
-VLLM_CONCURRENCY = int(os.environ.get("VLLM_CONCURRENCY", "8"))
+VLLM_CONCURRENCY = int(os.environ.get("VLLM_CONCURRENCY", "2"))
 _vllm_semaphore = asyncio.Semaphore(VLLM_CONCURRENCY)
 
 try:
@@ -188,6 +188,7 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
             else:
                 fewshots_text = ""
             template = template.replace("{few_shot_examples}", fewshots_text)
+            template = template.replace("{fewshots}", fewshots_text)
             from lib.prompt_wrapper import update_prompt_placeholders
             prompt = update_prompt_placeholders(template, note_text, csv_date)
             return prompt
@@ -286,7 +287,7 @@ def _get_fewshot_builder():
             if not json_file.exists():
                 json_file = backend_dir / "data" / "annotated_patient_notes.json"
             
-            _fewshot_builder = FewshotBuilder(store_dir=faiss_dir, use_gpu=True)
+            _fewshot_builder = FewshotBuilder(store_dir=faiss_dir, use_gpu=False)
             
             # Build indexes if needed and JSON file exists
             if json_file.exists():
@@ -517,7 +518,7 @@ async def _process_single_prompt(
 ) -> AnnotationResult:
     """
     Process a single prompt type for a note, with timing instrumentation.
-    Designed to run concurrently via asyncio.gather.
+    Process a single prompt type for a note. Called sequentially.
     """
     timer = TimingBreakdown()
     timer.start_total()
@@ -547,12 +548,17 @@ async def _process_single_prompt(
                 fast_mode=fast_mode,
             )
             raw_prompt = prompt
-            template = _PROMPTS[prompt_type]["template"]
+            if fast_mode and prompt_type in _FAST_PROMPTS:
+                template = _FAST_PROMPTS[prompt_type]["template"]
+            elif prompt_type in _PROMPTS:
+                template = _PROMPTS[prompt_type]["template"]
+            else:
+                template = ""
             is_simple = _is_simple_prompt(template)
 
         # --- vLLM inference (dominant cost) ---
         raw_response = None
-        fast_max_tokens = 256 if fast_mode else 512
+        fast_max_tokens = 1024 if fast_mode else 4096
         with timer.measure("vllm_inference"):
             async with _vllm_semaphore:
                 if is_simple:
@@ -839,11 +845,12 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
     except ImportError:
         use_structured = False
 
-    # Process all prompt types in PARALLEL
+    # Process all prompt types sequentially to avoid GPU memory pressure
     mode_label = "FAST" if request.fast_mode else "standard"
-    print(f"[INFO] Processing {len(prompt_types_to_process)} prompts in parallel (concurrency={VLLM_CONCURRENCY}, mode={mode_label})")
-    tasks = [
-        _process_single_prompt(
+    print(f"[INFO] Processing {len(prompt_types_to_process)} prompts sequentially, mode={mode_label}")
+    note_annotations = []
+    for pt in prompt_types_to_process:
+        result = await _process_single_prompt(
             prompt_type=pt,
             note_text=note_text,
             csv_date=csv_date,
@@ -856,9 +863,7 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
             note_id=request.note_id,
             fast_mode=request.fast_mode,
         )
-        for pt in prompt_types_to_process
-    ]
-    note_annotations = list(await asyncio.gather(*tasks))
+        note_annotations.append(result)
 
     processing_time = total_timer.get_total()
     # Aggregate timing: sum per-step times across all prompts
@@ -966,34 +971,28 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
 
     total_prompts = len(all_tasks)
     mode_label = "FAST" if request.fast_mode else "standard"
-    print(f"[INFO] Batch: {len(note_order)} notes, {total_prompts} total prompts, parallel concurrency={VLLM_CONCURRENCY}, mode={mode_label}")
+    print(f"[INFO] Batch: {len(note_order)} notes, {total_prompts} total prompts, sequential mode={mode_label}")
 
-    # Run ALL prompts across ALL notes in parallel
-    coros = [
-        _process_single_prompt(
-            prompt_type=pt,
-            note_text=nt,
-            csv_date=cd,
-            vllm_client=vllm_client,
-            use_structured=use_structured,
-            request_use_fewshots=request.use_fewshots,
-            request_fewshot_k=request.fewshot_k,
-            evaluation_mode=evaluation_mode,
-            session_data=session,
-            note_id=nid,
-            fast_mode=request.fast_mode,
-        )
-        for nid, nt, pt, cd in all_tasks
-    ]
-    all_results = list(await asyncio.gather(*coros))
-
-    # Group results by note_id
-    result_idx = 0
+    # Process notes and prompts sequentially to avoid GPU memory pressure
     results = []
     for note_id, note_text, prompt_types_to_process in note_order:
-        count = len(prompt_types_to_process)
-        note_annotations = all_results[result_idx:result_idx + count]
-        result_idx += count
+        note_annotations = []
+        for pt in prompt_types_to_process:
+            csv_date = note_dates.get(note_id)
+            result = await _process_single_prompt(
+                prompt_type=pt,
+                note_text=note_text,
+                csv_date=csv_date,
+                vllm_client=vllm_client,
+                use_structured=use_structured,
+                request_use_fewshots=request.use_fewshots,
+                request_fewshot_k=request.fewshot_k,
+                evaluation_mode=evaluation_mode,
+                session_data=session,
+                note_id=note_id,
+                fast_mode=request.fast_mode,
+            )
+            note_annotations.append(result)
 
         # Aggregate timing per note
         note_timing: Dict[str, float] = {}
@@ -1003,9 +1002,9 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
                     note_timing[step] = note_timing.get(step, 0.0) + dur
 
         # Calculate note processing time from annotation timings
-        note_time = max(
+        note_time = sum(
             (ann.timing_breakdown.get("total", 0.0) for ann in note_annotations if ann.timing_breakdown),
-            default=0.0
+            0.0
         )
 
         results.append(ProcessNoteResponse(
@@ -1110,7 +1109,7 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
 
     total_prompts = len(all_tasks)
     mode_label = "FAST" if request.fast_mode else "standard"
-    print(f"[INFO] Batch-stream: {len(note_order)} notes, {total_prompts} total prompts, parallel concurrency={VLLM_CONCURRENCY}, mode={mode_label}")
+    print(f"[INFO] Batch-stream: {len(note_order)} notes, {total_prompts} total prompts, sequential mode={mode_label}")
 
     async def _event_generator():
         # Send initial event immediately (keeps proxy connection alive)
@@ -1122,45 +1121,39 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
             }),
         }
 
-        # Create tagged tasks
-        tasks = [
-            asyncio.create_task(
-                _tagged_process(
-                    note_id=nid,
+        # Process notes and prompts sequentially, yielding progress after each
+        results_by_note: Dict[str, List[AnnotationResult]] = {}
+        completed = 0
+
+        for nid, nt, prompt_types_to_process in note_order:
+            csv_date = note_dates.get(nid)
+            for pt in prompt_types_to_process:
+                result = await _process_single_prompt(
                     prompt_type=pt,
                     note_text=nt,
-                    csv_date=cd,
+                    csv_date=csv_date,
                     vllm_client=vllm_client,
                     use_structured=use_structured,
                     request_use_fewshots=request.use_fewshots,
                     request_fewshot_k=request.fewshot_k,
                     evaluation_mode=evaluation_mode,
                     session_data=session,
+                    note_id=nid,
                     fast_mode=request.fast_mode,
                 )
-            )
-            for nid, nt, pt, cd in all_tasks
-        ]
+                completed += 1
+                results_by_note.setdefault(nid, []).append(result)
 
-        # Yield progress as each task completes
-        results_by_note: Dict[str, List[AnnotationResult]] = {}
-        completed = 0
-
-        for coro in asyncio.as_completed(tasks):
-            nid, pt, result = await coro
-            completed += 1
-            results_by_note.setdefault(nid, []).append(result)
-
-            yield {
-                "event": "progress",
-                "data": _json.dumps({
-                    "completed": completed,
-                    "total": total_prompts,
-                    "note_id": nid,
-                    "prompt_type": pt,
-                    "percentage": round(completed / total_prompts * 100) if total_prompts else 100,
-                }),
-            }
+                yield {
+                    "event": "progress",
+                    "data": _json.dumps({
+                        "completed": completed,
+                        "total": total_prompts,
+                        "note_id": nid,
+                        "prompt_type": pt,
+                        "percentage": round(completed / total_prompts * 100) if total_prompts else 100,
+                    }),
+                }
 
         # Assemble final response (same structure as BatchProcessResponse)
         results = []
@@ -1173,9 +1166,9 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
                     for step, dur in ann.timing_breakdown.items():
                         note_timing[step] = note_timing.get(step, 0.0) + dur
 
-            note_time = max(
+            note_time = sum(
                 (ann.timing_breakdown.get("total", 0.0) for ann in note_annotations if ann.timing_breakdown),
-                default=0.0,
+                0.0,
             )
 
             results.append(ProcessNoteResponse(

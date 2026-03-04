@@ -11,6 +11,12 @@ _RE_MARKDOWN_JSON = re.compile(r'```(?:json)?\s*\n?(.*?)\n?```', re.DOTALL)
 _RE_JSON_OBJ = re.compile(r'\{.*?"evidence".*?"reasoning".*?"final_output".*?\}', re.DOTALL)
 _RE_JSON_ARRAY = re.compile(r'\[\s*\{.*?"evidence".*?"reasoning".*?"final_output".*?\}.*?\]', re.DOTALL)
 _RE_JSON_OBJ_SINGLE = re.compile(r'\{[^{}]*"evidence"[^{}]*"reasoning"[^{}]*"final_output"[^{}]*\}', re.DOTALL)
+# Fast mode: only final_output field (no evidence/reasoning)
+_RE_FAST_JSON = re.compile(r'\{[^{}]*"final_output"\s*:[^{}]*\}', re.DOTALL)
+# Strip model thinking blocks: <unused94>thought ... </unused94>
+_RE_THINKING_BLOCK = re.compile(r'<unused\d+>\w+.*?</unused\d+>\s*', re.DOTALL | re.IGNORECASE)
+# Fallback: strip unclosed thinking block (token budget exhausted before </unusedXX> appeared)
+_RE_THINKING_BLOCK_UNCLOSED = re.compile(r'<unused\d+>.*$', re.DOTALL | re.IGNORECASE)
 _RE_EVIDENCE = re.compile(r'Evidence:\s*(.+?)(?:\.|$|Reasoning:)', re.IGNORECASE | re.DOTALL)
 _RE_EVIDENCE_QUOTED = re.compile(r'"([^"]+)"')
 _RE_REASONING = re.compile(r'Reasoning:\s*(.+?)(?:\.|$|Final)', re.IGNORECASE | re.DOTALL)
@@ -240,6 +246,12 @@ def generate_structured_annotation_fallback(
     Returns:
         StructuredAnnotation instance
     """
+    # Strip model thinking blocks (e.g. <unused94>thought...</unused94>) before parsing
+    raw_output = _RE_THINKING_BLOCK.sub('', raw_output).strip()
+    # Fallback: if thinking block was truncated (no closing tag), strip from <unusedXX> to end
+    if '<unused' in raw_output.lower():
+        raw_output = _RE_THINKING_BLOCK_UNCLOSED.sub('', raw_output).strip()
+
     # Try to extract JSON from output
     json_match = None
     json_str = None
@@ -276,6 +288,23 @@ def generate_structured_annotation_fallback(
                     except json.JSONDecodeError as e:
                         print(f"[DEBUG] Failed to parse JSON from pattern: {e}")
                         continue
+
+        # Fast mode: try minimal {"final_output": "..."} pattern
+        if not json_match:
+            match = _RE_FAST_JSON.search(raw_output)
+            if match:
+                try:
+                    parsed = json.loads(match.group(0))
+                    if isinstance(parsed, dict) and "final_output" in parsed:
+                        json_match = {
+                            "evidence": "",
+                            "reasoning": "Fast mode: no reasoning captured",
+                            "final_output": parsed["final_output"],
+                            "is_negated": False,
+                            "date": None,
+                        }
+                except json.JSONDecodeError as e:
+                    print(f"[DEBUG] Failed to parse fast JSON: {e}")
     
     # If JSON found, use it
     if json_match:

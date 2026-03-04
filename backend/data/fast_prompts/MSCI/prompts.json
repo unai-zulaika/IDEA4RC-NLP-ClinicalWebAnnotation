@@ -42,7 +42,7 @@
     }
   },
   "chemotherapy_end": {
-    "template": "You are a medical annotator. Read the note and extract chemotherapy end details.\n\nOutput format:\npre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]\npost-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]\nIf date is missing, keep [provide date]. If reason is missing, keep [select reason]. If cycles missing, keep [provide number].\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "template": "You are a medical annotator. Read the note and extract chemotherapy end details.\n\nOutput format:\npre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]\npost-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]\nIf date is missing, keep [provide date]. If reason is missing, keep [select reason]. If cycles missing, keep [provide number].\nIf chemotherapy end is not mentioned in the note, output: \"Unknown chemotherapy end.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
     "entity_mapping": {
       "entity_type": "SystemicTreatment",
       "fact_trigger": null,
@@ -75,7 +75,7 @@
     }
   },
   "chemotherapy_start": {
-    "template": "You are a medical annotator. Read the note and extract chemotherapy start details.\n\nOutput format:\npre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.\npost-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.\nIf date is missing, keep [provide date]. If regimen is missing, keep [select regimen]. If intent is missing, keep [select intent].\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "template": "You are a medical annotator. Read the note and extract chemotherapy start details.\n\nOutput format:\npre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.\npost-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.\nIf date is missing, keep [provide date]. If regimen is missing, keep [select regimen]. If intent is missing, keep [select intent].\nIf chemotherapy start is not mentioned in the note, output: \"Unknown chemotherapy start.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
     "entity_mapping": {
       "entity_type": "SystemicTreatment",
       "fact_trigger": null,
@@ -275,7 +275,7 @@
     }
   },
   "radiotherapy_end": {
-    "template": "You are a medical annotator. Read the note and extract radiotherapy end details.\n\nOutput format:\npre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].\npost-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].\nIf date is missing, keep [put date]. If reason is missing, keep [select reason]. If dose is missing, keep [put total dose]. If number is missing, keep [put number of].\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "template": "You are a medical annotator. Read the note and extract radiotherapy end details.\n\nOutput format:\npre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].\npost-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].\nIf date is missing, keep [put date]. If reason is missing, keep [select reason]. If dose is missing, keep [put total dose]. If number is missing, keep [put number of].\nIf radiotherapy end is not mentioned in the note, output: \"Unknown radiotherapy end.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
     "entity_mapping": {
       "entity_type": "Radiotherapy",
       "fact_trigger": null,
@@ -311,7 +311,7 @@
     }
   },
   "radiotherapy_start": {
-    "template": "You are a medical annotator. Read the note and extract radiotherapy start details.\n\nOutput format:\npre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date].\npost-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date].\nIf date is missing, keep [put date]. If place is missing, keep [please select where]. If intention is missing, keep [select intention].\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "template": "You are a medical annotator. Read the note and extract radiotherapy start details.\n\nOutput format:\npre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date].\npost-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date].\nIf date is missing, keep [put date]. If place is missing, keep [please select where]. If intention is missing, keep [select intention].\nIf radiotherapy start is not mentioned in the note, output: \"Unknown radiotherapy start.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
     "entity_mapping": {
       "entity_type": "Radiotherapy",
       "fact_trigger": null,
@@ -439,7 +439,7 @@
     }
   },
   "tumorbiopsytype": {
-    "template": "You are a medical annotator. Read the note and extract the biopsy type and date.\n\nOutput format: Baseline/primary tumor [biopsy type] biopsy has been performed on [date] in [place].\nIf date is missing, output \"unknown\". If place is not mentioned, output \"in the hospital\".\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "template": "You are a medical annotator. Read the note and extract the biopsy type and date.\n\nOutput format: Baseline/primary tumor [biopsy type] biopsy has been performed on [date] in [place].\nIf date is missing, output \"unknown\". If place is not mentioned, output \"in the hospital\".\nIf no biopsy is mentioned in the note, output: \"Unknown biopsy type.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
     "entity_mapping": {
       "entity_type": "Diagnosis",
       "fact_trigger": null,
