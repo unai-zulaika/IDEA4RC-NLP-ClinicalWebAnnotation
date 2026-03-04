@@ -138,6 +138,14 @@ class ICDO3CodeInfo(BaseModel):
     user_selected: bool = False  # True if user manually selected a candidate
 
 
+class ChunkInfo(BaseModel):
+    """Metadata recorded when a note is too long and processed in chunks."""
+    was_chunked: bool = False
+    total_chunks: Optional[int] = None
+    answer_chunk_index: Optional[int] = None  # 1-indexed chunk that produced the answer
+    chunks_exhausted: bool = False  # True if all chunks tried without a confident answer
+
+
 class AnnotationResult(BaseModel):
     prompt_type: str
     annotation_text: str
@@ -154,6 +162,7 @@ class AnnotationResult(BaseModel):
     evaluation_result: Optional[Dict[str, Any]] = None  # Evaluation metrics (only in evaluation mode)
     icdo3_code: Optional[ICDO3CodeInfo] = None  # ICD-O-3 code information (for histology/site prompts)
     timing_breakdown: Optional[Dict[str, float]] = None  # Per-step timing breakdown
+    chunk_info: Optional[ChunkInfo] = None  # Set when note was split into chunks due to context limit
 
 
 class ProcessNoteRequest(BaseModel):
@@ -228,6 +237,7 @@ class SessionAnnotation(BaseModel):
     evaluation_result: Optional[Dict[str, Any]] = None  # Evaluation metrics: exact_match, similarity_score, overall_match, etc.
     # ICD-O-3 code information (for histology/site prompts)
     icdo3_code: Optional[Dict[str, Any]] = None  # ICD-O-3 code information with query_code, match_method, match_score
+    chunk_info: Optional[ChunkInfo] = None  # Set when note was split into chunks due to context limit
 
 
 class SessionData(BaseModel):
