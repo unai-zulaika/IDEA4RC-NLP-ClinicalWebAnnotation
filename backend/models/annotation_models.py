@@ -25,11 +25,11 @@ class AnnotationDateInfo(BaseModel):
 class StructuredAnnotation(BaseModel):
     """Structured annotation output from LLM using Outlines"""
     evidence: str = Field(
-        ...,
+        "",
         description="The exact literal phrase or sentence from the note that supports this annotation. This will be used to highlight evidence in the text."
     )
     reasoning: str = Field(
-        ...,
+        "",
         description="Explanation of the logic used to map the natural language to the standard value. Include clinical validation (current vs PMH vs suspicion) and inference steps."
     )
     final_output: str = Field(

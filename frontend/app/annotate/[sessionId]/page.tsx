@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { sessionsApi, annotateApi, promptsApi, presetsApi } from '@/lib/api'
 import { useDefaultCenter } from '@/lib/useDefaultCenter'
+import { useFastMode } from '@/lib/useFastMode'
 import type { SessionData, AnnotationResult, EvidenceSpan, PromptInfo, ICDO3CodeInfo, UnifiedICDO3Code, BatchProcessResponse } from '@/lib/api'
 import ManagePromptTypesModal from '@/components/ManagePromptTypesModal'
 import TextHighlighter from '@/components/TextHighlighter'
@@ -28,6 +29,7 @@ export default function AnnotatePage() {
   const params = useParams()
   const sessionId = params.sessionId as string
   const [center] = useDefaultCenter()
+  const [fastMode, setFastMode] = useFastMode()
 
   const [session, setSession] = useState<SessionData | null>(null)
   const [selectedNoteIndex, setSelectedNoteIndex] = useState(0)
@@ -140,7 +142,8 @@ export default function AnnotatePage() {
         note_ids: [note.note_id],
         prompt_types: notePromptTypes,
         fewshot_k: 5,
-        use_fewshots: true,
+        use_fewshots: !fastMode,
+        fast_mode: fastMode,
       }
       let result: BatchProcessResponse
       try {
@@ -265,7 +268,8 @@ export default function AnnotatePage() {
             note_ids: [noteId],
             prompt_types: notePromptTypes,
             fewshot_k: 5,
-            use_fewshots: true,
+            use_fewshots: !fastMode,
+            fast_mode: fastMode,
           }
           let result: BatchProcessResponse
           try {
@@ -704,7 +708,23 @@ export default function AnnotatePage() {
                 </div>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={fastMode}
+                    onChange={(e) => setFastMode(e.target.checked)}
+                    disabled={processing || processingAll}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-gray-300 rounded-full peer peer-checked:bg-amber-500 peer-disabled:opacity-50 transition-colors" />
+                  <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform" />
+                </div>
+                <span className={`text-xs font-semibold ${fastMode ? 'text-amber-600' : 'text-gray-500'}`}>
+                  {fastMode ? 'FAST' : 'Standard'}
+                </span>
+              </label>
               <button
                 onClick={handleProcessAll}
                 disabled={processingAll || session.notes.length === 0}

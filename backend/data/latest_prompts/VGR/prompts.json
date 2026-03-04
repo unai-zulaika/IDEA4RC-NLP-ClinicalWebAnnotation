@@ -41,7 +41,7 @@
         {
           "template_placeholder": "[value]",
           "entity_type": "Diagnosis",
-          "field_name": "grading"
+          "field_name": "biopsyGrading"
         }
       ]
     }
@@ -55,7 +55,7 @@
         {
           "template_placeholder": "[provide date]",
           "entity_type": "SystemicTreatment",
-          "field_name": "endDateSystemicTreatment"
+          "field_name": "reasonForEndOfTreatment"
         },
         {
           "template_placeholder": "[provide number]",
@@ -141,7 +141,7 @@
         {
           "template_placeholder": "[value]",
           "entity_type": "PatientFollowUp",
-          "field_name": "statusAtLastFollowUp"
+          "field_name": "statusOfPatientAtLastFollowUp"
         }
       ]
     }
@@ -169,7 +169,7 @@
         {
           "template_placeholder": "[put total dose]",
           "entity_type": "Radiotherapy",
-          "field_name": "totalDoseGy"
+          "field_name": "rtTreatmentCompletedAsPlanned"
         },
         {
           "template_placeholder": "[put number of]",

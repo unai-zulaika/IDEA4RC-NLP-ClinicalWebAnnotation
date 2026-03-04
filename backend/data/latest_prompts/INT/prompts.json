@@ -22,7 +22,7 @@
         {
           "template_placeholder": "[value]",
           "entity_type": "Diagnosis",
-          "field_name": "grading",
+          "field_name": "biopsyGrading",
           "value_code_mappings": {
             "1": "1634371",
             "2": "1634752"
@@ -54,7 +54,7 @@
         {
           "template_placeholder": "[provide date]",
           "entity_type": "SystemicTreatment",
-          "field_name": "endDateSystemicTreatment"
+          "field_name": "reasonForEndOfTreatment"
         },
         {
           "template_placeholder": "[provide number]",
@@ -140,7 +140,7 @@
         {
           "template_placeholder": "[value]",
           "entity_type": "Diagnosis",
-          "field_name": "biopsyGrading"
+          "field_name": "necrosisInBiopsy"
         }
       ]
     }
@@ -154,7 +154,7 @@
         {
           "template_placeholder": "[value]",
           "entity_type": "Surgery",
-          "field_name": "surgicalSpecimenGradingOnlyInUntreatedTumours"
+          "field_name": "necrosisInSurgicalSpecimen"
         }
       ]
     }
@@ -182,7 +182,7 @@
         {
           "template_placeholder": "[value]",
           "entity_type": "PatientFollowUp",
-          "field_name": "statusAtLastFollowUp"
+          "field_name": "statusOfPatientAtLastFollowUp"
         }
       ]
     }
@@ -210,7 +210,7 @@
         {
           "template_placeholder": "[put total dose]",
           "entity_type": "Radiotherapy",
-          "field_name": "totalDoseGy"
+          "field_name": "rtTreatmentCompletedAsPlanned"
         },
         {
           "template_placeholder": "[put number of]",

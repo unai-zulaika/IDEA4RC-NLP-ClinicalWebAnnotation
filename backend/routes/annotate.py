@@ -67,6 +67,11 @@ _prompts_loaded = False
 _PROMPTS: Dict[str, Any] = {}
 _PROMPTS_DIR_MTIMES: Dict[str, float] = {}  # Track per-center file modification times
 
+# Fast prompts storage (condensed prompts for fast mode)
+_FAST_PROMPTS: Dict[str, Any] = {}
+_FAST_PROMPTS_LOADED = False
+_FAST_PROMPTS_DIR_MTIMES: Dict[str, float] = {}
+
 def _ensure_prompts_loaded(force_reload: bool = False):
     """Load prompts from directory-based structure without importing model_runner."""
     global _prompts_loaded, _PROMPTS, _PROMPTS_DIR_MTIMES
@@ -98,6 +103,39 @@ def _ensure_prompts_loaded(force_reload: bool = False):
             print(f"[INFO] Loaded {len(_PROMPTS)} prompts from {prompts_dir}: {list(_PROMPTS.keys())}")
 
 
+def _ensure_fast_prompts_loaded(force_reload: bool = False):
+    """Load fast prompts from backend/data/fast_prompts/ directory."""
+    global _FAST_PROMPTS_LOADED, _FAST_PROMPTS, _FAST_PROMPTS_DIR_MTIMES
+    from lib.prompt_adapter import adapt_all_prompts
+
+    backend_dir = Path(__file__).parent.parent
+    prompts_dir = backend_dir / "data" / "fast_prompts"
+
+    if not prompts_dir.is_dir():
+        _FAST_PROMPTS_LOADED = True
+        return
+
+    files_changed = False
+    for center_dir in prompts_dir.iterdir():
+        if not center_dir.is_dir():
+            continue
+        prompts_file = center_dir / "prompts.json"
+        if prompts_file.exists():
+            current_mtime = prompts_file.stat().st_mtime
+            prev_mtime = _FAST_PROMPTS_DIR_MTIMES.get(center_dir.name, 0.0)
+            if current_mtime > prev_mtime:
+                files_changed = True
+                _FAST_PROMPTS_DIR_MTIMES[center_dir.name] = current_mtime
+
+    if not _FAST_PROMPTS_LOADED or force_reload or files_changed:
+        adapted_prompts = adapt_all_prompts(prompts_dir)
+        _FAST_PROMPTS.clear()
+        _FAST_PROMPTS.update(adapted_prompts)
+        _FAST_PROMPTS_LOADED = True
+        if files_changed or force_reload:
+            print(f"[INFO] Loaded {len(_FAST_PROMPTS)} fast prompts from {prompts_dir}: {list(_FAST_PROMPTS.keys())}")
+
+
 def _is_simple_prompt(template: str) -> bool:
     """
     Check if a prompt is a simple completion prompt (not structured annotation).
@@ -119,27 +157,48 @@ def _is_simple_prompt(template: str) -> bool:
     )
 
 
-def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, csv_date: Optional[str] = None) -> str:
+def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, csv_date: Optional[str] = None, fast_mode: bool = False) -> str:
     """
     Build prompt from template (standalone version, doesn't require model_runner).
     Now includes JSON format instructions for structured output.
-    
+
     Args:
         task_key: Prompt type key
         fewshots: List of (note_text, annotation) tuples
         note_text: The note to process
         csv_date: Optional CSV date column value
-    
+        fast_mode: Use condensed fast prompts (skip JSON wrapping and few-shots)
+
     Returns:
         Formatted prompt string with JSON format instructions
     """
     _ensure_prompts_loaded()
-    
+
+    # In fast mode, try fast prompts first, fall back to standard
+    if fast_mode:
+        _ensure_fast_prompts_loaded()
+        if task_key in _FAST_PROMPTS:
+            template = _FAST_PROMPTS[task_key]["template"]
+            # Substitute few-shot examples if placeholder present
+            if fewshots:
+                fewshots_parts = []
+                for note, annotation in fewshots:
+                    fewshots_parts.append(f"Example:\n- Medical Note: {note}\n- Annotation: {annotation}")
+                fewshots_text = "\n\n---\n\n".join(fewshots_parts)
+            else:
+                fewshots_text = ""
+            template = template.replace("{few_shot_examples}", fewshots_text)
+            from lib.prompt_wrapper import update_prompt_placeholders
+            prompt = update_prompt_placeholders(template, note_text, csv_date)
+            return prompt
+        else:
+            print(f"[WARN] No fast prompt for '{task_key}', falling back to standard prompt")
+
     if task_key not in _PROMPTS:
         raise KeyError(f"No prompt found for task '{task_key}'. Known: {list(_PROMPTS.keys())}")
-    
+
     template = _PROMPTS[task_key]["template"]
-    
+
     # Format fewshots
     fewshots_text = ""
     if fewshots:
@@ -147,24 +206,24 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
         for note, annotation in fewshots:
             fewshots_parts.append(f"Example:\n- Medical Note: {note}\n- Annotation: {annotation}")
         fewshots_text = "\n\n---\n\n".join(fewshots_parts)
-    
+
     # Replace placeholders - handle both formats for compatibility
     prompt = template.replace("{few_shot_examples}", fewshots_text)
     prompt = prompt.replace("{fewshots}", fewshots_text)  # Also support model_runner format
     prompt = prompt.replace("{static_samples}", "")  # Remove static samples placeholder if present
-    
+
     # Replace note and date placeholders first
     from lib.prompt_wrapper import wrap_prompt_with_json_format, update_prompt_placeholders
     prompt = update_prompt_placeholders(prompt, note_text, csv_date)
-    
+
     # Only wrap with JSON format instructions if the prompt doesn't already have them
     # and if it's not a simple test prompt (check if it contains structured output instructions)
     is_simple = _is_simple_prompt(template)
-    
+
     if not is_simple:
         # Wrap with JSON format instructions for structured annotation prompts
         prompt = wrap_prompt_with_json_format(prompt, csv_date)
-    
+
     return prompt
 
 
@@ -454,6 +513,7 @@ async def _process_single_prompt(
     evaluation_mode: str = "validation",
     session_data: Optional[Dict] = None,
     note_id: Optional[str] = None,
+    fast_mode: bool = False,
 ) -> AnnotationResult:
     """
     Process a single prompt type for a note, with timing instrumentation.
@@ -465,7 +525,12 @@ async def _process_single_prompt(
     try:
         # --- Fewshot retrieval ---
         with timer.measure("fewshot_retrieval"):
-            if request_use_fewshots:
+            if fast_mode:
+                if request_use_fewshots:
+                    fewshot_examples = _get_fewshot_examples(prompt_type, note_text, k=1)
+                else:
+                    fewshot_examples = []
+            elif request_use_fewshots:
                 fewshot_examples = _get_fewshot_examples(
                     prompt_type, note_text, k=request_fewshot_k
                 )
@@ -478,7 +543,8 @@ async def _process_single_prompt(
                 task_key=prompt_type,
                 fewshots=fewshot_examples,
                 note_text=note_text,
-                csv_date=csv_date
+                csv_date=csv_date,
+                fast_mode=fast_mode,
             )
             raw_prompt = prompt
             template = _PROMPTS[prompt_type]["template"]
@@ -486,16 +552,17 @@ async def _process_single_prompt(
 
         # --- vLLM inference (dominant cost) ---
         raw_response = None
+        fast_max_tokens = 256 if fast_mode else 512
         with timer.measure("vllm_inference"):
             async with _vllm_semaphore:
                 if is_simple:
                     output = await vllm_client.agenerate(
-                        prompt=prompt, max_new_tokens=512,
+                        prompt=prompt, max_new_tokens=fast_max_tokens,
                         temperature=0.0, return_logprobs=False
                     )
                     raw_output = output.get("raw", output.get("normalized", ""))
                     raw_response = raw_output
-                elif use_structured:
+                elif use_structured and not fast_mode:
                     try:
                         from services.structured_generator import generate_structured_annotation
                         structured_ann, raw_response = generate_structured_annotation(
@@ -510,9 +577,9 @@ async def _process_single_prompt(
                         # Outlines not available — fall through to fallback below
                         use_structured = False
 
-                if not is_simple and not use_structured:
+                if not is_simple and (fast_mode or not use_structured):
                     output = await vllm_client.agenerate(
-                        prompt=prompt, max_new_tokens=512,
+                        prompt=prompt, max_new_tokens=fast_max_tokens,
                         temperature=0.0, return_logprobs=False
                     )
                     raw_output = output.get("raw", output.get("normalized", ""))
@@ -538,7 +605,7 @@ async def _process_single_prompt(
                     is_negated=False,
                     date=None
                 )
-            elif use_structured:
+            elif use_structured and not fast_mode:
                 # structured_ann was already set by generate_structured_annotation
                 pass
             else:
@@ -773,7 +840,8 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
         use_structured = False
 
     # Process all prompt types in PARALLEL
-    print(f"[INFO] Processing {len(prompt_types_to_process)} prompts in parallel (concurrency={VLLM_CONCURRENCY})")
+    mode_label = "FAST" if request.fast_mode else "standard"
+    print(f"[INFO] Processing {len(prompt_types_to_process)} prompts in parallel (concurrency={VLLM_CONCURRENCY}, mode={mode_label})")
     tasks = [
         _process_single_prompt(
             prompt_type=pt,
@@ -786,6 +854,7 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
             evaluation_mode=evaluation_mode,
             session_data=session_data,
             note_id=request.note_id,
+            fast_mode=request.fast_mode,
         )
         for pt in prompt_types_to_process
     ]
@@ -896,7 +965,8 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
             all_tasks.append((note_id, note_text, pt, csv_date))
 
     total_prompts = len(all_tasks)
-    print(f"[INFO] Batch: {len(note_order)} notes, {total_prompts} total prompts, parallel concurrency={VLLM_CONCURRENCY}")
+    mode_label = "FAST" if request.fast_mode else "standard"
+    print(f"[INFO] Batch: {len(note_order)} notes, {total_prompts} total prompts, parallel concurrency={VLLM_CONCURRENCY}, mode={mode_label}")
 
     # Run ALL prompts across ALL notes in parallel
     coros = [
@@ -911,6 +981,7 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
             evaluation_mode=evaluation_mode,
             session_data=session,
             note_id=nid,
+            fast_mode=request.fast_mode,
         )
         for nid, nt, pt, cd in all_tasks
     ]
@@ -1038,7 +1109,8 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
             all_tasks.append((note_id, note_text, pt, csv_date))
 
     total_prompts = len(all_tasks)
-    print(f"[INFO] Batch-stream: {len(note_order)} notes, {total_prompts} total prompts, parallel concurrency={VLLM_CONCURRENCY}")
+    mode_label = "FAST" if request.fast_mode else "standard"
+    print(f"[INFO] Batch-stream: {len(note_order)} notes, {total_prompts} total prompts, parallel concurrency={VLLM_CONCURRENCY}, mode={mode_label}")
 
     async def _event_generator():
         # Send initial event immediately (keeps proxy connection alive)
@@ -1064,6 +1136,7 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
                     request_fewshot_k=request.fewshot_k,
                     evaluation_mode=evaluation_mode,
                     session_data=session,
+                    fast_mode=request.fast_mode,
                 )
             )
             for nid, nt, pt, cd in all_tasks
