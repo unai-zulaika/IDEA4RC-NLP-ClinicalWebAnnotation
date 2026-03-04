@@ -125,3 +125,147 @@ def test_annotation_result_has_chunk_info():
     ci = ChunkInfo(was_chunked=True, total_chunks=2, answer_chunk_index=1)
     ar2 = AnnotationResult(prompt_type="test", annotation_text="M", chunk_info=ci)
     assert ar2.chunk_info.was_chunked is True
+
+
+# ─────────────────────────────────────────────────────────────
+# Integration tests for _process_single_prompt() (Task 4)
+# ─────────────────────────────────────────────────────────────
+import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
+
+@pytest.fixture(autouse=True)
+def reset_chunker_singleton():
+    """Ensure NoteChunker singleton is fresh for each test."""
+    NoteChunker.reset_instance()
+    yield
+    NoteChunker.reset_instance()
+
+
+def _make_mock_vllm(responses: list):
+    """Return a mock vllm_client whose agenerate cycles through responses."""
+    client = MagicMock()
+    client.config = {
+        "vllm_endpoint": "http://localhost:8000/v1",
+        "model_name": "test-model",
+    }
+    call_count = {"n": 0}
+
+    async def _agenerate(**kwargs):
+        idx = min(call_count["n"], len(responses) - 1)
+        call_count["n"] += 1
+        return {"raw": responses[idx], "normalized": responses[idx]}
+
+    client.agenerate = AsyncMock(side_effect=_agenerate)
+    return client, call_count
+
+
+def test_short_note_no_chunking():
+    """A note that fits the context window is NOT split (chunk_info is None)."""
+    from routes.annotate import _process_single_prompt, _PROMPTS, _ensure_prompts_loaded
+    _ensure_prompts_loaded()
+    if not _PROMPTS:
+        pytest.skip("No prompts loaded — skipping integration test")
+
+    prompt_type = next(iter(_PROMPTS))
+    short_note = "Patient is 45 years old. Female."
+
+    mock_client, calls = _make_mock_vllm([
+        '{"final_output": "Female", "evidence": "Female.", "reasoning": "stated", "is_negated": false, "date": null}'
+    ])
+
+    with patch("routes.annotate._vllm_semaphore", asyncio.Semaphore(10)):
+        result = asyncio.run(
+            _process_single_prompt(
+                prompt_type=prompt_type,
+                note_text=short_note,
+                csv_date=None,
+                vllm_client=mock_client,
+                use_structured=False,
+                request_use_fewshots=False,
+                request_fewshot_k=0,
+                fast_mode=True,
+            )
+        )
+
+    assert result.chunk_info is None
+    assert calls["n"] == 1  # Only one inference call
+
+
+def test_long_note_chunked_early_stop():
+    """
+    A note too long to fit is split into chunks.
+    Processing stops at the first confident answer.
+    chunk_info reflects which chunk answered.
+    """
+    from routes.annotate import _process_single_prompt, _PROMPTS, _ensure_prompts_loaded
+    _ensure_prompts_loaded()
+    if not _PROMPTS:
+        pytest.skip("No prompts loaded — skipping integration test")
+
+    prompt_type = next(iter(_PROMPTS))
+    # ~50,000 chars — definitely exceeds any context window
+    long_note = " ".join([f"Sentence {i} contains clinical information." for i in range(3000)])
+
+    # First chunk returns "unknown" (not confident), second returns a real answer
+    responses = [
+        '{"final_output": "unknown", "evidence": "", "reasoning": "not found", "is_negated": false, "date": null}',
+        '{"final_output": "T2", "evidence": "tumor T2", "reasoning": "T2 stated", "is_negated": false, "date": null}',
+    ]
+    mock_client, calls = _make_mock_vllm(responses)
+
+    with patch("routes.annotate._vllm_semaphore", asyncio.Semaphore(10)):
+        result = asyncio.run(
+            _process_single_prompt(
+                prompt_type=prompt_type,
+                note_text=long_note,
+                csv_date=None,
+                vllm_client=mock_client,
+                use_structured=False,
+                request_use_fewshots=False,
+                request_fewshot_k=0,
+                fast_mode=True,
+            )
+        )
+
+    assert result.chunk_info is not None
+    assert result.chunk_info.was_chunked is True
+    assert result.chunk_info.answer_chunk_index == 2
+    assert result.chunk_info.chunks_exhausted is False
+    assert calls["n"] == 2  # Stopped after chunk 2
+
+
+def test_long_note_all_chunks_exhausted():
+    """If all chunks return unknown, chunks_exhausted=True and last chunk result is returned."""
+    from routes.annotate import _process_single_prompt, _PROMPTS, _ensure_prompts_loaded
+    _ensure_prompts_loaded()
+    if not _PROMPTS:
+        pytest.skip("No prompts loaded — skipping integration test")
+
+    prompt_type = next(iter(_PROMPTS))
+    long_note = " ".join([f"Sentence {i} contains clinical information." for i in range(3000)])
+
+    # All chunks return "unknown"
+    responses = [
+        '{"final_output": "unknown", "evidence": "", "reasoning": "not found", "is_negated": false, "date": null}'
+    ]
+    mock_client, calls = _make_mock_vllm(responses)
+
+    with patch("routes.annotate._vllm_semaphore", asyncio.Semaphore(10)):
+        result = asyncio.run(
+            _process_single_prompt(
+                prompt_type=prompt_type,
+                note_text=long_note,
+                csv_date=None,
+                vllm_client=mock_client,
+                use_structured=False,
+                request_use_fewshots=False,
+                request_fewshot_k=0,
+                fast_mode=True,
+            )
+        )
+
+    assert result.chunk_info is not None
+    assert result.chunk_info.was_chunked is True
+    assert result.chunk_info.chunks_exhausted is True
+    assert result.chunk_info.answer_chunk_index == result.chunk_info.total_chunks
