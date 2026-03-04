@@ -1,0 +1,505 @@
+{
+  "ageatdiagnosis": {
+    "template": "You are a medical annotator. Read the note and identify the patient's age at diagnosis.\n\nOutput format: Age at diagnosis [age] years.\nIf not mentioned, output: \"Unknown age at diagnosis.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis.ageAtDiagnosis",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "ageAtDiagnosis"
+        }
+      ]
+    }
+  },
+  "biopsygrading": {
+    "template": "You are a medical annotator. Read the note and identify the biopsy grading (FNCLCC).\n\nOutput format: Biopsy grading (FNCLCC): [value].\nAllowed values: 1, 2, 3, Other classification system high, Other classification system low, Biopsy grading not applicable, Unknown biopsy grading.\nIf not mentioned, output: \"Unknown biopsy grading.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis.biopsyGrading",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "biopsyGrading"
+        }
+      ]
+    }
+  },
+  "biopsymitoticcount": {
+    "template": "You are a medical annotator. Read the note and identify the biopsy mitotic count.\n\nOutput format: Biopsy mitotic count: [value]HPF/mm2.\nIf not mentioned, output: \"Unknown biopsy mitotic count.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "biopsyMitoticCount"
+        }
+      ]
+    }
+  },
+  "chemotherapy_end": {
+    "template": "You are a medical annotator. Read the note and extract chemotherapy end details.\n\nOutput format:\npre-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]\npost-operative chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason]\nIf date is missing, keep [provide date]. If reason is missing, keep [select reason]. If cycles missing, keep [provide number].\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "SystemicTreatment",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[provide date]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "reasonForEndOfTreatment"
+        },
+        {
+          "template_placeholder": "[provide number]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "numberOfCycles/Administrations"
+        },
+        {
+          "template_placeholder": "[select reason]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "reasonForEndOfTreatment",
+          "value_code_mappings": {
+            "intolerance to drug": "4240582",
+            "treatment ended due to comorbidity": "2000100030"
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "setting"
+        }
+      ]
+    }
+  },
+  "chemotherapy_start": {
+    "template": "You are a medical annotator. Read the note and extract chemotherapy start details.\n\nOutput format:\npre-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.\npost-operative chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen.\nIf date is missing, keep [provide date]. If regimen is missing, keep [select regimen]. If intent is missing, keep [select intent].\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "SystemicTreatment",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[select intent]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "intent",
+          "value_code_mappings": {
+            "curative": "4162591",
+            "palliative": "4179711"
+          }
+        },
+        {
+          "template_placeholder": "[provide date]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "startDateSystemicTreatment"
+        },
+        {
+          "template_placeholder": "[select regimen]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "regimen"
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "setting"
+        }
+      ]
+    }
+  },
+  "gender": {
+    "template": "You are a medical annotator. Read the note and identify the patient's gender. Consider third-person pronouns.\n\nOutput format: Patient's gender [male/female].\nIf not mentioned, output: \"Patient's gender unknown.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Patient.sex",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[male/female/unknown]",
+          "entity_type": "Patient",
+          "field_name": "sex",
+          "value_code_mappings": {
+            "male": "8507",
+            "female": "8532"
+          }
+        }
+      ]
+    }
+  },
+  "histological": {
+    "template": "You are a medical annotator. Read the note and identify the histological type of the tumor. Select the most specific or final diagnosis.\n\nOutput format: Histological type: [selected type] ([ICD-O-3 code]).\nIf not mentioned, output: \"Unknown histological type.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis.histologySubgroup",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "histologySubgroup"
+        }
+      ]
+    }
+  },
+  "last_contact_date": {
+    "template": "You are a medical annotator. Read the note and extract the last contact date with the patient.\n\nOutput format: Last contact date with the patient: [date].\nDate must be in dd/mm/yyyy format.\nIf not mentioned, output: \"Unknown.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "PatientFollowUp.lastContact",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[date]",
+          "entity_type": "PatientFollowUp",
+          "field_name": "lastContact"
+        }
+      ]
+    }
+  },
+  "necrosis_in_biopsy": {
+    "template": "You are a medical annotator. Read the note and extract necrosis information from the biopsy specimen.\n\nOutput format (use only one):\nNecrosis in biopsy specimen (type of): [percentage value] of tumor.\nNecrosis in biopsy specimen (type of): absent.\nNecrosis in biopsy specimen (type of): none.\nNecrosis in biopsy specimen (type of): present.\nNecrosis in biopsy specimen (type of): unknown.\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "necrosisInBiopsy"
+        }
+      ]
+    }
+  },
+  "necrosis_in_surgical": {
+    "template": "You are a medical annotator. Read the note and extract necrosis information from the surgical specimen.\n\nOutput format (use only one):\nNecrosis in surgical specimen (type of): 10%.\nNecrosis in surgical specimen (type of): absent.\nNecrosis in surgical specimen (type of): coagulative necrosis.\nNecrosis in surgical specimen (type of): coagulative.\nNecrosis in surgical specimen (type of): none.\nNecrosis in surgical specimen (type of): unknown.\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Surgery",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Surgery",
+          "field_name": "necrosisInSurgicalSpecimen"
+        }
+      ]
+    }
+  },
+  "occurrence_cancer": {
+    "template": "You are a medical annotator. Read the note and identify any other (non-index) cancers in the patient, past or concurrent.\n\nAllowed values:\nOccurrence of other cancer unknown at initial excision.\nOccurrence of other cancer prostate cancer.\nOccurrence of other cancer sarcoma.\nOccurrence of other cancer breast cancer.\nOccurrence of other cancer folliculoma ovari.\nOccurrence of other cancer gastric adenocarcinoma.\nOccurrence of other cancer : myoma uteri 2010.\nOccurrence of other cancer : non-small cell lung cancer.\nOccurrence of other cancer : prostate cancer, pT3bN1M0.\nNo information about occurrence of other cancers.\nNo previous or concurrent cancers.\nIf not mentioned, output: \"No information about occurrence of other cancers.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Patient.previousMalignantCancerSite",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Patient",
+          "field_name": "previousMalignantCancerSite"
+        }
+      ]
+    }
+  },
+  "patient-bmi": {
+    "template": "You are a medical annotator. Read the note and extract the patient's BMI with its evaluation date.\n\nOutput format: Patient's BMI [value] (evaluated on [DD/MM/YYYY]).\nConvert European commas (23,8) to decimal dots (23.8). Accept date formats: YYYY-MM-DD, DD/MM/YYYY, DD.MM.YYYY.\nIf not mentioned, output: \"Patient's BMI unknown.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Patient",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Patient",
+          "field_name": "bmi"
+        },
+        {
+          "template_placeholder": "[DD/MM/YYYY]",
+          "entity_type": "Patient",
+          "field_name": "bmiDate"
+        }
+      ]
+    }
+  },
+  "patient-status": {
+    "template": "You are a medical annotator. Read the note and extract the patient status at last follow-up.\n\nAllowed values:\n1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)\n2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])\n3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor\n4. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung).\n5. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. other).\n6. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases (lung. soft tissue. other).\n8. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor.\nFor metastases, list all mentioned sites in parentheses.\nIf not mentioned, output: \"Unknown patient status.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "PatientFollowUp.statusAtLastFollowUp",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "PatientFollowUp",
+          "field_name": "statusOfPatientAtLastFollowUp",
+          "value_code_mappings": {
+            "Alive, No Evidence of Disease (NED)": "2000100071",
+            "Dead of Disease (DOD)": "2000100072",
+            "Dead of Other Cause (DOC)": "2000100073",
+            "Dead of Unknown Cause (DUC)": "2000100074",
+            "Alive With Disease (AWD)": "2000100075",
+            "Alive": "4230556"
+          }
+        }
+      ]
+    }
+  },
+  "patient-weightheight": {
+    "template": "You are a medical annotator. Read the note and extract the patient's weight and height with evaluation date.\n\nOutput format: Patient's weight [put weight]kg and height[put height]cm (evaluated on [put date]).\nConvert European commas to decimal dots. Accept date formats: YYYY-MM-DD, DD/MM/YYYY, DD.MM.YYYY.\nIf not mentioned, output: \"Patient's BMI/weight/height unknown.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Patient",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[put weight]",
+          "entity_type": "Patient",
+          "field_name": "weight"
+        },
+        {
+          "template_placeholder": "[put height]",
+          "entity_type": "Patient",
+          "field_name": "height"
+        },
+        {
+          "template_placeholder": "[put date]",
+          "entity_type": "Patient",
+          "field_name": "weightHeightDate"
+        }
+      ]
+    }
+  },
+  "previous_cancer_treatment": {
+    "template": "You are a medical annotator. Read the note and identify previous cancer treatments received by the patient.\n\nAllowed values:\nPrevious cancer treatment: radiation, chemotherapy.\nPrevious cancer treatment: radiation, other.\nPrevious cancer treatment: radiation, surgery, other.\nPrevious cancer treatment: surgery, chemotherapy, radiation, other.\nPrevious cancer treatment: surgery, radiation, other.\nPrevious cancer treatment: surgery, radiation.\nPrevious cancer treatment: surgery.\nNo previous cancer treatments.\nNo previous or concurrent cancers.\nIf not mentioned, output: \"No previous cancer treatments.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Patient",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[select one option]",
+          "entity_type": "Patient",
+          "field_name": "previousCancerTreatment"
+        }
+      ]
+    }
+  },
+  "radiotherapy_end": {
+    "template": "You are a medical annotator. Read the note and extract radiotherapy end details.\n\nOutput format:\npre-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].\npost-operative radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason].\nIf date is missing, keep [put date]. If reason is missing, keep [select reason]. If dose is missing, keep [put total dose]. If number is missing, keep [put number of].\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Radiotherapy",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[put total dose]",
+          "entity_type": "Radiotherapy",
+          "field_name": "rtTreatmentCompletedAsPlanned"
+        },
+        {
+          "template_placeholder": "[put number of]",
+          "entity_type": "Radiotherapy",
+          "field_name": "numberOfFractions"
+        },
+        {
+          "template_placeholder": "[put date]",
+          "entity_type": "Radiotherapy",
+          "field_name": "endDate"
+        },
+        {
+          "template_placeholder": "[select reason]",
+          "entity_type": "Radiotherapy",
+          "field_name": "rtTreatmentCompletedAsPlanned?",
+          "value_code_mappings": {
+            "completed successfully": "44788181",
+            "discontinued by patient": "37017062",
+            "intolerance": "4105297",
+            "death": "4306655",
+            "acute radiotherapy toxicity": "4161588"
+          }
+        }
+      ]
+    }
+  },
+  "radiotherapy_start": {
+    "template": "You are a medical annotator. Read the note and extract radiotherapy start details.\n\nOutput format:\npre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date].\npost-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date].\nIf date is missing, keep [put date]. If place is missing, keep [please select where]. If intention is missing, keep [select intention].\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Radiotherapy",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[select intention]",
+          "entity_type": "Radiotherapy",
+          "field_name": "intent",
+          "value_code_mappings": {
+            "curative": "4162591",
+            "palliative": "4179711"
+          }
+        },
+        {
+          "template_placeholder": "[please select where]",
+          "entity_type": "Radiotherapy",
+          "field_name": "radiotherapyHospital"
+        },
+        {
+          "template_placeholder": "[put date]",
+          "entity_type": "Radiotherapy",
+          "field_name": "startDate"
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "Radiotherapy",
+          "field_name": "setting"
+        }
+      ]
+    }
+  },
+  "recur_or_prog": {
+    "template": "You are a medical annotator. Read the note and determine if there is progression, recurrence, or neither. Extract the date if available.\n\nOutput format:\n\"There was no progression/recurrence.\"\n\"There was a recurrence on [date].\" (keep [put date] if unknown)\n\"There was a progression on [date].\" (keep [put date] if unknown)\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "EpisodeEvent",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "EpisodeEvent",
+          "field_name": "diseaseStatus"
+        },
+        {
+          "template_placeholder": "[date]",
+          "entity_type": "EpisodeEvent",
+          "field_name": "dateOfEpisode"
+        }
+      ]
+    }
+  },
+  "recurrencetype": {
+    "template": "You are a medical annotator. Read the note and extract the type of recurrence or progression.\n\nAllowed values:\nType of recurrence/progression: local.\nType of recurrence/progression: local [select site if metastatic].\nType of recurrence/progression: metastatic.\nType of recurrence/progression: metastatic bone, soft tissue.\nType of recurrence/progression: metastatic bone.\nType of recurrence/progression: metastatic brain.\nType of recurrence/progression: metastatic liver, lung, bone.\nType of recurrence/progression: metastatic liver.\nType of recurrence/progression: metastatic lung, bone, soft tissue.\nType of recurrence/progression: metastatic lung, soft tissue.\nType of recurrence/progression: metastatic lung.\nType of recurrence/progression: metastatic other, soft tissue.\nType of recurrence/progression: metastatic other.\nType of recurrence/progression: metastatic soft tissue, lung, other.\nType of recurrence/progression: metastatic soft tissue.\nIf not mentioned, output: \"None.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "DiseaseExtent",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[selected type]",
+          "entity_type": "DiseaseExtent",
+          "field_name": "localised"
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "EpisodeEvent",
+          "field_name": "diseaseStatus"
+        }
+      ]
+    }
+  },
+  "stage_at_diagnosis": {
+    "template": "You are a medical annotator. Read the note and identify the stage at diagnosis.\n\nAllowed values:\nStage at diagnosis: localized.\nStage at diagnosis: loco-regional (In transit metastasis).\nStage at diagnosis: metastatic (regional nodal metastases).\nUnknown stage at diagnosis.\nIf not mentioned, output: \"Unknown stage at diagnosis.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "ClinicalStage",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "ClinicalStage",
+          "field_name": "clinicalStaging"
+        }
+      ]
+    }
+  },
+  "surgerymargins": {
+    "template": "You are a medical annotator. Read the note and classify the surgical resection margin status.\n\nOutput format: Margins after surgery: [R0 or R1 or R2]\nR0 = radical, tumor-free margins. A \"small but clear\" margin = still R0.\nIf not mentioned, output: \"Unknown surgery margins.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Surgery.marginsAfterSurgery",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Surgery",
+          "field_name": "marginsAfterSurgery",
+          "value_code_mappings": {
+            "R0": "1634643",
+            "R1": "1633801",
+            "R2": "1634484"
+          }
+        }
+      ]
+    }
+  },
+  "surgerytype": {
+    "template": "You are a medical annotator. Read the note and extract surgery type, date, and macroscopic completeness.\n\nOutput format (use one):\n\"Primary surgery was performed on DD/MM/YYYY and was macroscopically complete.\"\n\"Primary surgery was performed on DD/MM/YYYY and was macroscopically incomplete.\"\n\"Primary surgery was performed on DD/MM/YYYY and was macroscopically [select result].\"\n\"Surgery was performed on DD/MM/YYYY and was macroscopically complete.\"\n\"Surgery was performed on DD/MM/YYYY and was macroscopically incomplete.\"\n\"Surgery was performed on DD/MM/YYYY and was macroscopically [select result].\"\nIf not mentioned, output: \"No surgery information.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Surgery",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "Surgery",
+          "field_name": "surgeryType"
+        },
+        {
+          "template_placeholder": "DD/MM/YYYY",
+          "entity_type": "Surgery",
+          "field_name": "dateOfSurgery"
+        },
+        {
+          "template_placeholder": "[complete/incomplete]",
+          "entity_type": "Surgery",
+          "field_name": "marginsAfterSurgery"
+        }
+      ]
+    }
+  },
+  "tumorbiopsytype": {
+    "template": "You are a medical annotator. Read the note and extract the biopsy type and date.\n\nOutput format: Baseline/primary tumor [biopsy type] biopsy has been performed on [date] in [place].\nIf date is missing, output \"unknown\". If place is not mentioned, output \"in the hospital\".\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[biopsy type]",
+          "entity_type": "Diagnosis",
+          "field_name": "typeOfBiopsy",
+          "value_code_mappings": {
+            "Fine needle biopsy": "4171863",
+            "Core needle biopsy": "4321878",
+            "Incisional biopsy": "4321986",
+            "Excisional biopsy": "4228202",
+            "Excision": "4279903"
+          }
+        },
+        {
+          "template_placeholder": "[date]",
+          "entity_type": "Diagnosis",
+          "field_name": "dateOfDiagnosis"
+        },
+        {
+          "template_placeholder": "[place]",
+          "entity_type": "Diagnosis",
+          "field_name": "biopsyDoneBy"
+        }
+      ]
+    }
+  },
+  "tumordiameter": {
+    "template": "You are a medical annotator. Read the note and extract the tumor longest diameter (in mm) and the date.\n\nOutput format: Tumor longest diameter: [value]mm (at initial imaging on [date]).\nIf date is missing, keep [put date].\nIf not mentioned, output: \"Tumor longest diameter unknown.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis.tumorSize",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "tumorSize"
+        },
+        {
+          "template_placeholder": "[date]",
+          "entity_type": "Diagnosis",
+          "field_name": "dateOfDiagnosis"
+        }
+      ]
+    }
+  },
+  "tumorsite": {
+    "template": "You are a medical annotator. Read the note and identify the tumor location category and exact site. Prioritize the current tumor, not historical.\n\nOutput format: Tumor site ([select category]): [select site].\nAllowed values:\nTumor site (Genito urinary): Utero.\nTumor site (Intra abdominal): Pelvis.\nTumor site (Intra abdominal): Retroperitoneum.\nTumor site (Trunk wall): Abdominal Wall.\nTumor site (Trunk wall): Paravertebral – thoracolumbar.\nTumor site (Trunk wall): Thoracic Wall.\nTumor site (Upper and Lower limbs): Ankle.\nTumor site (Upper and Lower limbs): Buttock.\nTumor site (Upper and Lower limbs): Elbow/Antecubital fossa.\nTumor site (Upper and Lower limbs): Foot.\nTumor site (Upper and Lower limbs): Forearm.\nTumor site (Upper and Lower limbs): Groin.\nTumor site (Upper and Lower limbs): Leg.\nTumor site (Upper and Lower limbs): Periscapular.\nTumor site (Upper and Lower limbs): Upper arm.\nTumor site (Upper and Lower limbs): Upper leg.\nTumor site: breast.\nTumor site: head and neck.\nTumor site (Other): left thigh.\nTumor site (Other): skin of right breast.\nTumor site (Trunk wall): dorsum.\nTumor site (Upper and Lower limbs): [select site].\nTumor site (Upper and Lower limbs): Upper leg (hip).\nIf not mentioned, output: \"Tumor category unknown.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis.subsite",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "subsite"
+        }
+      ]
+    }
+  }
+}

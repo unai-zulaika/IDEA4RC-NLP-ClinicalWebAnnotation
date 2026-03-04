@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { promptsApi } from '@/lib/api'
-import type { PromptInfo } from '@/lib/api'
+import type { PromptInfo, PromptMode } from '@/lib/api'
 import PromptEditor from '@/components/PromptEditor'
 import { useDefaultCenter } from '@/lib/useDefaultCenter'
 
@@ -15,24 +15,38 @@ export default function PromptsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [newPromptName, setNewPromptName] = useState('')
-  const [newPromptTemplate, setNewPromptTemplate] = useState(`You are a medical expert. Your task is to extract information from clinical notes.
+  const defaultStandardTemplate = `You are a medical expert. Your task is to extract information from clinical notes.
 
 {few_shot_examples}
 
 Medical Note:
 {{note_original_text}}
 
-Annotation:`)
+Annotation:`
+
+  const defaultFastTemplate = `Extract the following from this clinical note. Respond with JSON only.
+
+{few_shot_examples}
+
+Medical Note:
+{{note_original_text}}
+
+Output format:
+{"final_output": "..."}`
+
+  const [newPromptTemplate, setNewPromptTemplate] = useState(defaultStandardTemplate)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [promptMode, setPromptMode] = useState<PromptMode>('standard')
   const [showNewCenterForm, setShowNewCenterForm] = useState(false)
   const [newCenterName, setNewCenterName] = useState('')
   const [creatingCenter, setCreatingCenter] = useState(false)
   const [centerError, setCenterError] = useState<string | null>(null)
 
-  const loadCenters = async () => {
+  const loadCenters = async (mode?: PromptMode) => {
+    const m = mode ?? promptMode
     try {
-      const data = await promptsApi.listCenters()
+      const data = await promptsApi.listCenters(m)
       setCenters(data)
       if (data.length > 0 && !data.includes(selectedCenter)) {
         setSelectedCenter(data[0])
@@ -46,18 +60,25 @@ Annotation:`)
     loadCenters()
   }, [])
 
+  // Reload when mode changes
+  useEffect(() => {
+    setSelectedPrompt(null)
+    setPrompts([])
+    loadCenters(promptMode)
+  }, [promptMode])
+
   useEffect(() => {
     if (selectedCenter) {
       setSelectedPrompt(null)
       loadPrompts()
     }
-  }, [selectedCenter])
+  }, [selectedCenter, promptMode])
 
   const loadPrompts = async () => {
     if (!selectedCenter) return
     setLoading(true)
     try {
-      const data = await promptsApi.list(selectedCenter)
+      const data = await promptsApi.list(selectedCenter, promptMode)
       setPrompts(data)
       if (selectedPrompt && data.some((p) => p.prompt_type === selectedPrompt)) {
         // Keep current selection
@@ -87,7 +108,7 @@ Annotation:`)
     setError(null)
 
     try {
-      const newPrompt = await promptsApi.create(newPromptName.trim(), newPromptTemplate.trim(), selectedCenter)
+      const newPrompt = await promptsApi.create(newPromptName.trim(), newPromptTemplate.trim(), selectedCenter, promptMode)
       await loadPrompts()
       setSelectedPrompt(newPrompt.prompt_type)
       setShowCreateForm(false)
@@ -110,8 +131,8 @@ Annotation:`)
     setCreatingCenter(true)
     setCenterError(null)
     try {
-      await promptsApi.createCenter(name)
-      await loadCenters()
+      await promptsApi.createCenter(name, promptMode)
+      await loadCenters(promptMode)
       setSelectedCenter(name)
       setShowNewCenterForm(false)
       setNewCenterName('')
@@ -128,7 +149,38 @@ Annotation:`)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Prompt Editor</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-4">Prompt Editor</h1>
+
+      {/* Mode toggle */}
+      <div className="mb-6">
+        <div className="inline-flex rounded-lg border border-gray-300 overflow-hidden">
+          <button
+            onClick={() => { setPromptMode('standard'); setNewPromptTemplate(defaultStandardTemplate) }}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              promptMode === 'standard'
+                ? 'bg-primary-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Standard Prompts
+          </button>
+          <button
+            onClick={() => { setPromptMode('fast'); setNewPromptTemplate(defaultFastTemplate) }}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              promptMode === 'fast'
+                ? 'bg-amber-500 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Fast Prompts
+          </button>
+        </div>
+        {promptMode === 'fast' && (
+          <p className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 inline-block">
+            Condensed prompts for fast mode (single few-shot example)
+          </p>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
@@ -253,6 +305,7 @@ Annotation:`)
               <PromptEditor
                 promptType={selectedPrompt}
                 center={selectedCenter}
+                mode={promptMode}
                 onSave={loadPrompts}
                 onDelete={async () => {
                   setSelectedPrompt(null)

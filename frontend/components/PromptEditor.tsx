@@ -3,17 +3,18 @@
 import { useState, useEffect } from 'react'
 import Editor from '@monaco-editor/react'
 import { promptsApi } from '@/lib/api'
-import type { PromptInfo, EntityMapping } from '@/lib/api'
+import type { PromptInfo, EntityMapping, PromptMode } from '@/lib/api'
 import EntityMappingEditor from './EntityMappingEditor'
 
 interface PromptEditorProps {
   promptType: string
   center?: string
+  mode?: PromptMode
   onSave?: () => void
   onDelete?: () => void
 }
 
-export default function PromptEditor({ promptType, center = 'INT', onSave, onDelete }: PromptEditorProps) {
+export default function PromptEditor({ promptType, center = 'INT', mode = 'standard', onSave, onDelete }: PromptEditorProps) {
   const [prompt, setPrompt] = useState<PromptInfo | null>(null)
   const [template, setTemplate] = useState('')
   const [promptName, setPromptName] = useState('')
@@ -29,11 +30,11 @@ export default function PromptEditor({ promptType, center = 'INT', onSave, onDel
 
   useEffect(() => {
     loadPrompt()
-  }, [promptType, center])
+  }, [promptType, center, mode])
 
   const loadPrompt = async () => {
     try {
-      const data = await promptsApi.get(promptType, center)
+      const data = await promptsApi.get(promptType, center, mode)
       setPrompt(data)
       setTemplate(data.template)
       setPromptName(data.prompt_type)
@@ -54,7 +55,7 @@ export default function PromptEditor({ promptType, center = 'INT', onSave, onDel
     setSuccess(false)
 
     try {
-      await promptsApi.update(promptType, template, entityMapping || undefined, center)
+      await promptsApi.update(promptType, template, entityMapping || undefined, center, mode)
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
       onSave?.()
@@ -77,7 +78,7 @@ export default function PromptEditor({ promptType, center = 'INT', onSave, onDel
     setSuccess(false)
 
     try {
-      await promptsApi.rename(promptType, promptName, center)
+      await promptsApi.rename(promptType, promptName, center, mode)
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
       setIsRenaming(false)
@@ -98,7 +99,7 @@ export default function PromptEditor({ promptType, center = 'INT', onSave, onDel
     setDeleting(true)
     setError(null)
     try {
-      await promptsApi.delete(promptType, center)
+      await promptsApi.delete(promptType, center, mode)
       setConfirmDelete(false)
       onDelete?.()
     } catch (err: any) {
@@ -239,7 +240,7 @@ export default function PromptEditor({ promptType, center = 'INT', onSave, onDel
               setEntityMapping(mapping)
               // Save mapping immediately when changed
               try {
-                await promptsApi.update(promptType, template, mapping || undefined, center)
+                await promptsApi.update(promptType, template, mapping || undefined, center, mode)
                 // Show success feedback
                 setSuccess(true)
                 setTimeout(() => setSuccess(false), 2000)

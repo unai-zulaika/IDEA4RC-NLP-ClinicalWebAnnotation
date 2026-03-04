@@ -74,6 +74,8 @@ export interface EntityMapping {
   field_mappings: EntityFieldMapping[]
 }
 
+export type PromptMode = 'standard' | 'fast'
+
 export interface PromptInfo {
   prompt_type: string
   template: string
@@ -300,6 +302,7 @@ export interface BatchProcessRequest {
   prompt_types: string[]
   fewshot_k?: number
   use_fewshots?: boolean
+  fast_mode?: boolean
 }
 
 export interface BatchProcessResponse {
@@ -404,51 +407,67 @@ export const serverApi = {
 }
 
 export const promptsApi = {
-  listCenters: async (): Promise<string[]> => {
-    const response = await api.get('/api/prompts/centers')
+  listCenters: async (mode: PromptMode = 'standard'): Promise<string[]> => {
+    const params: Record<string, string> = {}
+    if (mode !== 'standard') params.mode = mode
+    const response = await api.get('/api/prompts/centers', { params })
     return response.data
   },
 
-  createCenter: async (center: string): Promise<{ center: string; message: string }> => {
-    const response = await api.post('/api/prompts/centers', { center: center.trim() })
+  createCenter: async (center: string, mode: PromptMode = 'standard'): Promise<{ center: string; message: string }> => {
+    const params: Record<string, string> = {}
+    if (mode !== 'standard') params.mode = mode
+    const response = await api.post('/api/prompts/centers', { center: center.trim() }, { params })
     return response.data
   },
 
-  list: async (center?: string): Promise<PromptInfo[]> => {
-    const params = center ? { center } : {}
+  list: async (center?: string, mode: PromptMode = 'standard'): Promise<PromptInfo[]> => {
+    const params: Record<string, string> = {}
+    if (center) params.center = center
+    if (mode !== 'standard') params.mode = mode
     const response = await api.get('/api/prompts', { params })
     return response.data
   },
 
-  get: async (prompt_type: string, center?: string): Promise<PromptInfo> => {
-    const params = center ? { center } : {}
+  get: async (prompt_type: string, center?: string, mode: PromptMode = 'standard'): Promise<PromptInfo> => {
+    const params: Record<string, string> = {}
+    if (center) params.center = center
+    if (mode !== 'standard') params.mode = mode
     const response = await api.get(`/api/prompts/${prompt_type}`, { params })
     return response.data
   },
 
-  create: async (prompt_type: string, template: string, center?: string): Promise<PromptInfo> => {
+  create: async (prompt_type: string, template: string, center?: string, mode: PromptMode = 'standard'): Promise<PromptInfo> => {
+    const params: Record<string, string> = {}
+    if (mode !== 'standard') params.mode = mode
     const response = await api.post('/api/prompts', {
       prompt_type,
       template,
       center: center || 'INT',
-    })
+    }, { params })
     return response.data
   },
 
-  update: async (prompt_type: string, template: string, entity_mapping?: EntityMapping, center?: string): Promise<PromptInfo> => {
-    const params = center ? { center } : {}
+  update: async (prompt_type: string, template: string, entity_mapping?: EntityMapping, center?: string, mode: PromptMode = 'standard'): Promise<PromptInfo> => {
+    const params: Record<string, string> = {}
+    if (center) params.center = center
+    if (mode !== 'standard') params.mode = mode
     const response = await api.put(`/api/prompts/${prompt_type}`, { template, entity_mapping }, { params })
     return response.data
   },
 
-  rename: async (prompt_type: string, new_name: string, center?: string): Promise<PromptInfo> => {
-    const params = center ? { center } : {}
+  rename: async (prompt_type: string, new_name: string, center?: string, mode: PromptMode = 'standard'): Promise<PromptInfo> => {
+    const params: Record<string, string> = {}
+    if (center) params.center = center
+    if (mode !== 'standard') params.mode = mode
     const response = await api.post(`/api/prompts/${prompt_type}/rename`, { new_name }, { params })
     return response.data
   },
 
-  delete: async (prompt_type: string, center?: string): Promise<void> => {
-    const params = center ? { center } : {}
+  delete: async (prompt_type: string, center?: string, mode: PromptMode = 'standard'): Promise<void> => {
+    const params: Record<string, string> = {}
+    if (center) params.center = center
+    if (mode !== 'standard') params.mode = mode
     await api.delete(`/api/prompts/${prompt_type}`, { params })
   },
 }

@@ -20,13 +20,20 @@ router = APIRouter()
 DEFAULT_CENTER = "INT"
 
 
-def get_latest_prompts_dir() -> Path:
-    """Get path to the latest_prompts directory (directory-based prompt storage)."""
+def _get_prompts_dir(mode: str = "standard") -> Path:
+    """Get path to the prompts directory for the given mode."""
     backend_dir = Path(__file__).parent.parent
+    if mode == "fast":
+        return backend_dir / "data" / "fast_prompts"
     return backend_dir / "data" / "latest_prompts"
 
 
-def load_prompts_json() -> Dict:
+def get_latest_prompts_dir() -> Path:
+    """Get path to the latest_prompts directory (directory-based prompt storage)."""
+    return _get_prompts_dir("standard")
+
+
+def load_prompts_json(mode: str = "standard") -> Dict:
     """
     Load prompts from the directory-based structure.
 
@@ -38,8 +45,10 @@ def load_prompts_json() -> Dict:
         Dict with shape {center: {suffixed_key: prompt_data}}
         e.g. {"INT": {"biopsygrading-int": {...}}, "VGR": {"biopsygrading-vgr": {...}}}
     """
-    prompts_dir = get_latest_prompts_dir()
+    prompts_dir = _get_prompts_dir(mode)
     if not prompts_dir.is_dir():
+        if mode == "fast":
+            return {}
         raise HTTPException(status_code=404, detail=f"Prompts directory not found: {prompts_dir}")
 
     result: Dict[str, Dict] = {}
@@ -48,6 +57,8 @@ def load_prompts_json() -> Dict:
     )
 
     if not center_dirs:
+        if mode == "fast":
+            return {}
         raise HTTPException(status_code=404, detail=f"No center directories found in {prompts_dir}")
 
     for center_dir in center_dirs:
@@ -119,14 +130,14 @@ def _serialize_prompt_data(template: str, mapping: Optional[EntityMapping] = Non
         return result
 
 
-def save_prompts_json(data: Dict):
+def save_prompts_json(data: Dict, mode: str = "standard"):
     """
     Save prompts back to the directory-based structure.
 
     For each center key in data, strips the -{center_lower} suffix from
     prompt keys and writes to {center}/prompts.json.
     """
-    prompts_dir = get_latest_prompts_dir()
+    prompts_dir = _get_prompts_dir(mode)
     prompts_dir.mkdir(parents=True, exist_ok=True)
 
     for center, center_prompts in data.items():
@@ -156,9 +167,9 @@ def _get_center_prompts(prompts_data: Dict, center: str) -> Dict:
 # --- Centers (must be defined before /{prompt_type}) ---
 
 @router.get("/centers", response_model=List[str])
-async def list_centers():
-    """List all center/group names (subdirectories in latest_prompts/)."""
-    prompts_dir = get_latest_prompts_dir()
+async def list_centers(mode: str = Query("standard", description="Prompt mode: standard or fast")):
+    """List all center/group names (subdirectories in prompts dir)."""
+    prompts_dir = _get_prompts_dir(mode)
     if not prompts_dir.is_dir():
         return []
     return sorted(
@@ -168,13 +179,13 @@ async def list_centers():
 
 
 @router.post("/centers", response_model=dict)
-async def create_center(body: CenterCreate):
+async def create_center(body: CenterCreate, mode: str = Query("standard", description="Prompt mode: standard or fast")):
     """Create a new center/group. Prompts can then be added to it."""
     center = body.center.strip()
     if not center:
         raise HTTPException(status_code=400, detail="Center name cannot be empty")
 
-    prompts_dir = get_latest_prompts_dir()
+    prompts_dir = _get_prompts_dir(mode)
     center_dir = prompts_dir / center
     if center_dir.is_dir() and (center_dir / "prompts.json").exists():
         raise HTTPException(status_code=400, detail=f"Center '{center}' already exists")
@@ -189,11 +200,12 @@ async def create_center(body: CenterCreate):
 
 @router.get("", response_model=List[PromptInfo])
 async def list_prompts(
-    center: Optional[str] = Query(None, description="Filter by center; default INT")
+    center: Optional[str] = Query(None, description="Filter by center; default INT"),
+    mode: str = Query("standard", description="Prompt mode: standard or fast"),
 ):
     """List prompts for a center. If center omitted, defaults to INT."""
     c = center or DEFAULT_CENTER
-    prompts_data = load_prompts_json()
+    prompts_data = load_prompts_json(mode)
     center_prompts = _get_center_prompts(prompts_data, c)
     result = []
     for prompt_type, prompt_data in center_prompts.items():
@@ -209,9 +221,9 @@ async def list_prompts(
 
 
 @router.post("", response_model=PromptInfo)
-async def create_prompt(create: PromptInfo):
+async def create_prompt(create: PromptInfo, mode: str = Query("standard", description="Prompt mode: standard or fast")):
     """Create a new prompt in a center. Default center is INT if not set."""
-    prompts_data = load_prompts_json()
+    prompts_data = load_prompts_json(mode)
     c = (create.center or DEFAULT_CENTER).strip()
     if c not in prompts_data:
         prompts_data[c] = {}
@@ -236,7 +248,7 @@ async def create_prompt(create: PromptInfo):
         )
     center_prompts[prompt_type] = _serialize_prompt_data(template, create.entity_mapping)
     prompts_data[c] = center_prompts
-    save_prompts_json(prompts_data)
+    save_prompts_json(prompts_data, mode)
     return PromptInfo(
         prompt_type=prompt_type,
         template=template,
@@ -249,11 +261,12 @@ async def create_prompt(create: PromptInfo):
 @router.get("/{prompt_type}", response_model=PromptInfo)
 async def get_prompt(
     prompt_type: str,
-    center: Optional[str] = Query(None, description="Center; default INT")
+    center: Optional[str] = Query(None, description="Center; default INT"),
+    mode: str = Query("standard", description="Prompt mode: standard or fast"),
 ):
     """Get a specific prompt by type and center."""
     c = center or DEFAULT_CENTER
-    prompts_data = load_prompts_json()
+    prompts_data = load_prompts_json(mode)
     center_prompts = _get_center_prompts(prompts_data, c)
     if prompt_type not in center_prompts:
         raise HTTPException(
@@ -274,11 +287,12 @@ async def get_prompt(
 async def update_prompt(
     prompt_type: str,
     update: PromptUpdate,
-    center: Optional[str] = Query(None, description="Center; default INT")
+    center: Optional[str] = Query(None, description="Center; default INT"),
+    mode: str = Query("standard", description="Prompt mode: standard or fast"),
 ):
     """Update prompt template and/or entity mapping."""
     c = center or DEFAULT_CENTER
-    prompts_data = load_prompts_json()
+    prompts_data = load_prompts_json(mode)
     center_prompts = _get_center_prompts(prompts_data, c)
     if prompt_type not in center_prompts:
         raise HTTPException(
@@ -287,7 +301,7 @@ async def update_prompt(
         )
     center_prompts[prompt_type] = _serialize_prompt_data(update.template, update.entity_mapping)
     prompts_data[c] = center_prompts
-    save_prompts_json(prompts_data)
+    save_prompts_json(prompts_data, mode)
     return PromptInfo(
         prompt_type=prompt_type,
         template=update.template,
@@ -301,11 +315,12 @@ async def update_prompt(
 async def rename_prompt(
     prompt_type: str,
     rename: PromptRename,
-    center: Optional[str] = Query(None, description="Center; default INT")
+    center: Optional[str] = Query(None, description="Center; default INT"),
+    mode: str = Query("standard", description="Prompt mode: standard or fast"),
 ):
     """Rename a prompt type within a center."""
     c = center or DEFAULT_CENTER
-    prompts_data = load_prompts_json()
+    prompts_data = load_prompts_json(mode)
     center_prompts = _get_center_prompts(prompts_data, c)
     if prompt_type not in center_prompts:
         raise HTTPException(
@@ -323,7 +338,7 @@ async def rename_prompt(
     prompt_data = center_prompts.pop(prompt_type)
     center_prompts[new_name] = prompt_data
     prompts_data[c] = center_prompts
-    save_prompts_json(prompts_data)
+    save_prompts_json(prompts_data, mode)
     template, mapping = _extract_template_and_mapping(prompt_data)
     return PromptInfo(
         prompt_type=new_name,
@@ -337,11 +352,12 @@ async def rename_prompt(
 @router.delete("/{prompt_type}", status_code=204)
 async def delete_prompt(
     prompt_type: str,
-    center: Optional[str] = Query(None, description="Center; default INT")
+    center: Optional[str] = Query(None, description="Center; default INT"),
+    mode: str = Query("standard", description="Prompt mode: standard or fast"),
 ):
     """Delete a prompt from a center."""
     c = center or DEFAULT_CENTER
-    prompts_data = load_prompts_json()
+    prompts_data = load_prompts_json(mode)
     center_prompts = _get_center_prompts(prompts_data, c)
     if prompt_type not in center_prompts:
         raise HTTPException(
@@ -350,6 +366,6 @@ async def delete_prompt(
         )
     del center_prompts[prompt_type]
     prompts_data[c] = center_prompts
-    save_prompts_json(prompts_data)
+    save_prompts_json(prompts_data, mode)
     return None
 

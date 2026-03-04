@@ -161,6 +161,7 @@ class ProcessNoteRequest(BaseModel):
     prompt_types: List[str]
     fewshot_k: int = 5
     use_fewshots: bool = True
+    fast_mode: bool = False
 
 
 class ProcessNoteResponse(BaseModel):
@@ -176,6 +177,7 @@ class BatchProcessRequest(BaseModel):
     prompt_types: List[str]
     fewshot_k: int = 5
     use_fewshots: bool = True
+    fast_mode: bool = False
 
 
 class BatchProcessResponse(BaseModel):
