@@ -5,7 +5,7 @@ pipeline/api/data/results/*
 
 data/diagnosis_codes/diagnosis-codes-list.csv
 test_data/
-
+medgemma-1.5-4b-it-W4A16-G128/
 
 # Python
 __pycache__/

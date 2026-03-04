@@ -29,7 +29,7 @@ _USE_VLLM: bool = False
 class VLLMClient:
     """Client for VLLM server API."""
     
-    def __init__(self, endpoint: str, model_name: str, timeout: int = 30):
+    def __init__(self, endpoint: str, model_name: str, timeout: int = 30, max_tokens: int = 4096):
         """
         Initialize VLLM client.
         
@@ -37,10 +37,12 @@ class VLLMClient:
             endpoint: VLLM server endpoint (e.g., "http://localhost:8000/v1")
             model_name: Model name to use
             timeout: Request timeout in seconds
+            max_tokens: Default maximum tokens to generate
         """
         self.endpoint = endpoint.rstrip('/')
         self.model_name = model_name
         self.timeout = timeout
+        self.max_tokens = max_tokens
         
         # Setup session with retry strategy
         self.session = requests.Session()
@@ -83,7 +85,7 @@ class VLLMClient:
             raise ConnectionError(f"Failed to connect to VLLM server at {self.endpoint}: {e}")
     def generate(self, 
                  prompt: str,
-                 max_new_tokens: int = 128,
+                 max_new_tokens: Optional[int] = None,
                  temperature: float = 0.1,
                  logprobs: Optional[int] = None,
                  **kwargs) -> Dict[str, Any]:
@@ -100,6 +102,9 @@ class VLLMClient:
         Returns:
             Dictionary with 'raw', 'normalized' output, and optionally 'logprobs'
         """
+        if max_new_tokens is None:
+            max_new_tokens = self.max_tokens
+
         url = f"{self.endpoint}/chat/completions"
         
         # Determine if this is a simple completion prompt (no system message needed)
@@ -253,7 +258,7 @@ class VLLMClient:
     
     async def agenerate(self,
                        prompt: str,
-                       max_new_tokens: int = 128,
+                       max_new_tokens: Optional[int] = None,
                        temperature: float = 0.1,
                        logprobs: Optional[int] = None,
                        **kwargs) -> Dict[str, Any]:
@@ -271,6 +276,9 @@ class VLLMClient:
         """
         if not HTTPX_AVAILABLE:
             raise RuntimeError("httpx is required for async generation. Install with: pip install httpx")
+
+        if max_new_tokens is None:
+            max_new_tokens = self.max_tokens
 
         url = f"{self.endpoint}/chat/completions"
 
@@ -417,6 +425,7 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
     model_name = "meta-llama/Llama-3.1-8B-Instruct"
     batch_size = 8
     timeout = 30
+    max_tokens = 4096
 
     if config_path and config_path.exists():
         try:
@@ -427,6 +436,7 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
                 model_name = config.get("model_name", model_name)
                 batch_size = config.get("batch_size", batch_size)
                 timeout = config.get("timeout", timeout)
+                max_tokens = config.get("max_tokens", max_tokens)
         except Exception as e:
             print(f"[WARN] Failed to load VLLM config from {config_path}: {e}")
 
@@ -441,13 +451,16 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
         batch_size = int(os.getenv("VLLM_BATCH_SIZE"))
     if os.getenv("VLLM_TIMEOUT"):
         timeout = int(os.getenv("VLLM_TIMEOUT"))
+    if os.getenv("VLLM_MAX_TOKENS"):
+        max_tokens = int(os.getenv("VLLM_MAX_TOKENS"))
 
     return {
         "use_vllm": use_vllm,
         "vllm_endpoint": vllm_endpoint,
         "model_name": model_name,
         "batch_size": batch_size,
-        "timeout": timeout
+        "timeout": timeout,
+        "max_tokens": max_tokens
     }
 
 
@@ -473,7 +486,8 @@ def init_model_vllm(config_path: Optional[Path] = None) -> bool:
         _VLLM_CLIENT = VLLMClient(
             endpoint=config["vllm_endpoint"],
             model_name=config["model_name"],
-            timeout=config["timeout"]
+            timeout=config["timeout"],
+            max_tokens=config["max_tokens"]
         )
         _USE_VLLM = True
         print(f"[VLLM] Initialized successfully with model: {config['model_name']}")
@@ -487,7 +501,7 @@ def init_model_vllm(config_path: Optional[Path] = None) -> bool:
 
 
 def run_model_with_prompt_vllm(prompt: str,
-                               max_new_tokens: int = 128,
+                               max_new_tokens: Optional[int] = None,
                                temperature: float = 0.1,
                                return_logprobs: bool = False) -> Dict[str, Any]:
     """

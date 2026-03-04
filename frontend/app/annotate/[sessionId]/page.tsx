@@ -126,7 +126,7 @@ export default function AnnotatePage() {
     setNoteProgress({
       current: 0,
       total: totalPrompts,
-      currentPrompt: `Processing ${totalPrompts} prompts in parallel...`,
+      currentPrompt: `Processing ${totalPrompts} prompts...`,
       percentage: 10,
     })
 
@@ -562,12 +562,12 @@ export default function AnnotatePage() {
       // This handles old sessions that don't have evidence_spans saved
       const evidenceText = ann.evidence_text
       const noteText = currentNote.text
-      
+
       // Simple case-insensitive search
       const evidenceLower = evidenceText.toLowerCase()
       const noteLower = noteText.toLowerCase()
       const start = noteLower.indexOf(evidenceLower)
-      
+
       if (start !== -1) {
         // Found it - create a span
         allSpans.push({
@@ -900,35 +900,35 @@ export default function AnnotatePage() {
                     annotation={
                       annotation
                         ? {
-                            prompt_type: annotation.prompt_type,
-                            annotation_text: annotation.annotation_text,
-                            values: annotation.values || [],
-                            evidence_spans: annotation.evidence_spans || annotation.values?.flatMap((v) => v.evidence_spans || []) || [],
-                            reasoning: annotation.reasoning,
-                            is_negated: annotation.is_negated,
-                            date_info: annotation.date_info,
-                            evidence_text: annotation.evidence_text,
-                            raw_prompt: annotation.raw_prompt,
-                            raw_response: annotation.raw_response,
-                            status: annotation.status || 'success',
-                            evaluation_result: annotation.evaluation_result,  // Include evaluation results
-                            icdo3_code: annotation.icdo3_code,  // Include ICD-O-3 code information
-                          }
+                          prompt_type: annotation.prompt_type,
+                          annotation_text: annotation.annotation_text,
+                          values: annotation.values || [],
+                          evidence_spans: annotation.evidence_spans || annotation.values?.flatMap((v) => v.evidence_spans || []) || [],
+                          reasoning: annotation.reasoning,
+                          is_negated: annotation.is_negated,
+                          date_info: annotation.date_info,
+                          evidence_text: annotation.evidence_text,
+                          raw_prompt: annotation.raw_prompt,
+                          raw_response: annotation.raw_response,
+                          status: annotation.status || 'success',
+                          evaluation_result: annotation.evaluation_result,  // Include evaluation results
+                          icdo3_code: annotation.icdo3_code,  // Include ICD-O-3 code information
+                        }
                         : {
-                            prompt_type: promptType,
-                            annotation_text: '',
-                            values: [],
-                            evidence_spans: [],
-                            reasoning: undefined,
-                            is_negated: undefined,
-                            date_info: undefined,
-                            evidence_text: undefined,
-                            raw_prompt: undefined,
-                            raw_response: undefined,
-                            status: undefined,
-                            evaluation_result: undefined,
-                            icdo3_code: undefined,
-                          }
+                          prompt_type: promptType,
+                          annotation_text: '',
+                          values: [],
+                          evidence_spans: [],
+                          reasoning: undefined,
+                          is_negated: undefined,
+                          date_info: undefined,
+                          evidence_text: undefined,
+                          raw_prompt: undefined,
+                          raw_response: undefined,
+                          status: undefined,
+                          evaluation_result: undefined,
+                          icdo3_code: undefined,
+                        }
                     }
                     noteText={currentNote.text}
                     expectedAnnotation={expectedAnnotation}
