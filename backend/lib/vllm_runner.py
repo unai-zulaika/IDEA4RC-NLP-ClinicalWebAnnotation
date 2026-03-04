@@ -417,6 +417,7 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
     model_name = "meta-llama/Llama-3.1-8B-Instruct"
     batch_size = 8
     timeout = 30
+    context_window = 8192
 
     if config_path and config_path.exists():
         try:
@@ -427,6 +428,7 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
                 model_name = config.get("model_name", model_name)
                 batch_size = config.get("batch_size", batch_size)
                 timeout = config.get("timeout", timeout)
+                context_window = config.get("context_window", context_window)
         except Exception as e:
             print(f"[WARN] Failed to load VLLM config from {config_path}: {e}")
 
@@ -447,7 +449,8 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
         "vllm_endpoint": vllm_endpoint,
         "model_name": model_name,
         "batch_size": batch_size,
-        "timeout": timeout
+        "timeout": timeout,
+        "context_window": context_window
     }
 
 
