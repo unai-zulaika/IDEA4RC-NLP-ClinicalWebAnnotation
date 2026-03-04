@@ -4,5 +4,6 @@
   "model_name": "./medgemma-1.5-4b-it-W4A16-G128",
   "batch_size": 8,
   "timeout": 150,
-  "max_tokens": 4096
+  "max_tokens": 4096,
+  "context_window": 8192
 }
