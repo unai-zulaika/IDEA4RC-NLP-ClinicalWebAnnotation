@@ -60,12 +60,19 @@ export interface ModelInfo {
   is_active: boolean
 }
 
+export interface OutputWordMapping {
+  pattern: string   // Python re.search() regex tested against LLM final_output
+  value: string     // Value to store for this field if pattern matches
+  flags?: string    // Comma-separated: "IGNORECASE", "MULTILINE"
+}
+
 export interface EntityFieldMapping {
   template_placeholder: string
   entity_type: string
   field_name: string
   hardcoded_value?: string
   value_code_mappings?: Record<string, string>
+  output_word_mappings?: OutputWordMapping[]
 }
 
 export interface EntityMapping {
@@ -287,6 +294,7 @@ export interface AnnotationResult {
   evaluation_result?: EvaluationResult  // Evaluation metrics (only in evaluation mode)
   icdo3_code?: ICDO3CodeInfo  // ICD-O-3 code information (for histology/site prompts)
   timing_breakdown?: Record<string, number>  // Per-step timing breakdown
+  derived_field_values?: Record<string, string>  // Values resolved via output_word_mappings at annotation time
 }
 
 export interface ProcessNoteResponse {
@@ -341,6 +349,7 @@ export interface SessionAnnotation {
   status?: 'success' | 'error' | 'incomplete'  // Annotation status
   evaluation_result?: EvaluationResult  // Evaluation metrics (only in evaluation mode)
   icdo3_code?: ICDO3CodeInfo  // ICD-O-3 code information (for histology/site prompts)
+  derived_field_values?: Record<string, string>  // Values resolved via output_word_mappings at annotation time
 }
 
 export interface SessionData {
