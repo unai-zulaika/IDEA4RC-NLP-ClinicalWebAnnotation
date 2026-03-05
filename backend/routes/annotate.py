@@ -603,13 +603,13 @@ async def _process_single_prompt(
                         # Outlines not available — fall through to fallback below
                         use_structured = False
 
-                    if not is_simple and (fast_mode or not use_structured):
-                        output = await vllm_client.agenerate(
-                            prompt=prompt, max_new_tokens=fast_max_tokens,
-                            temperature=0.0, return_logprobs=False
-                        )
-                        raw_output = output.get("raw", output.get("normalized", ""))
-                        raw_response = raw_output
+                if not is_simple and (fast_mode or not use_structured):
+                    output = await vllm_client.agenerate(
+                        prompt=prompt, max_new_tokens=fast_max_tokens,
+                        temperature=0.0, return_logprobs=False
+                    )
+                    raw_output = output.get("raw", output.get("normalized", ""))
+                    raw_response = raw_output
 
             # --- Post-processing ---
             with timer.measure("post_processing"):
