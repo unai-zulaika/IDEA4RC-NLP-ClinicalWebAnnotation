@@ -70,8 +70,8 @@ class NoteChunker:
         except Exception:
             return 8192
 
-    def _resolve_model_path(self) -> Optional[str]:
-        """Resolve local model path from vllm_config.json (for tokenizer loading)."""
+    def _get_model_name_or_path(self) -> Optional[str]:
+        """Return local model path if it exists, otherwise the raw model_name for HF Hub."""
         config_path = Path(__file__).parent.parent / "config" / "vllm_config.json"
         try:
             with open(config_path, encoding="utf-8") as f:
@@ -79,13 +79,16 @@ class NoteChunker:
             model_name = config.get("model_name", "")
             if not model_name:
                 return None
+            # Check local path first
             if model_name.startswith("/"):
                 resolved = Path(model_name).resolve()
-            else:
-                # Relative path: resolve from project root (parent of backend/)
-                project_root = Path(__file__).parent.parent.parent
-                resolved = (project_root / model_name).resolve()
-            return str(resolved) if resolved.exists() else None
+                return str(resolved) if resolved.exists() else None
+            project_root = Path(__file__).parent.parent.parent
+            resolved = (project_root / model_name).resolve()
+            if resolved.exists():
+                return str(resolved)
+            # Return raw model_name for HF Hub download
+            return model_name
         except Exception:
             return None
 
@@ -93,17 +96,17 @@ class NoteChunker:
 
     def _try_load_tokenizer(self) -> None:
         """Attempt to load the model's tokenizer; fall back to char approximation."""
-        model_path = self._resolve_model_path()
-        if model_path is None:
+        model_ref = self._get_model_name_or_path()
+        if model_ref is None:
             logger.warning(
-                "[NoteChunker] Model path not found; using char-based token approximation (len//4)"
+                "[NoteChunker] No model_name configured; using char-based token approximation (len//4)"
             )
             self._using_approximation = True
             return
         try:
             from transformers import AutoTokenizer
-            self._tokenizer = AutoTokenizer.from_pretrained(model_path)
-            logger.info(f"[NoteChunker] Tokenizer loaded from {model_path}")
+            self._tokenizer = AutoTokenizer.from_pretrained(model_ref)
+            logger.info(f"[NoteChunker] Tokenizer loaded from {model_ref}")
         except Exception as exc:
             logger.warning(
                 f"[NoteChunker] Tokenizer load failed ({exc}); using char-based approximation"
