@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { EntityMapping, EntityFieldMapping, OutputWordMapping } from '@/lib/api'
 
 function ValueCodeMappingsSection({
@@ -111,15 +111,19 @@ function OutputWordMappingsSection({
   onChange: (mappings: OutputWordMapping[] | undefined) => void
 }) {
   const [expanded, setExpanded] = useState(false)
+  const keyCounter = useRef(0)
+  const [keys, setKeys] = useState<string[]>(() => (mappings || []).map(() => String(keyCounter.current++)))
   const list = mappings || []
 
   const addPattern = () => {
     onChange([...list, { pattern: '', value: '', flags: 'IGNORECASE' }])
+    setKeys([...keys, String(keyCounter.current++)])
     setExpanded(true)
   }
 
   const removePattern = (i: number) => {
     const updated = list.filter((_, idx) => idx !== i)
+    setKeys(keys.filter((_, idx) => idx !== i))
     onChange(updated.length > 0 ? updated : undefined)
   }
 
@@ -132,6 +136,9 @@ function OutputWordMappingsSection({
     if (i === 0) return
     const updated = [...list]
     ;[updated[i - 1], updated[i]] = [updated[i], updated[i - 1]]
+    const updatedKeys = [...keys]
+    ;[updatedKeys[i - 1], updatedKeys[i]] = [updatedKeys[i], updatedKeys[i - 1]]
+    setKeys(updatedKeys)
     onChange(updated)
   }
 
@@ -139,6 +146,9 @@ function OutputWordMappingsSection({
     if (i === list.length - 1) return
     const updated = [...list]
     ;[updated[i], updated[i + 1]] = [updated[i + 1], updated[i]]
+    const updatedKeys = [...keys]
+    ;[updatedKeys[i], updatedKeys[i + 1]] = [updatedKeys[i + 1], updatedKeys[i]]
+    setKeys(updatedKeys)
     onChange(updated)
   }
 
@@ -169,7 +179,7 @@ function OutputWordMappingsSection({
             Regex patterns tested against LLM output in order; first match sets the field value. Composes with Value-to-Code Mappings.
           </p>
           {list.map((owm, i) => (
-            <div key={i} className="border border-purple-100 rounded p-2 bg-purple-50 space-y-1.5">
+            <div key={keys[i] ?? i} className="border border-purple-100 rounded p-2 bg-purple-50 space-y-1.5">
               <div className="flex items-center gap-1.5">
                 <input
                   type="text"
