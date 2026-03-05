@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import type { EntityMapping, EntityFieldMapping } from '@/lib/api'
+import type { EntityMapping, EntityFieldMapping, OutputWordMapping } from '@/lib/api'
 
 function ValueCodeMappingsSection({
   mappings,
@@ -96,6 +96,150 @@ function ValueCodeMappingsSection({
             className="text-xs text-green-700 hover:text-green-900 font-medium"
           >
             + Add Value Mapping
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function OutputWordMappingsSection({
+  mappings,
+  onChange,
+}: {
+  mappings?: OutputWordMapping[]
+  onChange: (mappings: OutputWordMapping[] | undefined) => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const list = mappings || []
+
+  const addPattern = () => {
+    onChange([...list, { pattern: '', value: '', flags: 'IGNORECASE' }])
+    setExpanded(true)
+  }
+
+  const removePattern = (i: number) => {
+    const updated = list.filter((_, idx) => idx !== i)
+    onChange(updated.length > 0 ? updated : undefined)
+  }
+
+  const updatePattern = (i: number, patch: Partial<OutputWordMapping>) => {
+    const updated = list.map((item, idx) => idx === i ? { ...item, ...patch } : item)
+    onChange(updated)
+  }
+
+  const moveUp = (i: number) => {
+    if (i === 0) return
+    const updated = [...list]
+    ;[updated[i - 1], updated[i]] = [updated[i], updated[i - 1]]
+    onChange(updated)
+  }
+
+  const moveDown = (i: number) => {
+    if (i === list.length - 1) return
+    const updated = [...list]
+    ;[updated[i], updated[i + 1]] = [updated[i + 1], updated[i]]
+    onChange(updated)
+  }
+
+  const hasFlag = (flags: string | undefined, flag: string) =>
+    (flags || '').split(',').map(f => f.trim()).includes(flag)
+
+  const toggleFlag = (i: number, flag: string, checked: boolean) => {
+    const current = (list[i].flags || '').split(',').map(f => f.trim()).filter(Boolean)
+    const next = checked
+      ? Array.from(new Set([...current, flag]))
+      : current.filter(f => f !== flag)
+    updatePattern(i, { flags: next.length > 0 ? next.join(',') : undefined })
+  }
+
+  return (
+    <div className="mt-2 border border-purple-200 rounded-md">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex justify-between items-center px-2 py-1.5 text-xs font-medium text-purple-800 bg-purple-50 hover:bg-purple-100 rounded-t-md"
+      >
+        <span>Output Word Mappings {list.length > 0 && `(${list.length} pattern${list.length > 1 ? 's' : ''})`}</span>
+        <span>{expanded ? '\u25B2' : '\u25BC'}</span>
+      </button>
+      {expanded && (
+        <div className="p-2 space-y-2">
+          <p className="text-xs text-gray-500">
+            Regex patterns tested against LLM output in order; first match sets the field value. Composes with Value-to-Code Mappings.
+          </p>
+          {list.map((owm, i) => (
+            <div key={i} className="border border-purple-100 rounded p-2 bg-purple-50 space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={owm.pattern}
+                  onChange={(e) => updatePattern(i, { pattern: e.target.value })}
+                  placeholder="Pattern (e.g. recurrence)"
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs font-mono"
+                />
+                <input
+                  type="text"
+                  value={owm.value}
+                  onChange={(e) => updatePattern(i, { value: e.target.value })}
+                  placeholder="Value (e.g. recurrence)"
+                  className="w-32 px-2 py-1 border border-gray-300 rounded text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => moveUp(i)}
+                  disabled={i === 0}
+                  className="px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded text-xs hover:bg-gray-300 disabled:opacity-30"
+                  title="Move up"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveDown(i)}
+                  disabled={i === list.length - 1}
+                  className="px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded text-xs hover:bg-gray-300 disabled:opacity-30"
+                  title="Move down"
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removePattern(i)}
+                  className="px-1.5 py-0.5 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                  title="Remove pattern"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="flex items-center gap-3 pl-0.5">
+                <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={hasFlag(owm.flags, 'IGNORECASE')}
+                    onChange={(e) => toggleFlag(i, 'IGNORECASE', e.target.checked)}
+                    className="rounded"
+                  />
+                  Case-insensitive
+                </label>
+                <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={hasFlag(owm.flags, 'MULTILINE')}
+                    onChange={(e) => toggleFlag(i, 'MULTILINE', e.target.checked)}
+                    className="rounded"
+                  />
+                  Multiline
+                </label>
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addPattern}
+            className="text-xs text-purple-700 hover:text-purple-900 font-medium"
+          >
+            + Add Pattern
           </button>
         </div>
       )}
@@ -382,6 +526,11 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
                   <ValueCodeMappingsSection
                     mappings={fm.value_code_mappings}
                     onChange={(vcm) => updateFieldMapping(index, { value_code_mappings: vcm })}
+                  />
+                  {/* Output Word Mappings */}
+                  <OutputWordMappingsSection
+                    mappings={fm.output_word_mappings}
+                    onChange={(owm) => updateFieldMapping(index, { output_word_mappings: owm })}
                   />
                 </div>
               ))}
