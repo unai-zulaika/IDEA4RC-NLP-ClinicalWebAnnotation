@@ -5,8 +5,8 @@ A comprehensive platform for human-in-the-loop annotation of clinical notes usin
 ## Overview
 
 This platform provides:
-- **Annotation Web Interface**: Human-in-the-loop review of LLM-extracted clinical entities
-- **Annotation API**: FastAPI backend for LLM inference, session management, and ICD-O-3 code lookup
+- **Annotation Web Interface**: Human-in-the-loop review of LLM-extracted clinical entities with patient-level diagnosis resolution
+- **Annotation API**: FastAPI backend for LLM inference (MedGemma 4B W4A16 quantized), session management, ICD-O-3 code lookup, and export validation
 - **NLP Pipeline**: Automated data ingestion, entity linking, and quality checks
 - **Pipeline Dashboard**: Streamlit-based monitoring for pipeline status and progress
 
@@ -23,8 +23,8 @@ This platform provides:
 │                     Annotation API                               │
 │                 (FastAPI, port 8001)                            │
 │  • Session management     • Few-shot retrieval (FAISS)          │
-│  • vLLM integration       • ICD-O-3 code lookup                 │
-│  • Prompt management      • Annotation evaluation               │
+│  • vLLM integration       • ICD-O-3 code lookup & resolution    │
+│  • Prompt management      • Diagnosis resolution & export       │
 └─────────────────────────────────────────────────────────────────┘
                                       │
                ┌──────────────────────┼──────────────────────┐
@@ -54,7 +54,7 @@ LLM inference requires an NVIDIA GPU. This applies whether you run vLLM inside D
 
 | Component | Requirement |
 |-----------|-------------|
-| **GPU** | NVIDIA GPU with sufficient VRAM for your model (24 GB+ for 27B models, 8 GB+ for 3B models) |
+| **GPU** | NVIDIA GPU with sufficient VRAM for your model (8 GB+ for 4B quantized models, 24 GB+ for 27B models) |
 | **NVIDIA Driver** | 550+ (CUDA 12.4) or 570+ (CUDA 12.8+) |
 | **CUDA** | 12.4+ (bundled with the driver) |
 
@@ -156,11 +156,11 @@ The 4 application services run in Docker. You run vLLM separately (in a virtual 
 # In a virtual environment with vllm installed
 pip install vllm
 
-vllm serve unsloth/medgemma-27b-text-it-unsloth-bnb-4bit \
-  --max-model-len 16384 \
-  --max-num-seqs 32 \
-  --gpu-memory-utilization 0.85 \
-  --enforce-eager
+vllm serve unaizulaika/medgemma-1.5-4b-it-W4A16-G128 \
+  --dtype auto \
+  --max-model-len 32768 \
+  --enable-chunked-prefill \
+  --gpu-memory-utilization 0.95
 ```
 
 vLLM will serve on `http://localhost:8000` by default.
@@ -284,9 +284,11 @@ mkdir -p sessions data/faiss_store
 {
   "use_vllm": true,
   "vllm_endpoint": "http://localhost:8000/v1",
-  "model_name": "unsloth/medgemma-27b-text-it-unsloth-bnb-4bit",
+  "model_name": "unaizulaika/medgemma-1.5-4b-it-W4A16-G128",
   "batch_size": 8,
-  "timeout": 150
+  "timeout": 150,
+  "max_tokens": 32768,
+  "context_window": 32768
 }
 ```
 
@@ -498,13 +500,13 @@ pip install vllm
 **Start vLLM:**
 
 ```bash
-vllm serve unsloth/medgemma-27b-text-it-unsloth-bnb-4bit \
+vllm serve unaizulaika/medgemma-1.5-4b-it-W4A16-G128 \
   --host 0.0.0.0 \
   --port 8000 \
-  --max-model-len 16384 \
-  --max-num-seqs 32 \
-  --gpu-memory-utilization 0.85 \
-  --enforce-eager
+  --dtype auto \
+  --max-model-len 32768 \
+  --enable-chunked-prefill \
+  --gpu-memory-utilization 0.95
 ```
 
 For gated models (Llama, Gemma), set your HuggingFace token:
@@ -681,9 +683,12 @@ clinical-annotation-platform/
 │   ├── lib/                  # Shared utilities
 │   │   ├── vllm_runner.py   # vLLM client
 │   │   ├── fewshot_builder.py # FAISS-based retrieval
-│   │   ├── icdo3_*.py       # ICD-O-3 extraction
+│   │   ├── icdo3_*.py       # ICD-O-3 extraction (sync + async)
+│   │   ├── topography_resolver.py # Deterministic topography lookup
+│   │   ├── condition_label_loader.py # Condition CSV loaders
+│   │   ├── output_mapper.py # Regex-based field derivation
 │   │   └── evaluation_engine.py
-│   └── data/                 # Prompts, few-shots, codes
+│   └── data/                 # Prompts, few-shots, codes, condition files
 │
 ├── frontend/                  # Annotation Web UI (Next.js)
 │   ├── app/                  # Next.js app router pages
@@ -721,11 +726,34 @@ clinical-annotation-platform/
 - "Show reasoning" toggle for LLM explanations
 - Session-based workflow with auto-save
 - ICD-O-3 code lookup with morphology/topography search
+- Sequential note processing with incremental save and real-time SSE progress
+- Per-note prompt type overrides and exclusions for fine-grained control
+- Output word mappings: regex-based field derivation from LLM output
+
+### Patient Diagnosis Resolution
+- Patient-level ICD-O-3 diagnosis resolution across multiple notes
+- Automatic merging of histology/topography codes into unified diagnosis
+- Manual review and resolution panel for ambiguous cases
+- Diagnosis-aware CSV export with conflict warnings
+
+### ICD-O-3 Code Extraction
+- Condition-specific CSV lookups (SARC, HNC) for deterministic topography/morphology matching
+- Fuzzy token-overlap matching before LLM fallback
+- Async extraction support for concurrent processing
+- Thinking block salvage: recovers annotations from token-exhausted LLM responses
+
+### Export & Validation
+- Pre-export validation with cardinality-based deduplication (repeatable vs non-repeatable entities)
+- Data type cleaning: extracts typed values (dates, integers, floats) from template-formatted text
+- Diagnosis row merging: replaces individual histology/topography rows with unified diagnosis codes
+- Conflict detection and reporting before CSV generation
 
 ### Prompt Management
 - Monaco Editor-based prompt editing
 - Multi-center support (INT, MSCI, VGR variants)
 - Few-shot example retrieval using FAISS
+- Entity mapping preservation through prompt adaptation
+- Output word mappings editor with drag-to-reorder
 
 ### NLP Pipeline
 - Batch processing of clinical notes
@@ -745,8 +773,13 @@ clinical-annotation-platform/
 | `/api/prompts/{type}` | PUT | Update prompt |
 | `/api/upload/csv` | POST | Upload clinical notes CSV |
 | `/api/annotate/process` | POST | Process single note |
+| `/api/annotate/sequential` | POST | Sequential processing with incremental save (SSE) |
 | `/api/sessions` | POST | Create annotation session |
 | `/api/sessions/{id}` | GET/PUT | Get/update session |
+| `/api/sessions/{id}/diagnoses` | GET | Get patient-level diagnoses |
+| `/api/sessions/{id}/diagnoses/{pid}/resolve` | POST | Resolve a patient's diagnosis |
+| `/api/sessions/{id}/diagnoses/resolve-all` | POST | Auto-resolve all diagnoses |
+| `/api/sessions/{id}/export/validate` | GET | Pre-validate export for conflicts |
 
 ### Pipeline API (port 8000)
 
@@ -799,12 +832,12 @@ All vLLM Docker parameters are configured via `.env`:
 
 ```bash
 VLLM_IMAGE=vllm/vllm-openai:latest
-VLLM_MODEL=unsloth/medgemma-27b-text-it-unsloth-bnb-4bit
-VLLM_MAX_MODEL_LEN=16384
+VLLM_MODEL=unaizulaika/medgemma-1.5-4b-it-W4A16-G128
+VLLM_MAX_MODEL_LEN=32768
 VLLM_MAX_NUM_SEQS=32
-VLLM_GPU_MEM_UTIL=0.85
+VLLM_GPU_MEM_UTIL=0.95
 VLLM_HOST_PORT=8080
-VLLM_EXTRA_ARGS=
+VLLM_EXTRA_ARGS=--dtype auto --enable-chunked-prefill
 # HF_TOKEN=
 ```
 
@@ -813,10 +846,10 @@ VLLM_EXTRA_ARGS=
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `VLLM_IMAGE` | `vllm/vllm-openai:latest` | Docker image for vLLM (change for CUDA compatibility) |
-| `VLLM_MODEL` | `unsloth/medgemma-27b-text-it-unsloth-bnb-4bit` | HuggingFace model ID to serve |
-| `VLLM_MAX_MODEL_LEN` | `16384` | Maximum sequence length (context window) |
+| `VLLM_MODEL` | `unaizulaika/medgemma-1.5-4b-it-W4A16-G128` | HuggingFace model ID to serve |
+| `VLLM_MAX_MODEL_LEN` | `32768` | Maximum sequence length (context window) |
 | `VLLM_MAX_NUM_SEQS` | `32` | Maximum number of concurrent sequences |
-| `VLLM_GPU_MEM_UTIL` | `0.85` | Fraction of GPU memory to use (0.0-1.0) |
+| `VLLM_GPU_MEM_UTIL` | `0.95` | Fraction of GPU memory to use (0.0-1.0) |
 | `VLLM_HOST_PORT` | `8080` | Host port to expose the vLLM API on |
 | `VLLM_EXTRA_ARGS` | *(empty)* | Additional vLLM CLI arguments |
 | `HF_TOKEN` | *(empty)* | HuggingFace token for gated models (Llama, Gemma, etc.) |
@@ -826,7 +859,7 @@ VLLM_EXTRA_ARGS=
 Edit `.env` and restart the vLLM container:
 
 ```bash
-# Example: switch to a smaller model
+# Example: switch to a different model
 VLLM_MODEL=unsloth/Llama-3.2-3B-Instruct-unsloth-bnb-4bit
 VLLM_MAX_MODEL_LEN=8192
 ```
@@ -869,9 +902,11 @@ In addition to the Docker-level configuration, the backend application has its o
 {
   "use_vllm": true,
   "vllm_endpoint": "http://localhost:8000/v1",
-  "model_name": "unsloth/medgemma-27b-text-it-unsloth-bnb-4bit",
+  "model_name": "unaizulaika/medgemma-1.5-4b-it-W4A16-G128",
   "batch_size": 8,
-  "timeout": 150
+  "timeout": 150,
+  "max_tokens": 32768,
+  "context_window": 32768
 }
 ```
 
