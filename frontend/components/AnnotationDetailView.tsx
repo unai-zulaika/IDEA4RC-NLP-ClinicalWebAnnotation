@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import type { AnnotationResult, EvidenceSpan, AnnotationDateInfo, EntityMapping, EntityFieldMapping, PromptInfo, ICDO3CodeInfo, FieldEvaluation, FieldEvaluationResult, UnifiedICDO3Code } from '@/lib/api'
-import { promptsApi, annotateApi } from '@/lib/api'
-import UnifiedICDO3Selector from './UnifiedICDO3Selector'
+import { useState, useEffect } from 'react'
+import type { AnnotationResult, EvidenceSpan, AnnotationDateInfo, EntityMapping, EntityFieldMapping, PromptInfo, FieldEvaluation, FieldEvaluationResult } from '@/lib/api'
+import { promptsApi } from '@/lib/api'
 import { isTemplateIncomplete, getPlaceholders } from '@/lib/annotationUtils'
 
 type EvaluationViewMode = 'prompt' | 'field'
@@ -16,11 +15,6 @@ interface AnnotationDetailViewProps {
   onSelectSpan?: (span: EvidenceSpan) => void
   sessionId?: string
   noteId?: string
-  onCandidateSelect?: (icdo3Code: ICDO3CodeInfo) => void
-  // Props for unified ICD-O-3 selector
-  otherAnnotations?: AnnotationResult[]  // Other annotations for the same note (to find histology/site pairs)
-  existingUnifiedCode?: UnifiedICDO3Code | null
-  onUnifiedCodeSave?: (unifiedCode: UnifiedICDO3Code) => void
 }
 
 export default function AnnotationDetailView({
@@ -31,102 +25,16 @@ export default function AnnotationDetailView({
   onSelectSpan,
   sessionId,
   noteId,
-  onCandidateSelect,
-  otherAnnotations,
-  existingUnifiedCode,
-  onUnifiedCodeSave,
 }: AnnotationDetailViewProps) {
   const [entityMapping, setEntityMapping] = useState<EntityMapping | null>(null)
   const [promptTemplate, setPromptTemplate] = useState<string>('')
   const [extractedMappings, setExtractedMappings] = useState<Record<string, string>>({})
   const [loadingMapping, setLoadingMapping] = useState(false)
-  const [selectingCandidate, setSelectingCandidate] = useState(false)
-  const [localIcdo3Code, setLocalIcdo3Code] = useState<ICDO3CodeInfo | undefined>(annotation.icdo3_code)
   const [evaluationViewMode, setEvaluationViewMode] = useState<EvaluationViewMode>('prompt')
-  const [showUnifiedSelector, setShowUnifiedSelector] = useState(false)
-  const [localUnifiedCode, setLocalUnifiedCode] = useState<UnifiedICDO3Code | null>(existingUnifiedCode || null)
 
   // Check if field-level evaluation is available
   const fieldEvaluation = annotation.evaluation_result?.field_evaluation
   const hasFieldEvaluation = fieldEvaluation?.field_evaluation_available === true
-
-  // Helper to check if prompt type is histology-related
-  const isHistologyPrompt = (promptType: string) => {
-    const lower = promptType.toLowerCase()
-    return lower.includes('histolog') || lower.includes('morpholog') || lower.includes('tipo')
-  }
-
-  // Helper to check if prompt type is topography/site-related
-  // Be specific - only match 'site' or 'topograph', not general 'tumor' which matches too many prompts
-  const isTopographyPrompt = (promptType: string) => {
-    const lower = promptType.toLowerCase()
-    // Match 'tumorsite' specifically, or 'site' or 'topograph' in general
-    return (lower.includes('tumorsite') || lower.includes('topograph') ||
-            (lower.includes('site') && !lower.includes('histolog')))
-  }
-
-  // Check if current annotation is an ICD-O-3 related prompt
-  const currentIsHistology = isHistologyPrompt(annotation.prompt_type)
-  const currentIsTopography = isTopographyPrompt(annotation.prompt_type)
-  const isICDO3RelatedPrompt = currentIsHistology || currentIsTopography
-
-  // Find paired annotation (histology for topography, or vice versa)
-  const pairedAnnotation = useMemo(() => {
-    if (!otherAnnotations || !isICDO3RelatedPrompt) return null
-
-    if (currentIsHistology) {
-      // Find topography annotation
-      return otherAnnotations.find(a => isTopographyPrompt(a.prompt_type))
-    } else if (currentIsTopography) {
-      // Find histology annotation
-      return otherAnnotations.find(a => isHistologyPrompt(a.prompt_type))
-    }
-    return null
-  }, [otherAnnotations, currentIsHistology, currentIsTopography, isICDO3RelatedPrompt])
-
-  // Extract morphology and topography codes
-  const extractedCodes = useMemo(() => {
-    let morphologyCode: string | undefined
-    let topographyCode: string | undefined
-    let morphologyDescription: string | undefined
-    let topographyDescription: string | undefined
-
-    // Get codes from current annotation
-    if (currentIsHistology && localIcdo3Code) {
-      morphologyCode = localIcdo3Code.morphology_code || localIcdo3Code.code
-      morphologyDescription = localIcdo3Code.description
-    } else if (currentIsTopography && localIcdo3Code) {
-      topographyCode = localIcdo3Code.topography_code || localIcdo3Code.code
-      topographyDescription = localIcdo3Code.description
-    }
-
-    // Get codes from paired annotation
-    if (pairedAnnotation?.icdo3_code) {
-      if (isHistologyPrompt(pairedAnnotation.prompt_type)) {
-        morphologyCode = pairedAnnotation.icdo3_code.morphology_code || pairedAnnotation.icdo3_code.code
-        morphologyDescription = pairedAnnotation.icdo3_code.description
-      } else if (isTopographyPrompt(pairedAnnotation.prompt_type)) {
-        topographyCode = pairedAnnotation.icdo3_code.topography_code || pairedAnnotation.icdo3_code.code
-        topographyDescription = pairedAnnotation.icdo3_code.description
-      }
-    }
-
-    return { morphologyCode, topographyCode, morphologyDescription, topographyDescription }
-  }, [currentIsHistology, currentIsTopography, localIcdo3Code, pairedAnnotation])
-
-  const hasBothCodes = Boolean(extractedCodes.morphologyCode && extractedCodes.topographyCode)
-
-  // Handle unified code save
-  const handleUnifiedCodeSave = (unifiedCode: UnifiedICDO3Code) => {
-    setLocalUnifiedCode(unifiedCode)
-    setShowUnifiedSelector(false)
-    onUnifiedCodeSave?.(unifiedCode)
-  }
-
-  // Sync unified code state with prop
-  useEffect(() => {
-    setLocalUnifiedCode(existingUnifiedCode || null)
-  }, [existingUnifiedCode])
 
   // Check if template is incomplete
   const templateIncomplete = isTemplateIncomplete(annotation.annotation_text)
@@ -135,35 +43,6 @@ export default function AnnotationDetailView({
   const evidenceText = annotation.evidence_spans.length > 0
     ? annotation.evidence_spans.map(span => span.text).join(' ')
     : annotation.evidence_text || 'No evidence spans available'
-
-  // Sync local ICD-O-3 code state with annotation prop
-  useEffect(() => {
-    setLocalIcdo3Code(annotation.icdo3_code)
-  }, [annotation.icdo3_code])
-
-  // Handle ICD-O-3 candidate selection
-  const handleSelectCandidate = async (index: number) => {
-    if (!sessionId || !noteId || !localIcdo3Code) return
-
-    setSelectingCandidate(true)
-    try {
-      const result = await annotateApi.selectICDO3Candidate(
-        sessionId,
-        noteId,
-        annotation.prompt_type,
-        index
-      )
-
-      if (result.success) {
-        setLocalIcdo3Code(result.icdo3_code)
-        onCandidateSelect?.(result.icdo3_code)
-      }
-    } catch (error) {
-      console.error('Failed to select ICD-O-3 candidate:', error)
-    } finally {
-      setSelectingCandidate(false)
-    }
-  }
 
   // Load entity mapping and template for this prompt type
   useEffect(() => {
@@ -635,7 +514,26 @@ export default function AnnotationDetailView({
                   </div>
                 )}
               </div>
-              
+
+              {/* Derived field values from output_word_mappings */}
+              {annotation.derived_field_values && Object.keys(annotation.derived_field_values).length > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-gray-600 mb-1">Mapped Values</h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(annotation.derived_field_values).map(([field, value]) => (
+                      <span
+                        key={field}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                        title={`Field "${field}" resolved via output_word_mappings`}
+                      >
+                        <span className="text-blue-500 font-semibold">{field}:</span>
+                        {value}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Expected Annotation */}
               {expectedAnnotation && (
                 <div>
@@ -747,240 +645,6 @@ export default function AnnotationDetailView({
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Date Information</h3>
               <div className="bg-purple-50 border border-purple-200 rounded-md p-3">
                 {formatDateInfo(annotation.date_info)}
-              </div>
-            </div>
-          )}
-
-          {/* ICD-O-3 Code Information with Candidate Selection */}
-          {(localIcdo3Code || (annotation.prompt_type && (annotation.prompt_type.includes('histolog') || (annotation.prompt_type.includes('site') && annotation.prompt_type.includes('tumor'))))) && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">ICD-O-3 Code Selection</h3>
-              {localIcdo3Code ? (
-              <div className="bg-indigo-50 border border-indigo-200 rounded-md p-3">
-                {/* Candidate Selection UI */}
-                {localIcdo3Code.candidates && localIcdo3Code.candidates.length > 0 ? (
-                  <div className="space-y-3">
-                    <p className="text-xs text-gray-600">
-                      Select the most appropriate ICD-O-3 code from the candidates below (from CSV):
-                    </p>
-
-                    {/* Candidate List */}
-                    <div className="space-y-2">
-                      {localIcdo3Code.candidates.map((candidate, index) => (
-                        <label
-                          key={`${candidate.query_code}-${index}`}
-                          className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-all ${
-                            index === localIcdo3Code.selected_candidate_index
-                              ? 'border-indigo-500 bg-indigo-100 ring-2 ring-indigo-300'
-                              : 'border-gray-200 bg-white hover:bg-gray-50'
-                          } ${selectingCandidate ? 'opacity-50 pointer-events-none' : ''}`}
-                        >
-                          <input
-                            type="radio"
-                            name="icdo3-candidate"
-                            checked={index === localIcdo3Code.selected_candidate_index}
-                            onChange={() => handleSelectCandidate(index)}
-                            disabled={selectingCandidate || !sessionId || !noteId}
-                            className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-mono text-sm font-semibold text-indigo-800">
-                                {candidate.query_code}
-                              </span>
-                              <span className={`text-xs px-2 py-0.5 rounded ${
-                                candidate.match_score >= 0.8
-                                  ? 'bg-green-100 text-green-800'
-                                  : candidate.match_score >= 0.5
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}>
-                                {(candidate.match_score * 100).toFixed(0)}% match
-                              </span>
-                              {index === localIcdo3Code.selected_candidate_index && localIcdo3Code.user_selected && (
-                                <span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-800">
-                                  ✓ Selected
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-sm text-gray-700 mt-1 font-medium">
-                              {candidate.name}
-                            </div>
-                            <div className="text-xs text-gray-500 mt-1">
-                              Morphology: <span className="font-mono">{candidate.morphology_code || 'N/A'}</span>
-                              {' | '}
-                              Topography: <span className="font-mono">{candidate.topography_code || 'N/A'}</span>
-                            </div>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-
-                    {/* Selection status */}
-                    {selectingCandidate && (
-                      <div className="text-xs text-indigo-600 flex items-center gap-2">
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Updating selection...
-                      </div>
-                    )}
-
-                    {!sessionId && (
-                      <div className="text-xs text-yellow-600">
-                        Note: Selection is disabled (no session context)
-                      </div>
-                    )}
-
-                    {/* Currently selected summary */}
-                    <div className="mt-3 pt-3 border-t border-indigo-200">
-                      <div className="text-xs font-semibold text-gray-700 mb-2">Currently Selected:</div>
-                      <div className="bg-white rounded-md p-2 border border-indigo-200">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm font-bold text-indigo-800 bg-green-100 px-2 py-1 rounded border border-green-300">
-                            {localIcdo3Code.query_code || localIcdo3Code.code}
-                          </span>
-                        </div>
-                        {localIcdo3Code.description && (
-                          <div className="text-xs text-gray-700 mt-1">
-                            {localIcdo3Code.description}
-                          </div>
-                        )}
-                        <div className="text-xs text-gray-500 mt-1">
-                          {localIcdo3Code.morphology_code && (
-                            <span>Morphology: <span className="font-mono">{localIcdo3Code.morphology_code}</span></span>
-                          )}
-                          {localIcdo3Code.morphology_code && localIcdo3Code.topography_code && ' | '}
-                          {localIcdo3Code.topography_code && (
-                            <span>Topography: <span className="font-mono">{localIcdo3Code.topography_code}</span></span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* Fallback: No candidates, show single code info */
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-700">Code:</span>
-                      <span className="text-xs text-gray-900 font-mono bg-green-100 px-2 py-1 rounded font-semibold border border-green-300">
-                        {localIcdo3Code.query_code || localIcdo3Code.code}
-                      </span>
-                    </div>
-                    {localIcdo3Code.description && (
-                      <div className="mt-2">
-                        <span className="text-xs font-medium text-gray-600 block mb-1">Label from CSV:</span>
-                        <div className="text-xs text-gray-800 bg-white border border-indigo-200 rounded p-2">
-                          {localIcdo3Code.description}
-                        </div>
-                      </div>
-                    )}
-                    {localIcdo3Code.morphology_code && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-600">Morphology:</span>
-                        <span className="text-xs text-gray-900 font-mono bg-white px-2 py-1 rounded">
-                          {localIcdo3Code.morphology_code}
-                        </span>
-                      </div>
-                    )}
-                    {localIcdo3Code.topography_code && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-600">Topography:</span>
-                        <span className="text-xs text-gray-900 font-mono bg-white px-2 py-1 rounded">
-                          {localIcdo3Code.topography_code}
-                        </span>
-                      </div>
-                    )}
-                    <div className="mt-2 pt-2 border-t border-indigo-200 text-xs text-yellow-700">
-                      No candidates available. The code was extracted directly from text.
-                    </div>
-                  </div>
-                )}
-
-                {/* Unified Code Section - Show when both histology and topography are available */}
-                {hasBothCodes && sessionId && noteId && (
-                  <div className="mt-4 pt-4 border-t border-indigo-300">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-xs font-semibold text-indigo-800">
-                        Unified Diagnosis Code
-                      </div>
-                      <button
-                        onClick={() => setShowUnifiedSelector(true)}
-                        className="text-xs px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                      >
-                        {localUnifiedCode ? 'Edit Unified Code' : 'Create Unified Code'}
-                      </button>
-                    </div>
-                    {localUnifiedCode ? (
-                      <div className="bg-white rounded-md p-2 border border-indigo-200">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-mono text-sm font-bold text-indigo-900 bg-green-100 px-2 py-1 rounded border border-green-300">
-                            {localUnifiedCode.query_code}
-                          </span>
-                          <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700">
-                            Unified
-                          </span>
-                          {localUnifiedCode.user_selected && (
-                            <span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">
-                              User Selected
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-700 mt-1">{localUnifiedCode.name}</div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          Morphology: <span className="font-mono">{localUnifiedCode.morphology_code}</span>
-                          {' | '}
-                          Topography: <span className="font-mono">{localUnifiedCode.topography_code}</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-xs text-gray-600">
-                        Both histology ({extractedCodes.morphologyCode}) and topography ({extractedCodes.topographyCode}) codes are available.
-                        Click the button above to validate and combine them into a unified diagnosis code.
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                  <div className="text-xs text-yellow-800">
-                    <p className="font-medium mb-1">No ICD-O-3 code extracted</p>
-                    <p className="text-yellow-700">
-                      The system attempted to extract an ICD-O-3 code but none was found.
-                      This may happen if:
-                    </p>
-                    <ul className="list-disc list-inside mt-1 text-yellow-700">
-                      <li>The annotation contains a placeholder like "[select ICD-O-3 code]"</li>
-                      <li>The extraction failed (check backend logs)</li>
-                      <li>vLLM server is not available</li>
-                      <li>CSV file is not accessible</li>
-                    </ul>
-                    <p className="text-yellow-700 mt-1">
-                      Try reprocessing the note or check the backend logs for details.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Unified ICD-O-3 Selector Modal */}
-          {showUnifiedSelector && sessionId && noteId && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-              <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <UnifiedICDO3Selector
-                  sessionId={sessionId}
-                  noteId={noteId}
-                  morphologyCode={extractedCodes.morphologyCode}
-                  topographyCode={extractedCodes.topographyCode}
-                  morphologyDescription={extractedCodes.morphologyDescription}
-                  topographyDescription={extractedCodes.topographyDescription}
-                  existingUnifiedCode={localUnifiedCode}
-                  onSave={handleUnifiedCodeSave}
-                  onClose={() => setShowUnifiedSelector(false)}
-                />
               </div>
             </div>
           )}

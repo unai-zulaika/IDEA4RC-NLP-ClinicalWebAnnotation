@@ -217,7 +217,7 @@ class EnhancedVLLMClient:
         )
 
     async def agenerate(self, prompt: str, max_new_tokens: Optional[int] = None,
-                        temperature: float = 0.0, return_logprobs: bool = False) -> Dict[str, Any]:
+                        temperature: float = 0.0, return_logprobs: bool = False, **kwargs) -> Dict[str, Any]:
         """Async generate text using VLLM (httpx-based)"""
         if not self._client:
             raise RuntimeError("VLLM client not initialized")
@@ -226,7 +226,8 @@ class EnhancedVLLMClient:
             prompt=prompt,
             max_new_tokens=max_new_tokens,
             temperature=temperature,
-            logprobs=1 if return_logprobs else None
+            logprobs=1 if return_logprobs else None,
+            **kwargs
         )
 
 

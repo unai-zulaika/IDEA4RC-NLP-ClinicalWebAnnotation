@@ -4,7 +4,7 @@ Session management routes
 
 from fastapi import APIRouter, HTTPException, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
-from typing import List, Dict, Tuple
+from typing import List, Dict, Optional, Tuple
 from pathlib import Path
 import json
 import io
@@ -13,7 +13,13 @@ from datetime import datetime
 
 import pandas as pd
 
-from models.schemas import SessionCreate, SessionInfo, SessionData, SessionUpdate, SessionMetadataUpdate, SessionPromptTypesUpdate, CSVRow
+from models.schemas import (
+    SessionCreate, SessionInfo, SessionData, SessionUpdate,
+    SessionMetadataUpdate, SessionPromptTypesUpdate, CSVRow,
+    PatientDiagnosisResolveRequest, PatientDiagnosisResolveResponse,
+    DiagnosisValidationReport, PatientDiagnosisInfo,
+    ExportConflict, ExportValidationResponse,
+)
 
 router = APIRouter()
 
@@ -243,7 +249,9 @@ async def get_session(session_id: str):
         annotations=annotations,
         prompt_types=session['prompt_types'],
         evaluation_mode=session.get('evaluation_mode', 'validation'),
-        report_type_mapping=session.get('report_type_mapping')
+        report_type_mapping=session.get('report_type_mapping'),
+        note_prompt_overrides=session.get('note_prompt_overrides'),
+        note_prompt_exclusions=session.get('note_prompt_exclusions')
     )
 
 
@@ -264,9 +272,14 @@ async def update_session(session_id: str, update: SessionUpdate):
         annotations_dict[note_id] = {}
         for prompt_type, ann in prompt_anns.items():
             if isinstance(ann, dict):
-                annotations_dict[note_id][prompt_type] = ann
+                ann_dict = ann
             else:
-                annotations_dict[note_id][prompt_type] = ann.dict()
+                ann_dict = ann.dict()
+            # Clear derived_field_values when user manually edits an annotation
+            # so stale pattern-matched values are not used at export time
+            if ann_dict.get('edited'):
+                ann_dict.pop('derived_field_values', None)
+            annotations_dict[note_id][prompt_type] = ann_dict
     
     session['annotations'] = annotations_dict
     _save_session(session_id, session)
@@ -284,6 +297,10 @@ async def update_session_metadata(session_id: str, update: SessionMetadataUpdate
 
     if update.name is not None:
         session['name'] = update.name
+    if update.note_prompt_overrides is not None:
+        session['note_prompt_overrides'] = update.note_prompt_overrides
+    if update.note_prompt_exclusions is not None:
+        session['note_prompt_exclusions'] = update.note_prompt_exclusions
     if update.report_type_mapping is not None:
         session['report_type_mapping'] = update.report_type_mapping
         # Set prompt_types to exactly the union of all mapped prompt types
@@ -300,11 +317,13 @@ async def update_session_metadata(session_id: str, update: SessionMetadataUpdate
             if nid:
                 note_report_types[nid] = rt
 
+        note_prompt_overrides = session.get('note_prompt_overrides', {})
         annotations = session.get('annotations', {})
         for note_id in list(annotations.keys()):
             rt = note_report_types.get(note_id, '')
-            # Prompt types now allowed for this note's report type
+            # Prompt types now allowed for this note's report type + per-note overrides
             allowed = set(update.report_type_mapping.get(rt, []))
+            allowed.update(note_prompt_overrides.get(note_id, []))
             for pt in list(annotations[note_id].keys()):
                 if pt not in allowed:
                     del annotations[note_id][pt]
@@ -643,12 +662,53 @@ def _normalize_date(date_str: str) -> str:
     return date_str
 
 
+def _clean_value_by_data_type(value: str, data_type: str) -> str:
+    """Extract the actual typed value from template-formatted annotation text.
+
+    For date types, extracts the date pattern (DD/MM/YYYY or YYYY-MM-DD).
+    For Integer types, extracts the first standalone integer.
+    For float types, extracts the first standalone number (int or decimal).
+    Other types pass through unchanged.
+    """
+    if not value or not value.strip():
+        return value
+
+    v = value.strip()
+
+    if 'date' in data_type.lower() or 'iso' in data_type.lower():
+        # Try DD/MM/YYYY or DD-MM-YYYY first
+        date_match = re.search(r'\b(\d{1,2}[/-]\d{1,2}[/-]\d{4})\b', v)
+        if date_match:
+            return _normalize_date(date_match.group(1))
+        # Try YYYY-MM-DD
+        date_match = re.search(r'\b(\d{4}[/-]\d{1,2}[/-]\d{1,2})\b', v)
+        if date_match:
+            return _normalize_date(date_match.group(1))
+        return v
+
+    if data_type == 'Integer':
+        int_match = re.search(r'\b(\d+)\b', v)
+        if int_match:
+            return int_match.group(1)
+        return v
+
+    if data_type == 'float':
+        float_match = re.search(r'\b(\d+(?:\.\d+)?)\b', v)
+        if float_match:
+            return float_match.group(1)
+        return v
+
+    return v
+
+
 _ABSENCE_PATTERNS = [
     re.compile(r'\bnot\s+(specified|available|applicable|mentioned|present|found)\b', re.IGNORECASE),
     re.compile(r'^unknown\b', re.IGNORECASE),
     re.compile(r'\bno\s+(information|data|result|finding|value)\b', re.IGNORECASE),
     re.compile(r'\binformation\s+not\s+available\b', re.IGNORECASE),
     re.compile(r'^\[.*\]$'),
+    re.compile(r'^absent\.?$', re.IGNORECASE),
+    re.compile(r'^none\.?$', re.IGNORECASE),
 ]
 
 
@@ -708,16 +768,23 @@ def _build_export_rows(session: Dict) -> Tuple[List[Dict], List[Dict]]:
                         extracted_date = date_info.get('date_value', '')
                     elif isinstance(date_info, str):
                         extracted_date = date_info
+                derived_field_values = ann.get('derived_field_values') or {}
             else:
                 annotation_text = ''
                 icdo3_code = ''
                 extracted_date = ''
+                derived_field_values = {}
 
             if not annotation_text or not annotation_text.strip():
                 continue
 
-            extracted_value = _extract_value_from_annotation(annotation_text, prompt_type)
             core_variable = prompt_mapping.get(prompt_type, prompt_type)
+            # Use derived_field_values if available for this field (set by output_word_mappings at annotation time)
+            _field_name = core_variable.split('.')[-1] if '.' in core_variable else ''
+            if _field_name and _field_name in derived_field_values:
+                extracted_value = derived_field_values[_field_name]
+            else:
+                extracted_value = _extract_value_from_annotation(annotation_text, prompt_type)
             entity = _extract_entity_from_core_variable(core_variable)
 
             if extracted_date:
@@ -766,6 +833,108 @@ def _build_export_rows(session: Dict) -> Tuple[List[Dict], List[Dict]]:
     return rows, excluded_rows
 
 
+# ---------------------------------------------------------------------------
+# Cardinality-based validation & deduplication
+# ---------------------------------------------------------------------------
+
+_CARDINALITY_CACHE: Optional[Dict[str, int]] = None
+
+
+def _load_entity_cardinality() -> Dict[str, int]:
+    """Load entity cardinality config (1 = non-repeatable, 0 = repeatable)."""
+    global _CARDINALITY_CACHE
+    if _CARDINALITY_CACHE is None:
+        path = Path(__file__).resolve().parent.parent / "data" / "entities_cardinality.json"
+        with open(path) as f:
+            _CARDINALITY_CACHE = json.load(f)
+    return _CARDINALITY_CACHE
+
+
+def _validate_and_deduplicate_rows(
+    rows: List[Dict],
+) -> Tuple[List[Dict], List[ExportConflict], int]:
+    """Validate cardinality constraints and deduplicate exact rows.
+
+    Returns:
+        Tuple of (clean_rows, conflicts, deduplicated_count)
+    """
+    cardinality = _load_entity_cardinality()
+
+    # --- 1. Deduplicate exact rows ---
+    seen = set()
+    deduped: List[Dict] = []
+    dedup_count = 0
+    for row in rows:
+        key = (row['patient_id'], row['entity'], row['date_ref'],
+               row['core_variable'], row['value'])
+        if key in seen:
+            dedup_count += 1
+            continue
+        seen.add(key)
+        deduped.append(row)
+
+    # --- 2. Detect conflicts ---
+    from collections import defaultdict
+    conflicts: List[ExportConflict] = []
+
+    # Group values by the appropriate key based on cardinality
+    # Non-repeatable (1): group by (patient_id, core_variable) — date irrelevant
+    # Repeatable (0):     group by (patient_id, core_variable, date_ref)
+    non_rep_values: Dict[tuple, set] = defaultdict(set)
+    rep_values: Dict[tuple, set] = defaultdict(set)
+
+    for row in deduped:
+        entity = row['entity']
+        card = cardinality.get(entity)  # None if entity unknown → treat as repeatable
+
+        if card == 1:
+            group_key = (row['patient_id'], row['core_variable'])
+            non_rep_values[group_key].add(row['value'])
+        else:
+            group_key = (row['patient_id'], row['core_variable'], row['date_ref'])
+            rep_values[group_key].add(row['value'])
+
+    # Non-repeatable conflicts
+    for (pid, cv), values in non_rep_values.items():
+        if len(values) > 1:
+            conflicts.append(ExportConflict(
+                patient_id=pid,
+                core_variable=cv,
+                date_ref=None,
+                conflicting_values=sorted(values),
+                conflict_type="non_repeatable",
+            ))
+
+    # Repeatable same-date conflicts
+    for (pid, cv, date_ref), values in rep_values.items():
+        if len(values) > 1:
+            conflicts.append(ExportConflict(
+                patient_id=pid,
+                core_variable=cv,
+                date_ref=date_ref,
+                conflicting_values=sorted(values),
+                conflict_type="repeatable_same_date",
+            ))
+
+    # --- 3. Reassign record_id based on cardinality ---
+    record_id_tracker: Dict[tuple, int] = {}
+    current_record_id = 0
+    for row in deduped:
+        entity = row['entity']
+        card = cardinality.get(entity)
+        if card == 1:
+            record_key = (row['patient_id'], entity)
+        else:
+            record_key = (row['patient_id'], entity, row['date_ref'])
+
+        if record_key not in record_id_tracker:
+            current_record_id += 1
+            record_id_tracker[record_key] = current_record_id
+        row['record_id'] = record_id_tracker[record_key]
+
+    return deduped, conflicts, dedup_count
+
+
 _SARC_COLUMNS = [
     'patient_id', 'original_source', 'core_variable', 'date_ref',
     'value', 'record_id', 'linked_to', 'quality'
@@ -785,12 +954,115 @@ def _build_excluded_summary(excluded_rows: List[Dict]) -> str:
     ], ensure_ascii=False)
 
 
+_DIAGNOSIS_MERGE_VARS = {'Diagnosis.histologySubgroup', 'Diagnosis.subsite'}
+
+
+def _merge_diagnosis_rows(
+    rows: List[Dict],
+    patient_diagnoses: Dict[str, Dict],
+    value_field: str = 'query_code',
+) -> List[Dict]:
+    """Replace individual histology/topography rows with merged Diagnosis.diagnosisCode rows.
+
+    Args:
+        rows: Export rows from _build_export_rows()
+        patient_diagnoses: session['patient_diagnoses'] dict keyed by patient_id
+        value_field: 'query_code' for labels export, 'csv_id' for codes export
+
+    Returns:
+        New list of rows with diagnosis rows merged at the patient level.
+    """
+    if not patient_diagnoses:
+        # No patient_diagnoses computed yet — pass through unchanged for backward compat
+        return rows
+
+    diag_added: set = set()   # patient_ids that already have a diagnosisCode row
+    merged: List[Dict] = []
+
+    for row in rows:
+        if row['core_variable'] not in _DIAGNOSIS_MERGE_VARS:
+            merged.append(row)
+            continue
+
+        pid = row['patient_id']
+        if pid in diag_added:
+            # Already emitted a diagnosisCode row for this patient — skip
+            continue
+
+        diag_added.add(pid)
+        diag = patient_diagnoses.get(pid, {})
+        status = diag.get('status', '')
+
+        if status in ('auto_resolved', 'manually_resolved'):
+            resolved = diag.get('resolved_code') or {}
+            if value_field == 'csv_id':
+                value = diag.get('csv_id', '') or ''
+                if not value:
+                    value = 'UNRESOLVED::no_csv_id'
+            else:
+                value = resolved.get('query_code', '') or ''
+                if not value:
+                    value = 'UNRESOLVED::no_query_code'
+        else:
+            value = 'UNRESOLVED::needs_review'
+
+        merged.append({
+            **row,
+            'core_variable': 'Diagnosis.diagnosisCode',
+            'value': value,
+        })
+
+    return merged
+
+
+def _build_diagnosis_warnings(patient_diagnoses: Dict[str, Dict]) -> str:
+    """Build JSON warning list for patients that still need review."""
+    warnings = []
+    for pid, diag in patient_diagnoses.items():
+        if not isinstance(diag, dict):
+            continue
+        if diag.get('status') == 'needs_review':
+            warnings.append({
+                'patient_id': pid,
+                'reasons': diag.get('review_reasons', []),
+            })
+    if not warnings:
+        return ''
+    return json.dumps(warnings, ensure_ascii=False)
+
+
+@router.get("/{session_id}/export/validate", response_model=ExportValidationResponse)
+async def validate_export(session_id: str):
+    """Pre-validate export data for cardinality conflicts.
+
+    Returns conflict details without generating CSV so the frontend can
+    warn the user before attempting to export.
+    """
+    try:
+        session = _load_session(session_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+    rows, _excluded = _build_export_rows(session)
+    patient_diagnoses = session.get('patient_diagnoses', {})
+    rows = _merge_diagnosis_rows(rows, patient_diagnoses, value_field='query_code')
+    clean_rows, conflicts, dedup_count = _validate_and_deduplicate_rows(rows)
+
+    return ExportValidationResponse(
+        valid=len(conflicts) == 0,
+        conflicts=conflicts,
+        row_count=len(clean_rows),
+        deduplicated_count=dedup_count,
+    )
+
+
 @router.get("/{session_id}/export")
 async def export_session_for_pipeline(session_id: str):
     """Export validated annotations in pipeline-compatible CSV format (labels).
 
     Format matches SARC_V2(in).csv: semicolon-delimited, 8 columns.
     Rows with absence values (Not applicable, Unknown, etc.) are excluded.
+    Blocks with HTTP 409 if cardinality conflicts are detected.
     """
     try:
         session = _load_session(session_id)
@@ -798,6 +1070,22 @@ async def export_session_for_pipeline(session_id: str):
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 
     rows, excluded = _build_export_rows(session)
+
+    # Patient-level diagnosis merging: replace individual histology/topography rows
+    # with a merged Diagnosis.diagnosisCode row using query_code format
+    patient_diagnoses = session.get('patient_diagnoses', {})
+    rows = _merge_diagnosis_rows(rows, patient_diagnoses, value_field='query_code')
+
+    # Validate cardinality constraints and deduplicate
+    rows, conflicts, _ = _validate_and_deduplicate_rows(rows)
+    if conflicts:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Export blocked: cardinality conflicts detected. Resolve them before exporting.",
+                "conflicts": [c.model_dump() for c in conflicts],
+            },
+        )
 
     # Strip internal fields before CSV output
     for row in rows:
@@ -813,10 +1101,14 @@ async def export_session_for_pipeline(session_id: str):
 
     headers = {
         "Content-Disposition": f"attachment; filename={session_id}_validated.csv",
-        "Access-Control-Expose-Headers": "X-Excluded-Rows",
+        "Access-Control-Expose-Headers": "X-Excluded-Rows, X-Diagnosis-Warnings",
     }
     if excluded:
         headers["X-Excluded-Rows"] = _build_excluded_summary(excluded)
+
+    diag_warnings = _build_diagnosis_warnings(patient_diagnoses)
+    if diag_warnings:
+        headers["X-Diagnosis-Warnings"] = diag_warnings
 
     return StreamingResponse(
         iter([csv_buffer.getvalue()]),
@@ -864,60 +1156,43 @@ async def export_session_coded(session_id: str):
 
     rows, excluded = _build_export_rows(session)
 
-    # Load unified ICD-O-3 codes from session
-    unified_icdo3_codes: Dict[str, Dict] = session.get('unified_icdo3_codes', {})
+    # Patient-level diagnosis merging: replace individual histology/topography rows
+    # with a merged Diagnosis.diagnosisCode row using csv_id (numeric ID)
+    patient_diagnoses = session.get('patient_diagnoses', {})
+    rows = _merge_diagnosis_rows(rows, patient_diagnoses, value_field='csv_id')
 
-    # Variables that get merged into diagnosisCode
-    _DIAGNOSIS_MERGE_VARS = {'Diagnosis.histologySubgroup', 'Diagnosis.subsite'}
+    # Validate cardinality constraints and deduplicate
+    rows, conflicts, _ = _validate_and_deduplicate_rows(rows)
+    if conflicts:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Export blocked: cardinality conflicts detected. Resolve them before exporting.",
+                "conflicts": [c.model_dump() for c in conflicts],
+            },
+        )
 
-    # Collect note_ids that have histology/topography rows for diagnosis merging
-    notes_with_diag: Dict[str, Dict] = {}  # note_id -> first matching row (for metadata)
-    for row in rows:
-        if row['core_variable'] in _DIAGNOSIS_MERGE_VARS:
-            nid = row['_note_id']
-            if nid not in notes_with_diag:
-                notes_with_diag[nid] = row
-
-    # Build coded rows
+    # Build coded rows (resolve CodeableConcept values to IDEA4RC codes)
     coded_rows = []
-
-    # Track which notes already have a diagnosisCode row added
-    diag_code_added: set = set()
 
     for row in rows:
         cv = row['core_variable']
 
-        if cv in _DIAGNOSIS_MERGE_VARS:
-            nid = row['_note_id']
-            if nid not in diag_code_added:
-                diag_code_added.add(nid)
-                # Create merged diagnosisCode row
-                unified = unified_icdo3_codes.get(nid, {})
-                query_code = unified.get('query_code', '') if isinstance(unified, dict) else ''
-
-                if query_code:
-                    value = query_code
-                else:
-                    value = 'UNRESOLVED::no_unified_icdo3_code'
-
-                coded_rows.append({
-                    'patient_id': row['patient_id'],
-                    'original_source': row['original_source'],
-                    'core_variable': 'Diagnosis.diagnosisCode',
-                    'date_ref': row['date_ref'],
-                    'value': value,
-                    'record_id': row['record_id'],
-                    'linked_to': row['linked_to'],
-                    'quality': row['quality'],
-                })
-            # Skip individual histology/topography rows in coded output
-            continue
-
-        # Non-CodeableConcept rows pass through unchanged (dates, integers, strings, etc.)
-        if row['types'] != 'CodeableConcept':
+        # Diagnosis.diagnosisCode rows already have their value set by _merge_diagnosis_rows
+        if cv == 'Diagnosis.diagnosisCode':
             coded_rows.append({
                 k: v for k, v in row.items()
                 if k not in ('_note_id', '_prompt_type', 'types', 'icdo3_code', 'entity')
+            })
+            continue
+
+        # Non-CodeableConcept rows: clean value by data type before passing through
+        if row['types'] != 'CodeableConcept':
+            cleaned_value = _clean_value_by_data_type(row['value'], row['types'])
+            coded_rows.append({
+                **{k: v for k, v in row.items()
+                   if k not in ('_note_id', '_prompt_type', 'types', 'icdo3_code', 'entity')},
+                'value': cleaned_value,
             })
             continue
 
@@ -948,10 +1223,14 @@ async def export_session_coded(session_id: str):
 
     headers = {
         "Content-Disposition": f"attachment; filename={session_id}_coded.csv",
-        "Access-Control-Expose-Headers": "X-Excluded-Rows",
+        "Access-Control-Expose-Headers": "X-Excluded-Rows, X-Diagnosis-Warnings",
     }
     if excluded:
         headers["X-Excluded-Rows"] = _build_excluded_summary(excluded)
+
+    diag_warnings = _build_diagnosis_warnings(patient_diagnoses)
+    if diag_warnings:
+        headers["X-Diagnosis-Warnings"] = diag_warnings
 
     return StreamingResponse(
         iter([csv_buffer.getvalue()]),
@@ -983,6 +1262,109 @@ async def export_session_json(session_id: str):
         media_type="application/json",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+# ---------------------------------------------------------------------------
+# Patient Diagnosis endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/{session_id}/diagnoses")
+async def get_patient_diagnoses(session_id: str):
+    """Compute and return patient-level diagnosis status for all patients."""
+    try:
+        session = _load_session(session_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+    from services.diagnosis_resolver import DiagnosisResolver
+    resolver = DiagnosisResolver()
+    patient_diagnoses = resolver.resolve_session(session)
+
+    # Persist computed results to session
+    session['patient_diagnoses'] = patient_diagnoses
+    _save_session(session_id, session)
+
+    patients_list = list(patient_diagnoses.values())
+    summary = _diagnosis_summary(patients_list)
+    return {**summary, 'patients': patients_list}
+
+
+@router.post("/{session_id}/diagnoses/{patient_id}/resolve")
+async def resolve_patient_diagnosis(
+    session_id: str,
+    patient_id: str,
+    request: PatientDiagnosisResolveRequest,
+):
+    """Manually resolve a patient's diagnosis by selecting a query_code."""
+    try:
+        session = _load_session(session_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+    from services.diagnosis_resolver import DiagnosisResolver
+
+    resolved = DiagnosisResolver.resolve_manual(request.query_code)
+    if resolved is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid or unrecognised query code: {request.query_code}",
+        )
+
+    # Get or create patient_diagnoses
+    patient_diagnoses = session.setdefault('patient_diagnoses', {})
+    existing = patient_diagnoses.get(patient_id, {})
+
+    patient_diagnoses[patient_id] = {
+        **existing,
+        'patient_id': patient_id,
+        'status': 'manually_resolved',
+        'review_reasons': [],
+        'resolved_code': resolved['resolved_code'],
+        'csv_id': resolved['csv_id'],
+        'resolved_at': datetime.now().isoformat(),
+        'resolved_by': 'user',
+    }
+
+    _save_session(session_id, session)
+
+    return PatientDiagnosisResolveResponse(
+        success=True,
+        diagnosis=PatientDiagnosisInfo(**patient_diagnoses[patient_id]),
+        message=f"Saved diagnosis: {request.query_code}",
+    )
+
+
+@router.post("/{session_id}/diagnoses/resolve-all")
+async def resolve_all_diagnoses(session_id: str):
+    """Run the resolver and auto-save all auto-resolvable diagnoses.
+
+    Manually-resolved entries are preserved.
+    """
+    try:
+        session = _load_session(session_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+    from services.diagnosis_resolver import DiagnosisResolver
+    resolver = DiagnosisResolver()
+    patient_diagnoses = resolver.resolve_session(session, preserve_manual=True)
+
+    session['patient_diagnoses'] = patient_diagnoses
+    _save_session(session_id, session)
+
+    patients_list = list(patient_diagnoses.values())
+    summary = _diagnosis_summary(patients_list)
+    return {**summary, 'patients': patients_list}
+
+
+def _diagnosis_summary(patients: list) -> dict:
+    """Build summary counts from a list of PatientDiagnosisInfo dicts."""
+    counts = {'auto_resolved': 0, 'needs_review': 0, 'manually_resolved': 0, 'skipped': 0}
+    for p in patients:
+        status = p.get('status', 'skipped') if isinstance(p, dict) else 'skipped'
+        if status in counts:
+            counts[status] += 1
+    return {'total_patients': len(patients), **counts}
 
 
 def _get_data_type_for_variable(core_variable: str) -> str:

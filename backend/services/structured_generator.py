@@ -27,6 +27,36 @@ _RE_DATE_SLASH = re.compile(r'\d{2}/\d{2}/\d{4}')
 _RE_DATE_ISO = re.compile(r'\d{4}-\d{2}-\d{2}')
 _RE_DATE_FLEX = re.compile(r'\d{1,2}/\d{1,2}/\d{4}')
 
+# Patterns used to mine an answer from inside an unclosed thinking block
+_RE_THINK_FINAL_JSON = re.compile(r'\{[^{}]*"final_output"\s*:\s*"([^"]+)"[^{}]*\}', re.DOTALL)
+_RE_THINK_SHOULD_OUTPUT = re.compile(
+    r'(?:final_output should be|I should output|output should be|the output is|output:\s*)["\s]*([^\n"]{4,200})',
+    re.IGNORECASE,
+)
+_RE_THINK_LAST_SENTENCE = re.compile(r'([A-Z][^\n.]{10,200}\.)\s*$', re.DOTALL)
+
+
+def _try_extract_from_thinking(thinking_text: str) -> Optional[str]:
+    """
+    Try to extract the intended annotation from inside an unclosed thinking block.
+    Called as a last resort when the model ran out of tokens before producing JSON.
+
+    Returns the extracted string, or None if nothing useful was found.
+    """
+    # 1. Literal {"final_output": "..."} JSON anywhere in the thinking text
+    m = _RE_THINK_FINAL_JSON.search(thinking_text)
+    if m:
+        return m.group(1).strip()
+
+    # 2. "final_output should be ..." / "I should output ..." patterns
+    m = _RE_THINK_SHOULD_OUTPUT.search(thinking_text)
+    if m:
+        candidate = m.group(1).strip().strip('"').strip("'")
+        if len(candidate) >= 4:
+            return candidate
+
+    return None
+
 try:
     import outlines
     # Version 0.1.11 has a different API that's incompatible with our code
@@ -248,8 +278,38 @@ def generate_structured_annotation_fallback(
     """
     # Strip model thinking blocks (e.g. <unused94>thought...</unused94>) before parsing
     raw_output = _RE_THINKING_BLOCK.sub('', raw_output).strip()
-    # Fallback: if thinking block was truncated (no closing tag), strip from <unusedXX> to end
+    # Fallback: if thinking block was truncated (no closing tag, i.e. token budget hit mid-thought),
+    # try to salvage the intended answer from inside the thinking text before discarding it.
     if '<unused' in raw_output.lower():
+        # Try direct JSON/markdown extraction before parsing thinking text.
+        # Handles Format B: <unusedN>thinking...<unusedM>```json{...}```
+        # where <unusedM> is a response-section marker (no closing tag).
+        _md_match = _RE_MARKDOWN_JSON.search(raw_output)
+        if _md_match:
+            try:
+                _json_str = _md_match.group(1).strip()
+                _parsed = json.loads(_json_str)
+                if isinstance(_parsed, dict) and 'final_output' in _parsed:
+                    if csv_date and isinstance(_parsed.get("date"), dict) \
+                            and _parsed["date"].get("source") == "derived_from_csv":
+                        _parsed["date"]["csv_date"] = csv_date
+                    try:
+                        return StructuredAnnotation(**_parsed)
+                    except Exception as e:
+                        print(f"[WARN] StructuredAnnotation parse failed from early markdown block: {e}")
+            except json.JSONDecodeError:
+                pass
+
+        salvaged = _try_extract_from_thinking(raw_output)
+        if salvaged:
+            print(f"[INFO] Extracted annotation from unclosed thinking block: {salvaged[:80]!r}")
+            return StructuredAnnotation(
+                evidence="",
+                reasoning="Extracted from model thinking block (token budget was exhausted before JSON output)",
+                final_output=salvaged,
+                is_negated=False,
+                date=None,
+            )
         raw_output = _RE_THINKING_BLOCK_UNCLOSED.sub('', raw_output).strip()
 
     # Try to extract JSON from output

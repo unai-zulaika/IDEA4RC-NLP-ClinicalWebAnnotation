@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
-import type { AnnotationResult, EvidenceSpan, ICDO3CodeInfo, UnifiedICDO3Code } from '@/lib/api'
+import type { AnnotationResult, EvidenceSpan } from '@/lib/api'
 import AnnotationDetailView from './AnnotationDetailView'
 import { getColorClassesForPromptType, getColorForPromptType } from '@/lib/colors'
 import { isTemplateIncomplete } from '@/lib/annotationUtils'
@@ -15,11 +15,6 @@ interface AnnotationViewerProps {
   onSelectSpan?: (span: EvidenceSpan) => void
   sessionId?: string
   noteId?: string
-  onCandidateSelect?: (icdo3Code: ICDO3CodeInfo) => void
-  // Props for unified ICD-O-3 selector
-  otherAnnotations?: AnnotationResult[]
-  existingUnifiedCode?: UnifiedICDO3Code | null
-  onUnifiedCodeSave?: (unifiedCode: UnifiedICDO3Code) => void
 }
 
 interface FormValues {
@@ -34,10 +29,6 @@ export default function AnnotationViewer({
   onSelectSpan,
   sessionId,
   noteId,
-  onCandidateSelect,
-  otherAnnotations,
-  existingUnifiedCode,
-  onUnifiedCodeSave,
 }: AnnotationViewerProps) {
   const [showReasoning, setShowReasoning] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -301,10 +292,6 @@ export default function AnnotationViewer({
         onSelectSpan={onSelectSpan}
         sessionId={sessionId}
         noteId={noteId}
-        onCandidateSelect={onCandidateSelect}
-        otherAnnotations={otherAnnotations}
-        existingUnifiedCode={existingUnifiedCode}
-        onUnifiedCodeSave={onUnifiedCodeSave}
       />
     )}
     </>

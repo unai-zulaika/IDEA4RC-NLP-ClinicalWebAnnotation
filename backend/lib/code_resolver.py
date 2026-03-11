@@ -38,6 +38,7 @@ CORE_VARIABLE_TO_CATEGORY: Dict[str, str] = {
     "Diagnosis.pM": "pM",
     "Diagnosis.pathologicalStaging": "Pathological staging",
     "Diagnosis.extraNodalExtension": "Extra-nodal extension (rEne)",
+    "Diagnosis.necrosisInBiopsy": "Necrosis",
     "Diagnosis.crpTested": "CRP \u2013 C reactive protein tested ",
     "Diagnosis.otherImagingForMetastasis": "Other imaging for metastasis",
     "Surgery.surgeryType": "Surgery type",

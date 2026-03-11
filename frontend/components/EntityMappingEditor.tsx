@@ -111,9 +111,9 @@ function OutputWordMappingsSection({
   onChange: (mappings: OutputWordMapping[] | undefined) => void
 }) {
   const [expanded, setExpanded] = useState(false)
-  const keyCounter = useRef(0)
-  const [keys, setKeys] = useState<string[]>(() => (mappings || []).map(() => String(keyCounter.current++)))
   const list = mappings || []
+  const keyCounter = useRef(list.length)
+  const [keys, setKeys] = useState(() => list.map((_, i) => String(i)))
 
   const addPattern = () => {
     onChange([...list, { pattern: '', value: '', flags: 'IGNORECASE' }])

@@ -107,6 +107,21 @@ export interface ExcludedRow {
   reason: string
 }
 
+export interface ExportConflict {
+  patient_id: string
+  core_variable: string
+  date_ref: string | null
+  conflicting_values: string[]
+  conflict_type: 'non_repeatable' | 'repeatable_same_date'
+}
+
+export interface ExportValidationResponse {
+  valid: boolean
+  conflicts: ExportConflict[]
+  row_count: number
+  deduplicated_count: number
+}
+
 export interface CSVUploadResponse {
   success: boolean
   message: string
@@ -252,6 +267,41 @@ export interface ICDO3CombineResponse {
   message?: string
 }
 
+// Patient-level diagnosis resolution
+export interface PatientDiagnosisCode {
+  code: string
+  note_id: string
+  description?: string
+  prompt_type?: string
+}
+
+export interface PatientDiagnosisInfo {
+  patient_id: string
+  status: 'auto_resolved' | 'needs_review' | 'manually_resolved' | 'skipped'
+  review_reasons: string[]
+  histology_codes: PatientDiagnosisCode[]
+  topography_codes: PatientDiagnosisCode[]
+  resolved_code?: UnifiedICDO3Code | null
+  csv_id?: string | null
+  resolved_at?: string
+  resolved_by?: string
+}
+
+export interface DiagnosisValidationReport {
+  patients: PatientDiagnosisInfo[]
+  total_patients: number
+  auto_resolved: number
+  needs_review: number
+  manually_resolved: number
+  skipped: number
+}
+
+export interface PatientDiagnosisResolveResponse {
+  success: boolean
+  diagnosis?: PatientDiagnosisInfo
+  message?: string
+}
+
 export interface ICDO3TopographiesResponse {
   morphology: string
   topographies: Array<{
@@ -319,6 +369,51 @@ export interface BatchProcessResponse {
   timing_breakdown?: Record<string, number>  // Aggregate timing breakdown
 }
 
+// Sequential processing (resilient per-note processing with incremental save)
+export interface SequentialProcessRequest {
+  note_ids?: string[] | null       // null = process all notes
+  prompt_types?: string[] | null   // null = use session defaults
+  fewshot_k?: number
+  use_fewshots?: boolean
+  fast_mode?: boolean
+  skip_annotated?: boolean         // Skip notes that already have all annotations
+}
+
+export interface SequentialNoteResult {
+  note_id: string
+  status: 'success' | 'error' | 'skipped'
+  error_message?: string | null
+  annotations_count: number
+  processing_time_seconds: number
+}
+
+export interface SequentialProcessResponse {
+  session_id: string
+  total_notes: number
+  processed: number
+  skipped: number
+  errors: number
+  results: SequentialNoteResult[]
+  total_time_seconds: number
+  timing_summary?: {
+    total_processing_time: number
+    avg_per_note: number
+    min_per_note: number
+    max_per_note: number
+  }
+}
+
+export interface SequentialProgressEvent {
+  note_id: string
+  status: 'success' | 'error' | 'skipped'
+  error_message?: string
+  annotations_count?: number
+  completed: number
+  total: number
+  percentage: number
+  processing_time_seconds?: number
+}
+
 export interface SessionInfo {
   session_id: string
   name: string
@@ -364,6 +459,8 @@ export interface SessionData {
   center?: string  // Center/group name (e.g. INT, VGR, MSCI)
   evaluation_mode?: 'validation' | 'evaluation'  // Session mode
   report_type_mapping?: Record<string, string[]>  // report_type -> list of prompt_types
+  note_prompt_overrides?: Record<string, string[]>  // note_id -> list of additional prompt_types (per-note)
+  note_prompt_exclusions?: Record<string, string[]>  // note_id -> list of excluded prompt_types from report_type_mapping
 }
 
 // Annotation Preset Types
@@ -629,21 +726,34 @@ export const annotateApi = {
 
     while (true) {
       const { done, value } = await reader.read()
-      if (done) break
-      buffer += decoder.decode(value, { stream: true })
+      if (done) {
+        buffer += decoder.decode()
+      } else {
+        buffer += decoder.decode(value, { stream: true })
+      }
+
+      // Normalize \r\n to \n (sse-starlette uses \r\n)
+      buffer = buffer.replace(/\r\n/g, '\n')
 
       // Parse SSE events from buffer
       const parts = buffer.split('\n\n')
       buffer = parts.pop() || '' // last part may be incomplete
 
+      // When stream ends, treat leftover buffer as a final event too
+      if (done && buffer.trim()) {
+        parts.push(buffer)
+        buffer = ''
+      }
+
       for (const part of parts) {
         let eventType = ''
         let eventData = ''
         for (const line of part.split('\n')) {
-          if (line.startsWith('event: ')) {
-            eventType = line.slice(7).trim()
-          } else if (line.startsWith('data: ')) {
-            eventData += line.slice(6)
+          const trimmed = line.trim()
+          if (trimmed.startsWith('event:')) {
+            eventType = trimmed.slice(6).trim()
+          } else if (trimmed.startsWith('data:')) {
+            eventData += trimmed.slice(5).trim()
           }
         }
         if (!eventData) continue
@@ -654,6 +764,8 @@ export const annotateApi = {
           try { finalResult = JSON.parse(eventData) } catch { /* skip bad events */ }
         }
       }
+
+      if (done) break
     }
 
     if (!finalResult) throw new Error('Stream ended without a complete event')
@@ -743,6 +855,113 @@ export const annotateApi = {
     })
     return response.data
   },
+
+  // Sequential processing (resilient per-note with incremental save)
+  sequentialProcess: async (
+    session_id: string,
+    request: SequentialProcessRequest,
+    signal?: AbortSignal
+  ): Promise<SequentialProcessResponse> => {
+    const response = await api.post(
+      `/api/annotate/sequential`,
+      request,
+      {
+        params: { session_id },
+        timeout: 0, // no timeout for long-running sequential processing
+        signal,
+      }
+    )
+    return response.data
+  },
+
+  /**
+   * SSE-streaming sequential process. Emits progress events after each note.
+   * Server saves annotations to disk after each note (crash resilient).
+   * Falls back to non-streaming sequentialProcess on failure.
+   */
+  sequentialProcessStream: async (
+    session_id: string,
+    request: SequentialProcessRequest,
+    onProgress?: (data: SequentialProgressEvent) => void,
+    signal?: AbortSignal
+  ): Promise<SequentialProcessResponse> => {
+    const url = `${API_BASE_URL}/api/annotate/sequential/stream?session_id=${encodeURIComponent(session_id)}`
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request),
+      signal,
+    })
+
+    if (!response.ok) {
+      let detail = `Sequential streaming failed (${response.status})`
+      try {
+        const err = await response.json()
+        if (err.detail) detail = err.detail
+      } catch { /* ignore parse errors */ }
+      throw new Error(detail)
+    }
+
+    const reader = response.body!.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let finalResult: SequentialProcessResponse | null = null
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) {
+        buffer += decoder.decode()
+      } else {
+        buffer += decoder.decode(value, { stream: true })
+      }
+
+      // Normalize \r\n to \n (sse-starlette uses \r\n)
+      buffer = buffer.replace(/\r\n/g, '\n')
+
+      const parts = buffer.split('\n\n')
+      buffer = parts.pop() || ''
+
+      // When stream ends, treat leftover buffer as a final event too
+      if (done && buffer.trim()) {
+        parts.push(buffer)
+        buffer = ''
+      }
+
+      for (const part of parts) {
+        let eventType = ''
+        let eventData = ''
+        for (const line of part.split('\n')) {
+          const trimmed = line.trim()
+          if (trimmed.startsWith('event:')) {
+            eventType = trimmed.slice(6).trim()
+          } else if (trimmed.startsWith('data:')) {
+            eventData += trimmed.slice(5).trim()
+          }
+        }
+        if (!eventData) continue
+
+        if (eventType === 'progress' && onProgress) {
+          try { onProgress(JSON.parse(eventData)) } catch { /* skip bad events */ }
+        } else if (eventType === 'complete') {
+          try { finalResult = JSON.parse(eventData) } catch { /* skip bad events */ }
+        } else if (eventType === 'error') {
+          try {
+            const errData = JSON.parse(eventData)
+            throw new Error(errData.detail || 'Sequential processing error')
+          } catch (e) {
+            if (e instanceof Error && e.message !== 'Sequential processing error') throw e
+            throw new Error('Sequential processing error')
+          }
+        }
+      }
+
+      if (done) break
+    }
+
+    if (!finalResult) throw new Error('Stream ended without a complete event')
+    return finalResult
+  },
 }
 
 export const sessionsApi = {
@@ -813,9 +1032,14 @@ export const sessionsApi = {
 
   updateMetadata: async (
     session_id: string,
-    update: { name?: string; report_type_mapping?: Record<string, string[]> }
+    update: { name?: string; report_type_mapping?: Record<string, string[]>; note_prompt_overrides?: Record<string, string[]>; note_prompt_exclusions?: Record<string, string[]> }
   ): Promise<SessionData> => {
     const response = await api.patch(`/api/sessions/${session_id}`, update)
+    return response.data
+  },
+
+  validateExport: async (session_id: string): Promise<ExportValidationResponse> => {
+    const response = await api.get(`/api/sessions/${session_id}/export/validate`)
     return response.data
   },
 
@@ -848,6 +1072,28 @@ export const sessionsApi = {
     const response = await api.post('/api/sessions/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
+    return response.data
+  },
+
+  getDiagnoses: async (session_id: string): Promise<DiagnosisValidationReport> => {
+    const response = await api.get(`/api/sessions/${session_id}/diagnoses`)
+    return response.data
+  },
+
+  resolvePatientDiagnosis: async (
+    session_id: string,
+    patient_id: string,
+    query_code: string,
+  ): Promise<PatientDiagnosisResolveResponse> => {
+    const response = await api.post(
+      `/api/sessions/${session_id}/diagnoses/${encodeURIComponent(patient_id)}/resolve`,
+      { query_code },
+    )
+    return response.data
+  },
+
+  resolveAllDiagnoses: async (session_id: string): Promise<DiagnosisValidationReport> => {
+    const response = await api.post(`/api/sessions/${session_id}/diagnoses/resolve-all`)
     return response.data
   },
 }

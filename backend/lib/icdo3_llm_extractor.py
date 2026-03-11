@@ -17,32 +17,24 @@ def extract_histology_topography_with_llm(
     vllm_client: Any
 ) -> Optional[Dict[str, Any]]:
     """
-    Extract histology and topography information using LLM.
-    
+    Extract histology and topography information using LLM (synchronous).
+
     Args:
         note_text: Original clinical note text
         annotation_text: Extracted annotation text
         prompt_type: Type of prompt (histology or site)
         vllm_client: vLLM client instance
-    
+
     Returns:
-        Dictionary with extracted information:
-        {
-            "histology_text": "...",
-            "morphology_code": "...",
-            "topography_text": "...",
-            "topography_code": "...",
-            "query_code": "..."
-        }
-        or None if extraction fails
+        Dictionary with extracted information or None if extraction fails
     """
     if not vllm_client:
         print("[WARN] vLLM client not available for ICD-O-3 extraction")
         return None
-    
+
     # Build extraction prompt
     prompt = _build_extraction_prompt(note_text, annotation_text, prompt_type)
-    
+
     try:
         # Generate with LLM
         output = vllm_client.generate(
@@ -51,15 +43,51 @@ def extract_histology_topography_with_llm(
             temperature=0.0,  # Deterministic output
             return_logprobs=False
         )
-        
+
         raw_output = output.get("raw", output.get("normalized", ""))
-        
+
         # Parse LLM response
         extracted_info = _parse_llm_response(raw_output, prompt_type)
-        
+
         return extracted_info
     except Exception as e:
         print(f"[WARN] LLM extraction failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+
+async def extract_histology_topography_with_llm_async(
+    note_text: str,
+    annotation_text: str,
+    prompt_type: str,
+    vllm_client: Any
+) -> Optional[Dict[str, Any]]:
+    """
+    Extract histology and topography information using LLM (async, non-blocking).
+
+    Uses vllm_client.agenerate() to avoid blocking the event loop.
+    """
+    if not vllm_client:
+        print("[WARN] vLLM client not available for ICD-O-3 extraction")
+        return None
+
+    prompt = _build_extraction_prompt(note_text, annotation_text, prompt_type)
+
+    try:
+        output = await vllm_client.agenerate(
+            prompt=prompt,
+            max_new_tokens=512,
+            temperature=0.0,
+            return_logprobs=False
+        )
+
+        raw_output = output.get("raw", output.get("normalized", ""))
+        extracted_info = _parse_llm_response(raw_output, prompt_type)
+
+        return extracted_info
+    except Exception as e:
+        print(f"[WARN] Async LLM extraction failed: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -107,10 +135,22 @@ def _build_extraction_prompt(
     if has_placeholder:
         placeholder_note = "\n\nIMPORTANT: The annotation contains a placeholder '[select ICD-O-3 code]', which means the code was not extracted. You MUST extract the ICD-O-3 code from the Clinical Note below. Look carefully for histology descriptions and match them to appropriate ICD-O-3 codes."
     
+    # When annotation already has the info (no placeholder), use shorter context
+    if has_placeholder:
+        clinical_note_section = f"Clinical Note:\n{note_text[:1000]}"
+    elif note_text:
+        clinical_note_section = f"Clinical Note (excerpt):\n{note_text[:500]}"
+    else:
+        clinical_note_section = ""
+
+    # Build topography reference for site prompts
+    topography_reference = ""
+    if is_site:
+        topography_reference = _build_topography_reference()
+
     prompt = f"""You are a medical coding expert. Extract ICD-O-3 coding information from the following clinical note and annotation.
 
-Clinical Note:
-{note_text[:2000]}
+{clinical_note_section}
 
 Annotation:
 {annotation_text}
@@ -123,7 +163,7 @@ CRITICAL INSTRUCTIONS:
 2. Look for histology descriptions in the Clinical Note (e.g., "Sarcoma, undifferentiated", "Undifferentiated sarcoma", "Pleomorphic sarcoma")
 3. Match these descriptions to appropriate ICD-O-3 morphology codes
 4. For histology prompts, focus on morphology codes (e.g., 8805/3 for undifferentiated sarcoma)
-5. For site prompts, focus on topography codes (e.g., C71.7 for brain stem)
+5. For site prompts, focus on topography codes (e.g., C71.7 for brain stem). Use the Topography Reference below to find the correct code.
 
 Output format (JSON only):
 {{
@@ -139,15 +179,28 @@ Code Format:
 - Topography: "CXX.X" (C, 2 digits, dot, 1 digit) - e.g., "C71.7" for brain stem
 - Query code: "morphology_code-topography_code" - e.g., "8805/3-C71.7"
 
-Common ICD-O-3 Codes Reference:
+Common ICD-O-3 Morphology Codes:
 - Undifferentiated sarcoma: 8805/3
 - Pleomorphic sarcoma: 8802/3
 - Spindle cell sarcoma: 8801/3
 - Myxoid sarcoma: 8840/3
-
+{topography_reference}
 Output ONLY valid JSON, no other text."""
 
     return prompt
+
+
+def _build_topography_reference() -> str:
+    """Build a compact topography code reference from condition_files for LLM prompt."""
+    try:
+        from lib.topography_resolver import get_topography_resolver
+        resolver = get_topography_resolver()
+        lines = resolver.get_prompt_reference_lines(max_lines=60)
+        if lines:
+            return f"\nCommon ICD-O-3 Topography Codes (use these to map tumor sites):\n{lines}\n"
+    except Exception as e:
+        print(f"[WARN] Could not build topography reference: {e}")
+    return ""
 
 
 def _parse_llm_response(response_text: str, prompt_type: str) -> Optional[Dict[str, Any]]:
@@ -179,9 +232,9 @@ def _parse_llm_response(response_text: str, prompt_type: str) -> Optional[Dict[s
             
             # Validate and normalize
             result = {
-                "histology_text": parsed.get("histology_text", "").strip() or None,
+                "histology_text": (parsed.get("histology_text") or "").strip() or None,
                 "morphology_code": _normalize_code(parsed.get("morphology_code")) or None,
-                "topography_text": parsed.get("topography_text", "").strip() or None,
+                "topography_text": (parsed.get("topography_text") or "").strip() or None,
                 "topography_code": _normalize_code(parsed.get("topography_code")) or None,
                 "query_code": _normalize_code(parsed.get("query_code")) or None
             }
