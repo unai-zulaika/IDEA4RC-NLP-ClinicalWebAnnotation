@@ -24,9 +24,10 @@ def _adapt_prompts_for_center(center_prompts: Dict, adapted_prompts: Dict[str, D
         # Handle both old format (string) and new format (dict with template and entity_mapping)
         if isinstance(prompt_data, dict):
             template = prompt_data.get('template', '')
-            # entity_mapping is stored but not used in adaptation (it's for extraction later)
+            entity_mapping = prompt_data.get('entity_mapping')
         elif isinstance(prompt_data, str):
             template = prompt_data
+            entity_mapping = None
         else:
             raise ValueError(f"Unexpected prompt data type for '{prompt_key}': {type(prompt_data)}")
         
@@ -70,7 +71,8 @@ Generate the response in a structured JSON format. Ensure the `reasoning` and `e
         adapted_template = adapted_template.strip()
         
         adapted_prompts[prompt_key] = {
-            "template": adapted_template
+            "template": adapted_template,
+            "entity_mapping": entity_mapping,
         }
 
 

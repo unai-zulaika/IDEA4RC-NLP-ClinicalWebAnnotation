@@ -55,7 +55,8 @@ from models.schemas import (
     ProcessNoteRequest, ProcessNoteResponse, BatchProcessRequest, BatchProcessResponse,
     AnnotationResult, AnnotationValue, EvidenceSpan,
     ICDO3SearchResult, ICDO3SearchResponse, ICDO3ValidationResult,
-    UnifiedICDO3Code, ICDO3CombineRequest, ICDO3CombineResponse
+    UnifiedICDO3Code, ICDO3CombineRequest, ICDO3CombineResponse,
+    SequentialProcessRequest, SequentialNoteResult, SequentialProcessResponse
 )
 
 router = APIRouter()
@@ -138,6 +139,51 @@ def _ensure_fast_prompts_loaded(force_reload: bool = False):
             print(f"[INFO] Loaded {len(_FAST_PROMPTS)} fast prompts from {prompts_dir}: {list(_FAST_PROMPTS.keys())}")
 
 
+def _get_applicable_prompts(
+    note_id: str,
+    requested_prompt_types: List[str],
+    report_type: Optional[str],
+    report_type_mapping: Optional[Dict],
+    note_prompt_overrides: Dict,
+    note_prompt_exclusions: Dict,
+) -> List[str]:
+    """Filter prompt types for a note based on report_type_mapping + overrides - exclusions."""
+    if not report_type_mapping or not report_type:
+        return requested_prompt_types
+    allowed = set(report_type_mapping.get(report_type, []))
+    allowed.update(note_prompt_overrides.get(note_id, []))
+    allowed -= set(note_prompt_exclusions.get(note_id, []))
+    if allowed:
+        filtered = [pt for pt in requested_prompt_types if pt in allowed]
+        print(f"[INFO] Filtered prompts for report_type '{report_type}': {len(filtered)}/{len(requested_prompt_types)} prompts will be processed")
+        return filtered
+    print(f"[INFO] No prompt types mapped for report_type '{report_type}', skipping all prompts")
+    return []
+
+
+def _annotation_result_to_dict(result, note_id: str, prompt_type: str) -> dict:
+    """Convert an AnnotationResult from _process_single_prompt to session storage dict format."""
+    return {
+        "note_id": note_id,
+        "prompt_type": prompt_type,
+        "annotation_text": result.annotation_text,
+        "values": [v.model_dump() for v in (result.values or [])],
+        "edited": False,
+        "is_negated": result.is_negated,
+        "date_info": result.date_info,
+        "evidence_text": result.evidence_text,
+        "reasoning": result.reasoning,
+        "raw_prompt": result.raw_prompt,
+        "raw_response": result.raw_response,
+        "evidence_spans": [s.model_dump() for s in (result.evidence_spans or [])],
+        "status": result.status,
+        "evaluation_result": result.evaluation_result,
+        "icdo3_code": result.icdo3_code.model_dump() if result.icdo3_code else None,
+        "chunk_info": result.chunk_info.model_dump() if result.chunk_info else None,
+        "derived_field_values": getattr(result, 'derived_field_values', None),
+    }
+
+
 def _is_simple_prompt(template: str) -> bool:
     """
     Check if a prompt is a simple completion prompt (not structured annotation).
@@ -185,7 +231,9 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
             if fewshots:
                 fewshots_parts = []
                 for note, annotation in fewshots:
-                    fewshots_parts.append(f"Example:\n- Medical Note: {note}\n- Annotation: {annotation}")
+                    fewshots_parts.append(
+                        f'Example:\n- Medical Note: {note}\n- Response: {{"final_output": "{annotation}"}}'
+                    )
                 fewshots_text = "\n\n---\n\n".join(fewshots_parts)
             else:
                 fewshots_text = ""
@@ -207,7 +255,9 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
     if fewshots:
         fewshots_parts = []
         for note, annotation in fewshots:
-            fewshots_parts.append(f"Example:\n- Medical Note: {note}\n- Annotation: {annotation}")
+            fewshots_parts.append(
+                f'Example:\n- Medical Note: {note}\n- Response: {{"final_output": "{annotation}"}}'
+            )
         fewshots_text = "\n\n---\n\n".join(fewshots_parts)
 
     # Replace placeholders - handle both formats for compatibility
@@ -517,6 +567,7 @@ async def _process_single_prompt(
     session_data: Optional[Dict] = None,
     note_id: Optional[str] = None,
     fast_mode: bool = False,
+    icdo3_llm_cache: Optional[Dict[str, Any]] = None,
 ) -> AnnotationResult:
     """
     Process a single prompt type for a note, with timing instrumentation.
@@ -577,14 +628,21 @@ async def _process_single_prompt(
                 is_simple = _is_simple_prompt(template)
 
         # --- vLLM inference (dominant cost) ---
+        # Token budgets: generous enough to accommodate thinking-model preamble
+        # (MedGemma emits <unused94>thought</unused94> blocks before the JSON answer;
+        # too-small budgets exhaust mid-thought leaving nothing to parse).
         raw_response = None
-        fast_max_tokens = 256 if fast_mode else 512
+        fast_max_tokens = 512 if fast_mode else 1024
+        # Extra kwargs for fast mode: try to suppress thinking tokens at the API level.
+        # vLLM forwards unknown extra_body keys to the backend; if the model/server
+        # doesn't support it the parameter is silently ignored.
+        _fast_extra: dict = {"extra_body": {"chat_template_kwargs": {"enable_thinking": False}}} if fast_mode else {}
         with timer.measure("vllm_inference"):
             async with _vllm_semaphore:
                 if is_simple:
                     output = await vllm_client.agenerate(
                         prompt=prompt, max_new_tokens=fast_max_tokens,
-                        temperature=0.0, return_logprobs=False
+                        temperature=0.0, return_logprobs=False, **_fast_extra
                     )
                     raw_output = output.get("raw", output.get("normalized", ""))
                     raw_response = raw_output
@@ -606,7 +664,7 @@ async def _process_single_prompt(
                 if not is_simple and (fast_mode or not use_structured):
                     output = await vllm_client.agenerate(
                         prompt=prompt, max_new_tokens=fast_max_tokens,
-                        temperature=0.0, return_logprobs=False
+                        temperature=0.0, return_logprobs=False, **_fast_extra
                     )
                     raw_output = output.get("raw", output.get("normalized", ""))
                     raw_response = raw_output
@@ -656,15 +714,16 @@ async def _process_single_prompt(
                 evidence_spans = _extract_evidence_spans(_chunk_text, evidence, prompt_type)
                 values = _parse_annotation_values(annotation_text, _chunk_text, prompt_type)
 
-            # --- ICD-O-3 extraction ---
+            # --- ICD-O-3 extraction (async, non-blocking) ---
             icdo3_code_info = None
             with timer.measure("icdo3_extraction"):
                 try:
-                    from lib.icdo3_extractor import extract_icdo3_from_text, is_histology_or_site_prompt
+                    from lib.icdo3_extractor import extract_icdo3_from_text_async, is_histology_or_site_prompt
                     if is_histology_or_site_prompt(prompt_type):
-                        icdo3_code_info = extract_icdo3_from_text(
+                        icdo3_code_info = await extract_icdo3_from_text_async(
                             annotation_text, prompt_type,
-                            note_text=_chunk_text, vllm_client=vllm_client
+                            note_text=_chunk_text, vllm_client=vllm_client,
+                            icdo3_llm_cache=icdo3_llm_cache,
                         )
                         if icdo3_code_info:
                             from models.schemas import ICDO3CodeInfo
@@ -773,6 +832,15 @@ async def _process_single_prompt(
                 else:
                     status = "error"
 
+            # Resolve output_word_mappings against the raw LLM output
+            from lib.output_mapper import resolve_output_word_mappings as _resolve_owm
+            _prompt_entity_mapping = (
+                _PROMPTS.get(prompt_type, {}).get("entity_mapping")
+                or _FAST_PROMPTS.get(prompt_type, {}).get("entity_mapping")
+                or {}
+            )
+            _derived_field_values = _resolve_owm(structured_ann.final_output, _prompt_entity_mapping) or None
+
             _last_result = AnnotationResult(
                 prompt_type=prompt_type,
                 annotation_text=annotation_text,
@@ -789,6 +857,7 @@ async def _process_single_prompt(
                 evaluation_result=evaluation_result,
                 icdo3_code=icdo3_code_dict,
                 timing_breakdown=timer.to_dict(),
+                derived_field_values=_derived_field_values,
             )
 
             # --- Early stop for chunked notes ---
@@ -876,16 +945,17 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
     except Exception as e:
         print(f"[WARN] Could not load session: {e}")
 
-    # Filter prompt types based on report_type_mapping if available
-    prompt_types_to_process = request.prompt_types
-    if report_type_mapping and report_type:
-        allowed_prompt_types = report_type_mapping.get(report_type, [])
-        if allowed_prompt_types:
-            prompt_types_to_process = [pt for pt in request.prompt_types if pt in allowed_prompt_types]
-            print(f"[INFO] Filtered prompts for report_type '{report_type}': {len(prompt_types_to_process)}/{len(request.prompt_types)} prompts will be processed")
-        else:
-            print(f"[INFO] No prompt types mapped for report_type '{report_type}', skipping all prompts")
-            prompt_types_to_process = []
+    # Filter prompt types based on report_type_mapping + note_prompt_overrides - note_prompt_exclusions
+    note_overrides = session_data.get("note_prompt_overrides", {}) if session_data else {}
+    note_exclusions = session_data.get("note_prompt_exclusions", {}) if session_data else {}
+    prompt_types_to_process = _get_applicable_prompts(
+        note_id=request.note_id,
+        requested_prompt_types=request.prompt_types,
+        report_type=report_type,
+        report_type_mapping=report_type_mapping,
+        note_prompt_overrides=note_overrides,
+        note_prompt_exclusions=note_exclusions,
+    )
 
     # Check structured generation availability
     try:
@@ -894,12 +964,12 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
     except ImportError:
         use_structured = False
 
-    # Process all prompt types sequentially to avoid GPU memory pressure
+    # Process all prompt types in parallel (semaphore limits concurrent GPU access)
     mode_label = "FAST" if request.fast_mode else "standard"
-    print(f"[INFO] Processing {len(prompt_types_to_process)} prompts sequentially, mode={mode_label}")
-    note_annotations = []
-    for pt in prompt_types_to_process:
-        result = await _process_single_prompt(
+    print(f"[INFO] Processing {len(prompt_types_to_process)} prompts in parallel, mode={mode_label}")
+    icdo3_llm_cache: Dict[str, Any] = {}
+    note_annotations = list(await asyncio.gather(*[
+        _process_single_prompt(
             prompt_type=pt,
             note_text=note_text,
             csv_date=csv_date,
@@ -911,8 +981,10 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
             session_data=session_data,
             note_id=request.note_id,
             fast_mode=request.fast_mode,
+            icdo3_llm_cache=icdo3_llm_cache,
         )
-        note_annotations.append(result)
+        for pt in prompt_types_to_process
+    ]))
 
     processing_time = total_timer.get_total()
     # Aggregate timing: sum per-step times across all prompts
@@ -980,6 +1052,8 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
 
     note_dates = {}
     report_type_mapping = session.get('report_type_mapping')
+    note_prompt_overrides = session.get('note_prompt_overrides', {})
+    note_prompt_exclusions = session.get('note_prompt_exclusions', {})
     for note in session.get('notes', []):
         note_dates[note.get('note_id')] = note.get('date')
 
@@ -1006,13 +1080,14 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
         csv_date = note_dates.get(note_id)
         report_type = note_data.get('report_type')
 
-        prompt_types_to_process = request.prompt_types
-        if report_type_mapping and report_type:
-            allowed = report_type_mapping.get(report_type, [])
-            if allowed:
-                prompt_types_to_process = [pt for pt in request.prompt_types if pt in allowed]
-            else:
-                prompt_types_to_process = []
+        prompt_types_to_process = _get_applicable_prompts(
+            note_id=note_id,
+            requested_prompt_types=request.prompt_types,
+            report_type=report_type,
+            report_type_mapping=report_type_mapping,
+            note_prompt_overrides=note_prompt_overrides,
+            note_prompt_exclusions=note_prompt_exclusions,
+        )
 
         note_order.append((note_id, note_text, prompt_types_to_process))
         for pt in prompt_types_to_process:
@@ -1020,18 +1095,18 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
 
     total_prompts = len(all_tasks)
     mode_label = "FAST" if request.fast_mode else "standard"
-    print(f"[INFO] Batch: {len(note_order)} notes, {total_prompts} total prompts, sequential mode={mode_label}")
+    print(f"[INFO] Batch: {len(note_order)} notes, {total_prompts} total prompts, parallel mode={mode_label}")
 
-    # Process notes and prompts sequentially to avoid GPU memory pressure
-    results = []
-    for note_id, note_text, prompt_types_to_process in note_order:
-        note_annotations = []
-        for pt in prompt_types_to_process:
-            csv_date = note_dates.get(note_id)
-            result = await _process_single_prompt(
+    # Process all notes in parallel. The _vllm_semaphore inside _process_single_prompt
+    # limits concurrent GPU access (default VLLM_CONCURRENCY=2), so launching all tasks
+    # is safe — they queue on the semaphore while overlapping CPU-bound work.
+    async def _process_note(note_id: str, note_text: str, prompt_types_to_process: List[str]) -> ProcessNoteResponse:
+        icdo3_llm_cache: Dict[str, Any] = {}
+        note_annotations = await asyncio.gather(*[
+            _process_single_prompt(
                 prompt_type=pt,
                 note_text=note_text,
-                csv_date=csv_date,
+                csv_date=note_dates.get(note_id),
                 vllm_client=vllm_client,
                 use_structured=use_structured,
                 request_use_fewshots=request.use_fewshots,
@@ -1040,36 +1115,62 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
                 session_data=session,
                 note_id=note_id,
                 fast_mode=request.fast_mode,
+                icdo3_llm_cache=icdo3_llm_cache,
             )
-            note_annotations.append(result)
+            for pt in prompt_types_to_process
+        ])
 
-        # Aggregate timing per note
         note_timing: Dict[str, float] = {}
         for ann in note_annotations:
             if ann.timing_breakdown:
                 for step, dur in ann.timing_breakdown.items():
                     note_timing[step] = note_timing.get(step, 0.0) + dur
 
-        # Calculate note processing time from annotation timings
         note_time = sum(
             (ann.timing_breakdown.get("total", 0.0) for ann in note_annotations if ann.timing_breakdown),
             0.0
         )
 
-        results.append(ProcessNoteResponse(
+        return ProcessNoteResponse(
             note_id=note_id,
             note_text=note_text,
-            annotations=note_annotations,
+            annotations=list(note_annotations),
             processing_time_seconds=note_time,
             timing_breakdown=note_timing,
-        ))
+        )
+
+    results = list(await asyncio.gather(*[
+        _process_note(nid, ntxt, pts)
+        for nid, ntxt, pts in note_order
+    ]))
 
     batch_time = batch_timer.get_total()
+
+    # Aggregate per-step timing across all notes and annotations
+    agg_steps: Dict[str, float] = {}
+    prompt_type_times: Dict[str, List[float]] = {}
+    for note_result in results:
+        for ann in note_result.annotations:
+            if ann.timing_breakdown:
+                for step, dur in ann.timing_breakdown.items():
+                    agg_steps[step] = agg_steps.get(step, 0.0) + dur
+            # Track per-prompt-type total time
+            pt = ann.prompt_type or "unknown"
+            total_for_ann = ann.timing_breakdown.get("total", 0.0) if ann.timing_breakdown else 0.0
+            prompt_type_times.setdefault(pt, []).append(total_for_ann)
+
     batch_timing = {
         "wall_clock_total": batch_time,
         "note_count": float(len(note_order)),
         "prompt_count": float(total_prompts),
     }
+    # Add aggregated step totals
+    for step, total_dur in agg_steps.items():
+        batch_timing[f"sum_{step}"] = total_dur
+    # Add per-prompt-type averages
+    for pt, times in prompt_type_times.items():
+        if times:
+            batch_timing[f"avg_{pt}"] = sum(times) / len(times)
 
     return BatchProcessResponse(
         results=results,
@@ -1118,6 +1219,8 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
 
     note_dates: Dict[str, Optional[str]] = {}
     report_type_mapping = session.get('report_type_mapping')
+    note_prompt_overrides = session.get('note_prompt_overrides', {})
+    note_prompt_exclusions = session.get('note_prompt_exclusions', {})
     for note in session.get('notes', []):
         note_dates[note.get('note_id')] = note.get('date')
 
@@ -1144,13 +1247,14 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
         csv_date = note_dates.get(note_id)
         report_type = note_data.get('report_type')
 
-        prompt_types_to_process = request.prompt_types
-        if report_type_mapping and report_type:
-            allowed = report_type_mapping.get(report_type, [])
-            if allowed:
-                prompt_types_to_process = [pt for pt in request.prompt_types if pt in allowed]
-            else:
-                prompt_types_to_process = []
+        prompt_types_to_process = _get_applicable_prompts(
+            note_id=note_id,
+            requested_prompt_types=request.prompt_types,
+            report_type=report_type,
+            report_type_mapping=report_type_mapping,
+            note_prompt_overrides=note_prompt_overrides,
+            note_prompt_exclusions=note_prompt_exclusions,
+        )
 
         note_order.append((note_id, note_text, prompt_types_to_process))
         for pt in prompt_types_to_process:
@@ -1176,6 +1280,7 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
 
         for nid, nt, prompt_types_to_process in note_order:
             csv_date = note_dates.get(nid)
+            icdo3_llm_cache: Dict[str, Any] = {}  # shared across prompt types for this note
             for pt in prompt_types_to_process:
                 result = await _process_single_prompt(
                     prompt_type=pt,
@@ -1189,6 +1294,7 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
                     session_data=session,
                     note_id=nid,
                     fast_mode=request.fast_mode,
+                    icdo3_llm_cache=icdo3_llm_cache,
                 )
                 completed += 1
                 results_by_note.setdefault(nid, []).append(result)
@@ -1665,4 +1771,270 @@ async def get_unified_icdo3_code(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to get unified code: {str(e)}")
+
+
+# ---------------------------------------------------------------------------
+# Sequential processing endpoints — resilient per-note processing with
+# incremental save and optional resume via skip_annotated
+# ---------------------------------------------------------------------------
+
+async def _sequential_process_core(
+    request: SequentialProcessRequest,
+    session_id: str,
+):
+    """Shared logic for sequential endpoints. Yields (event_type, data_dict) tuples."""
+    import importlib.util
+    import json as _json
+
+    _ensure_prompts_loaded()
+    if request.fast_mode:
+        _ensure_fast_prompts_loaded()
+
+    # Load session
+    sessions_path = Path(__file__).parent / "sessions.py"
+    spec = importlib.util.spec_from_file_location("sessions", sessions_path)
+    if spec is None or spec.loader is None:
+        raise HTTPException(status_code=500, detail="Failed to load sessions module")
+    sessions_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sessions_module)
+
+    try:
+        session = sessions_module._load_session(session_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
+    # Check vLLM
+    vllm_client = get_vllm_client()
+    if not vllm_client.is_available():
+        status = vllm_client.get_status()
+        error_detail = status.get("error", "Unknown error")
+        endpoint = vllm_client.config.get("vllm_endpoint", "not configured")
+        raise HTTPException(
+            status_code=503,
+            detail=f"VLLM server not available. Endpoint: {endpoint}, Error: {error_detail}. "
+                   f"Please ensure the VLLM server is running."
+        )
+
+    # Check structured generation
+    try:
+        from services.structured_generator import OUTLINES_AVAILABLE
+        use_structured = OUTLINES_AVAILABLE
+    except ImportError:
+        use_structured = False
+
+    evaluation_mode = session.get('evaluation_mode', 'validation')
+    report_type_mapping = session.get('report_type_mapping')
+    note_prompt_overrides = session.get('note_prompt_overrides', {})
+    note_prompt_exclusions = session.get('note_prompt_exclusions', {})
+
+    # Determine prompt types
+    prompt_types = request.prompt_types or session.get('prompt_types', [])
+
+    # Determine notes to process
+    all_notes = session.get('notes', [])
+    if request.note_ids:
+        requested_ids = set(request.note_ids)
+        notes = [n for n in all_notes if n.get('note_id') in requested_ids]
+    else:
+        notes = all_notes
+
+    # Build processing plan: filter prompts per note and handle skip_annotated
+    processing_plan = []  # List of (note_data, applicable_prompts)
+    skipped_results = []
+
+    for note in notes:
+        note_id = note.get('note_id', '')
+        report_type = note.get('report_type')
+        applicable = _get_applicable_prompts(
+            note_id=note_id,
+            requested_prompt_types=prompt_types,
+            report_type=report_type,
+            report_type_mapping=report_type_mapping,
+            note_prompt_overrides=note_prompt_overrides,
+            note_prompt_exclusions=note_prompt_exclusions,
+        )
+        if not applicable:
+            skipped_results.append(SequentialNoteResult(
+                note_id=note_id, status="skipped", error_message="No applicable prompts"
+            ))
+            continue
+
+        if request.skip_annotated:
+            existing = session.get('annotations', {}).get(note_id, {})
+            if all(pt in existing for pt in applicable):
+                skipped_results.append(SequentialNoteResult(
+                    note_id=note_id, status="skipped"
+                ))
+                continue
+
+        processing_plan.append((note, applicable))
+
+    total_to_process = len(processing_plan)
+    total_notes = len(notes)
+
+    # Yield started event
+    yield ("started", {
+        "session_id": session_id,
+        "total_notes": total_notes,
+        "notes_to_process": total_to_process,
+        "skipped": len(skipped_results),
+    })
+
+    # Process notes sequentially
+    results = list(skipped_results)
+    processed_count = 0
+    error_count = 0
+    overall_start = time.time()
+
+    for idx, (note_data, applicable_prompts) in enumerate(processing_plan):
+        note_id = note_data.get('note_id', '')
+        note_text = note_data.get('text', '')
+        csv_date = note_data.get('date')
+        note_start = time.time()
+
+        try:
+            note_annotations = {}
+            icdo3_llm_cache: Dict[str, Any] = {}  # shared across prompt types for this note
+            for pt in applicable_prompts:
+                result = await _process_single_prompt(
+                    prompt_type=pt,
+                    note_text=note_text,
+                    csv_date=csv_date,
+                    vllm_client=vllm_client,
+                    use_structured=use_structured,
+                    request_use_fewshots=request.use_fewshots,
+                    request_fewshot_k=request.fewshot_k,
+                    evaluation_mode=evaluation_mode,
+                    session_data=session,
+                    note_id=note_id,
+                    fast_mode=request.fast_mode,
+                    icdo3_llm_cache=icdo3_llm_cache,
+                )
+                note_annotations[pt] = _annotation_result_to_dict(result, note_id, pt)
+
+            # Save annotations to session immediately
+            if note_id not in session.get('annotations', {}):
+                session.setdefault('annotations', {})[note_id] = {}
+            session['annotations'][note_id].update(note_annotations)
+            sessions_module._save_session(session_id, session)
+
+            note_time = time.time() - note_start
+            processed_count += 1
+            note_result = SequentialNoteResult(
+                note_id=note_id,
+                status="success",
+                annotations_count=len(note_annotations),
+                processing_time_seconds=round(note_time, 2),
+            )
+            results.append(note_result)
+
+            yield ("progress", {
+                "note_id": note_id,
+                "status": "success",
+                "annotations_count": len(note_annotations),
+                "completed": idx + 1,
+                "total": total_to_process,
+                "percentage": round((idx + 1) / total_to_process * 100, 1) if total_to_process else 100,
+                "processing_time_seconds": round(note_time, 2),
+            })
+
+        except Exception as e:
+            note_time = time.time() - note_start
+            error_count += 1
+            error_msg = str(e)
+            print(f"[ERROR] Sequential processing failed for note {note_id}: {error_msg}")
+            import traceback
+            traceback.print_exc()
+
+            note_result = SequentialNoteResult(
+                note_id=note_id,
+                status="error",
+                error_message=error_msg,
+                processing_time_seconds=round(note_time, 2),
+            )
+            results.append(note_result)
+
+            yield ("progress", {
+                "note_id": note_id,
+                "status": "error",
+                "error_message": error_msg,
+                "completed": idx + 1,
+                "total": total_to_process,
+                "percentage": round((idx + 1) / total_to_process * 100, 1) if total_to_process else 100,
+                "processing_time_seconds": round(note_time, 2),
+            })
+            continue  # Next note
+
+    total_time = time.time() - overall_start
+
+    # Compute timing summary from per-note results
+    note_times = [r.processing_time_seconds for r in results if r.status == "success" and r.processing_time_seconds > 0]
+    timing_summary = None
+    if note_times:
+        timing_summary = {
+            "total_processing_time": round(sum(note_times), 2),
+            "avg_per_note": round(sum(note_times) / len(note_times), 2),
+            "min_per_note": round(min(note_times), 2),
+            "max_per_note": round(max(note_times), 2),
+        }
+
+    response = SequentialProcessResponse(
+        session_id=session_id,
+        total_notes=total_notes,
+        processed=processed_count,
+        skipped=len(skipped_results),
+        errors=error_count,
+        results=results,
+        total_time_seconds=round(total_time, 2),
+        timing_summary=timing_summary,
+    )
+    yield ("complete", response.model_dump())
+
+
+@router.post("/sequential", response_model=SequentialProcessResponse)
+async def sequential_process(request: SequentialProcessRequest, session_id: str = Query(...)):
+    """Process notes sequentially with per-note error handling and incremental save.
+
+    Unlike /batch, this endpoint:
+    - Saves annotations to disk after each note (crash resilient)
+    - Catches per-note errors and continues processing
+    - Supports skip_annotated for resume capability
+    - Defaults to all notes and session prompt_types if not specified
+    """
+    final_response = None
+    async for event_type, data in _sequential_process_core(request, session_id):
+        if event_type == "complete":
+            final_response = data
+
+    if final_response is None:
+        raise HTTPException(status_code=500, detail="Sequential processing produced no result")
+
+    return SequentialProcessResponse(**final_response)
+
+
+@router.post("/sequential/stream")
+async def sequential_process_stream(request: SequentialProcessRequest, session_id: str = Query(...)):
+    """Streaming variant of /sequential. Sends SSE progress events after each note."""
+    from sse_starlette.sse import EventSourceResponse
+    import json as _json
+
+    async def _event_generator():
+        try:
+            async for event_type, data in _sequential_process_core(request, session_id):
+                yield {
+                    "event": event_type,
+                    "data": _json.dumps(data, default=str),
+                }
+        except HTTPException as exc:
+            yield {
+                "event": "error",
+                "data": _json.dumps({"detail": exc.detail, "status_code": exc.status_code}),
+            }
+        except Exception as exc:
+            yield {
+                "event": "error",
+                "data": _json.dumps({"detail": str(exc), "status_code": 500}),
+            }
+
+    return EventSourceResponse(_event_generator())
 

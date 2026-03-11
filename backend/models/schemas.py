@@ -2,7 +2,7 @@
 Pydantic schemas for request/response models
 """
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
@@ -32,6 +32,13 @@ class ModelInfo(BaseModel):
 
 
 # Prompt Schemas
+class OutputWordMapping(BaseModel):
+    """Regex pattern → value mapping applied against LLM final_output at annotation time"""
+    pattern: str = Field(..., description="Regex pattern tested against the LLM final_output string")
+    value: str = Field(..., description="Value to store for this field if the pattern matches")
+    flags: Optional[str] = Field(None, description="Comma-separated regex flags: 'IGNORECASE', 'MULTILINE'")
+
+
 class EntityFieldMapping(BaseModel):
     """Mapping from template placeholder to entity field"""
     template_placeholder: str = Field(..., description="The placeholder in the template, e.g., '[select intention]'")
@@ -39,6 +46,14 @@ class EntityFieldMapping(BaseModel):
     field_name: str = Field(..., description="The field name on the entity, e.g., 'intent'")
     hardcoded_value: Optional[str] = Field(None, description="If set, use this value for the field instead of extracting from the annotation")
     value_code_mappings: Optional[Dict[str, str]] = Field(None, description="Map specific extracted values to code IDs, e.g. {'1': '1634371', '2': '1634372'}")
+    output_word_mappings: Optional[List["OutputWordMapping"]] = Field(None, description="Ordered list of regex patterns tested against LLM final_output; first match sets field value")
+
+    @field_validator('value_code_mappings', mode='before')
+    @classmethod
+    def coerce_list_values_to_str(cls, val):
+        if val is None:
+            return val
+        return {k: (str(v[0]) if isinstance(v, list) else str(v) if not isinstance(v, str) else v) for k, v in val.items()}
 
 
 class EntityMapping(BaseModel):
@@ -163,6 +178,7 @@ class AnnotationResult(BaseModel):
     icdo3_code: Optional[ICDO3CodeInfo] = None  # ICD-O-3 code information (for histology/site prompts)
     timing_breakdown: Optional[Dict[str, float]] = None  # Per-step timing breakdown
     chunk_info: Optional[ChunkInfo] = None  # Set when note was split into chunks due to context limit
+    derived_field_values: Optional[Dict[str, str]] = None  # Values resolved via output_word_mappings at annotation time
 
 
 class ProcessNoteRequest(BaseModel):
@@ -193,6 +209,35 @@ class BatchProcessResponse(BaseModel):
     results: List[ProcessNoteResponse]
     total_time_seconds: float
     timing_breakdown: Optional[Dict[str, float]] = None  # Aggregate timing breakdown
+
+
+# Sequential Processing Schemas
+class SequentialProcessRequest(BaseModel):
+    note_ids: Optional[List[str]] = None        # None = process all notes in session
+    prompt_types: Optional[List[str]] = None     # None = use session's prompt_types
+    fewshot_k: int = 5
+    use_fewshots: bool = True
+    fast_mode: bool = False
+    skip_annotated: bool = False                 # Skip notes that already have all prompt annotations
+
+
+class SequentialNoteResult(BaseModel):
+    note_id: str
+    status: str                                  # "success" | "error" | "skipped"
+    error_message: Optional[str] = None
+    annotations_count: int = 0
+    processing_time_seconds: float = 0.0
+
+
+class SequentialProcessResponse(BaseModel):
+    session_id: str
+    total_notes: int
+    processed: int
+    skipped: int
+    errors: int
+    results: List[SequentialNoteResult]
+    total_time_seconds: float
+    timing_summary: Optional[Dict[str, Any]] = None
 
 
 # Session Schemas
@@ -252,11 +297,15 @@ class SessionData(BaseModel):
     center: Optional[str] = None  # Center/group name inferred from prompt_types
     evaluation_mode: Optional[str] = "validation"  # "validation" or "evaluation"
     report_type_mapping: Optional[Dict[str, List[str]]] = None  # report_type -> list of prompt_types
+    note_prompt_overrides: Optional[Dict[str, List[str]]] = None  # note_id -> list of additional prompt_types (per-note)
+    note_prompt_exclusions: Optional[Dict[str, List[str]]] = None  # note_id -> list of excluded prompt_types from report_type_mapping
 
 
 class SessionMetadataUpdate(BaseModel):
     name: Optional[str] = None
     report_type_mapping: Optional[Dict[str, List[str]]] = None
+    note_prompt_overrides: Optional[Dict[str, List[str]]] = None
+    note_prompt_exclusions: Optional[Dict[str, List[str]]] = None
 
 
 class SessionUpdate(BaseModel):
@@ -319,6 +368,50 @@ class ICDO3CombineResponse(BaseModel):
     message: Optional[str] = None
 
 
+# Patient Diagnosis Schemas (patient-level ICD-O-3 resolution)
+class PatientDiagnosisCode(BaseModel):
+    """A single ICD-O-3 code found in a patient's annotations"""
+    code: str                # morphology_code or topography_code
+    note_id: str
+    description: Optional[str] = None
+    prompt_type: Optional[str] = None
+
+
+class PatientDiagnosisInfo(BaseModel):
+    """Diagnosis status for a single patient"""
+    patient_id: str
+    status: str              # "auto_resolved", "needs_review", "manually_resolved", "skipped"
+    review_reasons: List[str] = []
+    histology_codes: List[PatientDiagnosisCode] = []
+    topography_codes: List[PatientDiagnosisCode] = []
+    resolved_code: Optional[UnifiedICDO3Code] = None
+    csv_id: Optional[str] = None         # numeric ID column from CSV
+    resolved_at: Optional[datetime] = None
+    resolved_by: Optional[str] = None    # "auto" | "user"
+
+
+class PatientDiagnosisResolveRequest(BaseModel):
+    """Request to manually resolve a patient's diagnosis"""
+    query_code: str
+
+
+class PatientDiagnosisResolveResponse(BaseModel):
+    """Response from resolving a patient's diagnosis"""
+    success: bool
+    diagnosis: Optional[PatientDiagnosisInfo] = None
+    message: Optional[str] = None
+
+
+class DiagnosisValidationReport(BaseModel):
+    """Summary of diagnosis resolution status across all patients"""
+    patients: List[PatientDiagnosisInfo]
+    total_patients: int
+    auto_resolved: int
+    needs_review: int
+    manually_resolved: int
+    skipped: int
+
+
 # Annotation Preset Schemas
 class AnnotationPresetCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
@@ -342,4 +435,23 @@ class AnnotationPreset(BaseModel):
     report_type_mapping: Dict[str, List[str]]
     created_at: str
     updated_at: str
+
+
+# ---------------------------------------------------------------------------
+# Export validation (cardinality-based conflict detection)
+# ---------------------------------------------------------------------------
+
+class ExportConflict(BaseModel):
+    patient_id: str
+    core_variable: str
+    date_ref: Optional[str] = None  # None for non-repeatable entities
+    conflicting_values: List[str]
+    conflict_type: str  # "non_repeatable" | "repeatable_same_date"
+
+
+class ExportValidationResponse(BaseModel):
+    valid: bool
+    conflicts: List[ExportConflict] = []
+    row_count: int = 0
+    deduplicated_count: int = 0
 
