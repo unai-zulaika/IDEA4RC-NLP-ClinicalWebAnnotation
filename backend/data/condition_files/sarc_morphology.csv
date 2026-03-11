@@ -1,0 +1,330 @@
+﻿N seq,Group,Label,Behaviour,WHO 5th/ICD-O-3.2 Code,WHO 5th/ICD-O-3.2 Label,Si/No,behaviour
+1,,,/0,8670/0,Steroid cell tumour NOS,No,
+2,,,/3,8670/3,"Steroid cell tumour, malignant",No,
+3,,,/3,8693/3,Cauda equina neuroendocrine tumour (previously paraganglioma),No,
+4,,,/3,8693/3,Extra-adrenal paraganglioma,No,
+,"Malignant glomus tumor (8710, 8711)",Glomangiosarcoma (8710) ,/3,8710/3,Glomangiosarcoma,,
+5,"Malignant glomus tumor (8710, 8711)",Malignant glomus tumor (8711),/0,8711/0,Glomus tumour NOS,Si,Benign
+6,"Malignant glomus tumor (8710, 8711)",Malignant glomus tumor (8711),/0,8711/0,          Classic glomus tumour†,Si,Benign
+7,"Malignant glomus tumor (8710, 8711)",Malignant glomus tumor (8711),/0,8711/0,          Symplastic glomus tumour†,Si,Benign
+8,"Malignant glomus tumor (8710, 8711)",Malignant glomus tumor (8711),/1,8711/1,Glomangiomatosis,Si,Benign
+9,"Malignant glomus tumor (8710, 8711)",Malignant glomus tumor (8711),/1,8711/1,Glomus tumour of uncertain malignant potential,Si,Borderline
+10,"Malignant glomus tumor (8710, 8711)",Malignant glomus tumor (8711),/3,8711/3,"Glomus tumour, malignant",Si,Malignant
+11,"Malignant glomus tumor (8710, 8711)",Malignant glomus tumor (8711),,,     Glomuvenous malformation,No,
+12,PEComa (8714),PEComa (8714),/0,8714/0,"Perivascular epithelioid tumour, benign",Si,Benign
+13,PEComa (8714),PEComa (8714),/0,8714/0,"PEComa, benign",Si,Benign
+14,PEComa (8714),PEComa (8714),,,Sclerosing PEComa,Si,Benign
+15,PEComa (8714),PEComa (8714),/3,8714/3,"Perivascular epithelioid tumour, malignant",Si,Malignant
+16,PEComa (8714),PEComa (8714),/3,8714/3,"PEComa, malignant",Si,Malignant
+,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)","Sarcoma, NOS (8800)",/0,8800/0,"Soft tissue tumor, benign",,
+,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)","Sarcoma, NOS (8800)",/3,8800/3,"Sarcoma, NOS",,
+17,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Spindle cell sarcoma (8801),/3,8801/3,"Spindle cell sarcoma, undifferentiated",Si,Malignant
+18,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Giant cell sarcoma (8802) ,/3,8802/3,Pleomorphic sarcoma,Si,Malignant
+19,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Giant cell sarcoma (8802) ,/3,8802/3,"Pleomorphic sarcoma, undifferentiated",Si,Malignant
+20,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Giant cell sarcoma (8802) ,/3,8802/3,Anaplastic sarcoma of the kidney†,boh!,
+21,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Giant cell sarcoma (8802) ,/1,8802/1,Pleomorphic hyalinizing angiectatic tumour,Si,Borderline
+22,Round cell sarcoma/Ewing-like sarcoma (8803),Round cell sarcoma/Ewing-like sarcoma (8803),/3,8803/3,"Round cell sarcoma, undifferentiated",Si,Malignant
+23,Epithelioid sarcoma (8804) ,Epithelioid sarcoma (8804) ,/3,8804/3,Epithelioid sarcoma,Si,Malignant
+24,Epithelioid sarcoma (8804) ,Epithelioid sarcoma (8804) ,/3,8804/3,Proximal or large cell epithelioid sarcoma,Si,Malignant
+25,Epithelioid sarcoma (8804) ,Epithelioid sarcoma (8804) ,/3,8804/3,Classic epithelioid sarcoma,Si,Malignant
+26,Epithelioid sarcoma (8804) ,Epithelioid sarcoma (8804) ,/3,8804/3,Undifferentiated epithelioid sarcoma,Si,Malignant
+27,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Undifferentiated sarcoma (8805) ,/3,8805/3,Undifferentiated sarcoma,Si,Malignant
+28,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Undifferentiated sarcoma (8805) ,/3,8805/3,"Undifferentiated sarcoma, NOS",Si,Malignant
+29,Desmoplastic small round cell tumor (8806),Desmoplastic small round cell tumor (8806),/3,8806/3,Desmoplastic small round cell tumour,Si,Malignant
+30,"Fibrosarcoma (8810, 8812, 8813) ","Fibrosarcoma, NOS (8810)",/0,8810/0,"Fibroma, NOS",Si,Benign
+31,"Fibrosarcoma (8810, 8812, 8813) ","Fibrosarcoma, NOS (8810)",/0,8810/0,Desmoplastic fibroblastoma,Si,Benign
+32,"Fibrosarcoma (8810, 8812, 8813) ","Fibrosarcoma, NOS (8810)",/0,8810/0,Nuchal fibroma,Si,Benign
+33,"Fibrosarcoma (8810, 8812, 8813) ","Fibrosarcoma, NOS (8810)",/0,8810/0,EWSR1::SMAD3-rearranged fibroblastic tumour†,Si,Benign
+34,"Fibrosarcoma (8810, 8812, 8813) ","Fibrosarcoma, NOS (8810)",/0,8810/0,Gardner fibroma,Si,Benign
+35,"Fibrosarcoma (8810, 8812, 8813) ","Fibrosarcoma, NOS (8810)",/1,8810/1,Cellular fibroma,Si,Benign
+36,"Fibrosarcoma (8810, 8812, 8813) ","Fibrosarcoma, NOS (8810)",/1,8810/1,Superficial CD34-positive fibroblastic tumour,Si,Benign
+37,"Fibrosarcoma (8810, 8812, 8813) ","Fibrosarcoma, NOS (8810)",/3,8810/3,Fibrosarcoma NOS,Si,Malignant
+38,Myxofibrosarcoma (8811),Myxofibrosarcoma (8811),/0,8811/0,Acral fibromyxoma,Si,Benign
+39,Myxofibrosarcoma (8811),Myxofibrosarcoma (8811),/0,8811/0,Plexiform fibromyxoma,Si,Benign
+40,Myxofibrosarcoma (8811),Myxofibrosarcoma (8811),/1,8811/1,Myxoinflammatory fibroblastic sarcoma,Si,Borderline
+41,Myxofibrosarcoma (8811),Myxofibrosarcoma (8811),/1,8811/1,Haemosiderotic fibrolipomatous tumour,Si,Borderline
+42,Myxofibrosarcoma (8811),Myxofibrosarcoma (8811),/3,8811/3,Myxofibrosarcoma,Si,Malignant
+43,Myxofibrosarcoma (8811),Myxofibrosarcoma (8811),/3,8811/3,Epithelioid myxofibrosarcoma,Si,Malignant
+,"Fibrosarcoma (8810, 8812, 8813)",Periosteal fibrosarcoma (8812),/0,8812/0,Periosteal fibroma,,
+,"Fibrosarcoma (8810, 8812, 8813)",Periosteal fibrosarcoma (8812),/3,8812/3,Periosteal fibrosarcoma,,
+,"Fibrosarcoma (8810, 8812, 8813)",Fascial fibrosarcoma (8813),/0,8813/0,Fibroma of tendon sheath,No,
+,"Fibrosarcoma (8810, 8812, 8813)",Fascial fibrosarcoma (8813),/1,8813/1,Palmar/plantar-type fibromatosis,Si,Borderline
+,"Fibrosarcoma (8810, 8812, 8813)",Fascial fibrosarcoma (8813),/3,8813/3,Fascial fibrosarcoma,,
+44,Infantile fibrosarcoma (8814),Infantile fibrosarcoma (8814),/3,8814/3,Infantile fibrosarcoma,Si,Malignant
+45,"Solitary fibrous tumour (8815, 9150) ",Solitary fibrous tumors (8815),/0,8815/0,"Solitary fibrous tumour, benign",Si,Benign
+46,"Solitary fibrous tumour (8815, 9150) ",Solitary fibrous tumors (8815),/1,8815/1,Solitary fibrous tumour NOS,Si,Borderline
+47,"Solitary fibrous tumour (8815, 9150) ",Solitary fibrous tumors (8815),/1,8815/1,Solitary fibrous tumour,Si,Borderline
+48,"Solitary fibrous tumour (8815, 9150) ",Solitary fibrous tumors (8815),/1,8815/1,Lipomatous solitary fibrous tumour,Si,Borderline
+49,"Solitary fibrous tumour (8815, 9150) ",Solitary fibrous tumors (8815),/1,8815/1,Dedifferentiated (anaplastic) solitary fibrous tumour,Si,Malignant
+50,"Solitary fibrous tumour (8815, 9150) ",Solitary fibrous tumors (8815),/1,8851/1,Lipofibromatosis,Si,Borderline
+51,"Solitary fibrous tumour (8815, 9150) ",Solitary fibrous tumors (8815),,,Inclusion body infantile digital fibromatosis,si,Benign
+52,"Solitary fibrous tumour (8815, 9150) ",Solitary fibrous tumors (8815),/3,8815/3,"Solitary fibrous tumour, malignant",Si,Malignant
+53,"Solitary fibrous tumour (8815, 9150) ",Solitary fibrous tumors (8815),,,Lipomatous solitary fibrous tumour,Si,Borderline
+54,Low-grade myofibroblastic sarcoma (8825),Low-grade myofibroblastic sarcoma (8825),/0,8825/0,Myofibroblastoma,Si,Benign
+55,Low-grade myofibroblastic sarcoma (8825),Low-grade myofibroblastic sarcoma (8825),/1,8825/1,Inflammatory myofibroblastic tumour,Si,Borderline
+56,Low-grade myofibroblastic sarcoma (8825),Low-grade myofibroblastic sarcoma (8825),/1,8825/1,Epithelioid inflammatory myofibroblastic sarcoma,Si,Borderline
+57,Low-grade myofibroblastic sarcoma (8825),Low-grade myofibroblastic sarcoma (8825),/3,8825/3,Myofibroblastic sarcoma,Si,Malignant
+58,Low-grade myofibroblastic sarcoma (8825),Low-grade myofibroblastic sarcoma (8825),/3,8825/3,Low-grade myofibroblastic sarcoma,Si,Malignant
+,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Malignant Fibrous histiocytoma (MFH) (8830),/0,8830/0,Fibrous histiocytoma,Si,Benigno
+,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Malignant Fibrous histiocytoma (MFH) (8830),/0,8830/0,          Cellular fibrous histiocytoma†,Si,Benigno
+,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Malignant Fibrous histiocytoma (MFH) (8830),/0,8830/0,          Aneurysmal fibrous histiocytoma†,Si,Benigno
+,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Malignant Fibrous histiocytoma (MFH) (8830),/0,8830/0,Epithelioid fibrous histiocytoma,Si,Benigno
+,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Malignant Fibrous histiocytoma (MFH) (8830),/1,8830/1,Atypical fibrous histiocytoma,,
+,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Malignant Fibrous histiocytoma (MFH) (8830),/1,8830/1,Atypical fibroxanthoma,Si,Borderline
+,"Undifferentiated/unclassified sarcoma (8800-8802, 8805, 8830)",Malignant Fibrous histiocytoma (MFH) (8830),/3,8830/3,Malignant fibrous histiocytoma,,
+,Dermatofibrosarcoma protuberans (8832-8833),"Dermatofibrosarcoma, NOS (8832) ",/0,8832/0,"Dermatofibroma, NOS",,
+59,Dermatofibrosarcoma protuberans (8832-8833),"Dermatofibrosarcoma, NOS (8832) ",/1,8832/1,Dermatofibrosarcoma protuberans NOS,Si,Borderline
+60,Dermatofibrosarcoma protuberans (8832-8833),"Dermatofibrosarcoma, NOS (8832) ",/1,8832/1,Myxoid dermatofibrosarcoma protuberans,Si,Borderline
+61,Dermatofibrosarcoma protuberans (8832-8833),"Dermatofibrosarcoma, NOS (8832) ",/1,8832/1,Dermatofibrosarcoma protuberans with myoid differentiation,Si,Borderline
+62,Dermatofibrosarcoma protuberans (8832-8833),"Dermatofibrosarcoma, NOS (8832) ",/1,8832/1,Plaque-like dermatofibrosarcoma protuberans,Si,Borderline
+63,Dermatofibrosarcoma protuberans (8832-8833),"Dermatofibrosarcoma, NOS (8832) ",/3,8832/3,"Dermatofibrosarcoma protuberans, fibrosarcomatous",Si,Malignant
+64,Dermatofibrosarcoma protuberans (8832-8833),"Dermatofibrosarcoma, NOS (8832) ",,,NTRK-rearranged spindle cell neoplasm (emerging),Si,Malignant
+65,Dermatofibrosarcoma protuberans (8832-8833),"Dermatofibrosarcoma, NOS (8832) ",,,Paediatric NTRK-rearranged spindle cell neoplasm (provisional entity),Si,Malignant
+,Dermatofibrosarcoma protuberans (8832-8833),Pigmented dermatofibrosarcoma protuberans (8833),/1,8833/1,Pigmented dermatofibrosarcoma protuberans,,
+66,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,/0,8840/0,Sinonasal tract myxoma,Si,Benign
+67,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,  ,      ,     Nasal dermoid cyst,Si,Benign
+68,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,  ,      ,     Hairy polyp,Si,Benign
+69,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,  ,      ,     Nasal chondromesenchymal hamartoma,Si,Benign
+70,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,/0,8840/0,Myxoma NOS,Si,Benign
+71,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,/0,8840/0,Intramuscular/juxta-articular myxoma†,Si,Benign
+72,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,,,Cellular myxoma,Si,Benign
+73,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,/3,8840/3,Low-grade fibromyxoid sarcoma,Si,Benign
+74,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,Low-grade fibromyxoid sarcoma/sclerosing epithelioid fibrosarcoma (8840) ,/3,8840/3,Sclerosing epithelioid fibrosarcoma,Si,Malignant
+75,"Ossifying fibromyxoid tumour, malignant (8842)","Ossifying fibromyxoid tumour, malignant (8842)",/0,8842/0,Ossifying fibromyxoid tumour NOS,Si,Borderline
+76,"Ossifying fibromyxoid tumour, malignant (8842)","Ossifying fibromyxoid tumour, malignant (8842)",/3,8842/3,"Ossifying fibromyxoid tumour, malignant",Si,Malignant
+77,"Ossifying fibromyxoid tumour, malignant (8842)","Ossifying fibromyxoid tumour, malignant (8842)",/3,8842/3,Pulmonary myxoid sarcoma with EWSR1-CREB1 fusion,Si,Malignant
+78,"Liposarcoma, NOS/atypical lipomatous tumour (8850)","Liposarcoma, NOS/atypical lipomatous tumour (8850)",/0,8850/0,Lipoma NOS,Si,Benign
+79,"Liposarcoma, NOS/atypical lipomatous tumour (8850)","Liposarcoma, NOS/atypical lipomatous tumour (8850)",/0,8850/0,Thymolipoma,Si,Benign
+80,"Liposarcoma, NOS/atypical lipomatous tumour (8850)","Liposarcoma, NOS/atypical lipomatous tumour (8850)",/1,8850/1,Atypical lipomatous tumour,Si,Borderline
+81,"Liposarcoma, NOS/atypical lipomatous tumour (8850)","Liposarcoma, NOS/atypical lipomatous tumour (8850)",/3,8850/3,"Liposarcoma, NOS",Si,Malignant
+82,"Liposarcoma, NOS/atypical lipomatous tumour (8850)","Liposarcoma, NOS/atypical lipomatous tumour (8850)",,,Pseudoangiomatous stromal hyperplasia,No,
+,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)","Liposarcoma, well differentiated (8851)",/0,8851/0,Fibrolipoma,,
+,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)","Liposarcoma, well differentiated (8851)",/1,8851/1,Lipofibromatosis,,
+83,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)","Liposarcoma, well differentiated (8851)",/3,8851/3,"Liposarcoma, well-differentiated, NOS",Si,Malignant
+84,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)","Liposarcoma, well differentiated (8851)",/3,8851/3,"Liposarcoma, well differentiated",Si,Malignant
+85,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)","Liposarcoma, well differentiated (8851)",/3,8851/3,Lipoma-like liposarcoma,Si,Malignant
+86,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)","Liposarcoma, well differentiated (8851)",/3,8851/3,Inflammatory liposarcoma,Si,Malignant
+87,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)","Liposarcoma, well differentiated (8851)",/3,8851/3,Sclerosing liposarcoma,Si,Malignant
+88,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)","Liposarcoma, well differentiated (8851)",/1,8851/1,Lipofibromatosis,Si,Borderline
+,Myxoid liposarcoma (8852-8853),Myxoid liposarcoma (8852),/0,8852/0,Fibromyxolipoma,,
+89,Myxoid liposarcoma (8852-8853),Myxoid liposarcoma (8852),/3,8852/3,Myxoid liposarcoma,Si,Malignant
+,Myxoid liposarcoma (8852-8853),Round cell liposarcoma (8853),/3,8853/3,Round cell liposarcoma,,
+90,Pleomorphic liposarcoma (8854),Pleomorphic liposarcoma (8854),/3,8854/3,Pleomorphic liposarcoma,Si,Malignant
+91,,,,,Epithelioid liposarcoma,Si,Malignant
+92,,,,,Postoperative spindle cell nodule,No,
+93,,,,,Fibroepithelial stromal polyp,No,
+,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Mixed liposarcoma (8855) ,/3,8855/3,Mixed liposarcoma,,
+,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),/0,8857/0,Spindle cell lipoma,Si,Benigno
+,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),/0,8857/0,Spindle cell / pleomorphic lipoma,Si,Benigno
+,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),,,"    Intracranial mesenchymal tumour, FET::CREB fusion–positive (provisional entity)",Si,Boh!
+,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),/0,8857/0,Atypical spindle cell / pleomorphic lipomatous tumour,Si,Benigno
+,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),/3,8857/3,Fibroblastic liposarcoma,,
+94,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Dedifferentiated liposarcoma (8858),/3,8858/3,Dedifferentiated liposarcoma,Si,Malignant
+95,,,/3,8859/3,Myxoid pleomorphic liposarcoma,Si,Malignant
+96,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/0,8890/0,Myolipoma,Si,Benign
+97,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/0,8890/0,Leiomyoma NOS,Si,Benign
+98,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/0,8890/0,Lipoleiomyoma,Si,Benign
+99,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/0,8890/0,"Leiomyoma, apoplectic",Si,Benign
+100,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/0,8890/0,"Leiomyoma, hydropic",Si,Benign
+101,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/0,8890/0,Dissecting leiomyoma,si,Benign
+102,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",,,Cutaneous (pilar) leiomyoma,Si,Benign
+103,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",,,Leiomyoma of the nipple/areola (muscularis mamillae and areolae),Si,Benign
+104,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",,,Leiomyoma of the breast parenchyma,Si,Benign
+105,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",,,Seedling leiomyomas,No,
+106,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/1,8890/1,"Leiomyomatosis, peritonealis disseminata",Si,Borderline
+107,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/1,8890/1,Intravenous leiomyomatosis,Si,Borderline
+108,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/1,8890/1,Leiomyomatosis NOS,Si,Borderline
+109,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/3,8890/3,Leiomyosarcoma NOS,Si,Malignant
+110,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/3,8890/3,                          Superficial leiomyosarcoma,Si,Malignant
+111,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/3,8890/3,                          Deep leiomyosarcoma,Si,Malignant
+112,"Leiomyosarcoma (8890,8891,8895-8896)",Epitheliod leiomyosarcoma (8891),/0,8891/0,Epithelioid leiomyoma,Si,Benign
+113,"Leiomyosarcoma (8890,8891,8895-8896)",Epitheliod leiomyosarcoma (8891),/1,8891/1,Epithelioid smooth muscle tumour of uncertain malignant potential,Si,Borderline
+114,"Leiomyosarcoma (8890,8891,8895-8896)",Epitheliod leiomyosarcoma (8891),  ,      ,Spindle leiomyosarcoma,Si,Malignant
+115,"Leiomyosarcoma (8890,8891,8895-8896)",Epitheliod leiomyosarcoma (8891),/3,8891/3,Epithelioid leiomyosarcoma,Si,Malignant
+,"Leiomyosarcoma (8890,8891,8895-8896)",Myosarcoma (8895),/0,8895/0,Myoma,,
+,"Leiomyosarcoma (8890,8891,8895-8896)",Myosarcoma (8895),/3,8895/3,Myosarcoma,,
+116,"Leiomyosarcoma (8890,8891,8895-8896)",Myxoid leiomyosarcoma (8896),/0,8896/0,Myxoid leiomyoma,Si,Benign
+117,"Leiomyosarcoma (8890,8891,8895-8896)",Myxoid leiomyosarcoma (8896),/1,8896/1, Myxoid smooth muscle tumour of uncertain malignant potential,Si,Borderline
+118,"Leiomyosarcoma (8890,8891,8895-8896)",Myxoid leiomyosarcoma (8896),,,Spindle smooth muscle tumour of uncertain malignant potential,Si,Borderline
+119,"Leiomyosarcoma (8890,8891,8895-8896)",Myxoid leiomyosarcoma (8896),/3,8896/3,Myxoid leiomyosarcoma,Si,Malignant
+120,,,/0,8900/0,Rhabdomyoma NOS,Si,Benign
+121,,,,,     Rhabdomyoma,Si,Benign
+122,,,/0,8900/0,Cardiac rhabdomyoma,Si,Benign
+123,,,/3,8900/3,"Rhabdomyosarcoma, NOS",Si,Malignant
+124,Pleomorphic rhabdomyosarcoma (8901),Pleomorphic rhabdomyosarcoma (8901),/3,8901/3,Pleomorphic rhabdomyosarcoma NOS,Si,Malignant
+125,Pleomorphic rhabdomyosarcoma (8901),Pleomorphic rhabdomyosarcoma (8901),/3,8901/3,Pleomorphic rhabdomyosarcoma,Si,Malignant
+126,Pleomorphic rhabdomyosarcoma (8901),Pleomorphic rhabdomyosarcoma (8901),/3,8901/3,"Rhabdomyosarcoma, pleomorphic-type",Si,Malignant
+127,"Pediatric rhabdomyosarcoma (8910, 8920)",Embryonal rhabdomyosarcoma (8910),/3,8910/3,Embryonal rhabdomyosarcoma NOS,Si,Malignant
+128,"Pediatric rhabdomyosarcoma (8910, 8920)",Embryonal rhabdomyosarcoma (8910),/3,8910/3,Embryonal rhabdomyosarcoma,Si,Malignant
+129,"Pediatric rhabdomyosarcoma (8910, 8920)",Embryonal rhabdomyosarcoma (8910),/3,8910/3,"Embryonal rhabdomyosarcoma, anaplastic",Si,Malignant
+130,,,/3,8912/3,Spindle cell rhabdomyosarcoma,Si,Malignant
+131,,,/3,8912/3,Spindle cell / sclerosing rhabdomyosarcoma,Si,Malignant
+132,,,/3,8912/3,"Rhabdomyosarcoma, spindle cell / sclerosing type",Si,Malignant
+133,,,,,Congenital spindle cell rhabdomyosarcoma with VGLL2/NCOA2/CITED2 rearrangements,Si,Malignant
+134,,,,,MYOD1-mutant spindle cell / sclerosing rhabdomyosarcoma,Si,Malignant
+135,,,,,lntraosseous spindle cell rhabdomyosarcoma (with TFCP2/NCOA2 rearrangements),Si,Malignant
+136,"Pediatric rhabdomyosarcoma (8910, 8920)",Alveolar rhabdomyosarcoma (8920),/3,8920/3,Alveolar rhabdomyosarcoma,Si,Malignant
+137,,,/3,8921/3,Ectomesenchymoma,Si,Malignant
+138,Endometrial stromal sarcoma (8930),Endometrial stromal sarcoma (8930),/0,8930/0,Endometrial stromal nodule,Si,Benign
+139,Endometrial stromal sarcoma (8930),Endometrial stromal sarcoma (8930),/3,8930/3,"Endometrioid stromal sarcoma, high grade",Si,Malignant
+140,"Endometrial stromal sarcoma, low grade (8931)","Endometrial stromal sarcoma, low grade (8931)",/3,8931/3,"Endometrial stromal sarcoma, low grade",Si,Malignant
+141,,,/3,8933/3,Adenosarcoma,Si,Malignant
+142,,,/1,8935/1,Stromal tumour of uncertain malignant potential,Si,Borderline
+143,,,/3,8935/3,Stromal sarcoma,Si,Malignant
+144,,,/3,8936/3,Gastrointestinal stromal tumour,Si,Malignant
+145,,,/3,8936/3,Succinate dehydrogenase-deficient gastrointestinal stromal tumour,Si,Malignant
+146,,,/0,8940/0,Pleomorphic adenoma,No,Benign
+147,,,/0,8940/0,Mixed tumour NOS,No,Benign
+148,,,/0,8940/0,          Mixed tumour,No,Benign
+149,,,/3,8940/3,"Mixed tumour, malignant, NOS",No,Malignant
+150,Extra-renal malignant rhabdoid tumor (8963),Extra-renal malignant rhabdoid tumor (8963),/3,8963/3,Rhabdoid tumour NOS,Si,Malignant
+151,Extra-renal malignant rhabdoid tumor (8963),Extra-renal malignant rhabdoid tumor (8963),/3,8963/3,Malignant rhabdoid tumour of the kidney,si,Malignant
+152,Extra-renal malignant rhabdoid tumor (8963),Extra-renal malignant rhabdoid tumor (8963),/3,8963/3,Extrarenal rhabdoid tumour,Si,Malignant
+153,,,/3,8964/3,Clear cell sarcoma of kidney,Si,Malignant
+154,,,/3,8970/3,          Mixed epithelial and mesenchymal hepatoblastoma without teratoid features†,Si,Malignant
+155,,,/3,8970/3,          Mixed epithelial and mesenchymal hepatoblastoma with teratoid features†,Si,Malignant
+156,,,/3,8973/3,Pleuropulmonary blastoma,boh!,
+157,,,/3,8980/3,Carcinosarcoma NOS,No,Malignant
+158,,,  ,      ,     Myoepithelial tumours of soft tissue,Si,Borderline
+159,Malignant myoepithelioma/myoepithelial carcinoma (8982),Malignant myoepithelioma/myoepithelial carcinoma (8982),/0,8982/0,          Myoepithelioma,Si,Borderline
+160,Malignant myoepithelioma/myoepithelial carcinoma (8982),Malignant myoepithelioma/myoepithelial carcinoma (8982),/0,8982/0,Myoepithelioma NOS,Si,Borderline
+161,Malignant myoepithelioma/myoepithelial carcinoma (8982),Malignant myoepithelioma/myoepithelial carcinoma (8982),/3,8982/3,Myoepithelial carcinoma,Si,Malignant
+162,Phosphaturic mesenchymal tumor (8990),Phosphaturic mesenchymal tumor (8990),/0,8990/0,Phosphaturic mesenchymal tumour NOS,Si,Benign
+,Phosphaturic mesenchymal tumor (8990),Phosphaturic mesenchymal tumor (8990),/1,8990/1,"Mesenchymoma, NOS",,
+163,Phosphaturic mesenchymal tumor (8990),Phosphaturic mesenchymal tumor (8990),/3,8990/3,"Phosphaturic mesenchymal tumour, malignant",Si,Malignant
+164,,,/3,8991/3,Embryonal sarcoma,Si,Malignant
+,"Phyllodes tumour, malignant (9020)","Phyllodes tumour, malignant (9020)",/1,9020/1, Phyllodes tumour NOS,Si,Borderline
+,"Phyllodes tumour, malignant (9020)","Phyllodes tumour, malignant (9020)",/0,9020/0," Phyllodes tumour, benign",Si,Benign
+,"Phyllodes tumour, malignant (9020)","Phyllodes tumour, malignant (9020)",/1,9020/1,"Phyllodes tumour, borderline",Si,Borderline
+,"Phyllodes tumour, malignant (9020)","Phyllodes tumour, malignant (9020)",/3,9020/3," Phyllodes tumour, malignant",Si,Malignant
+,Synovial sarcoma (9040-9043),"Synovial sarcoma, NOS (9040)",/0,9040/0,"Synovioma, benign",,
+165,Synovial sarcoma (9040-9043),"Synovial sarcoma, NOS (9040)",/3,9040/3,Synovial sarcoma NOS,Si,Malignant
+166,Synovial sarcoma (9040-9043),"Synovial sarcoma, NOS (9040)",/3,9040/3,"Synovial sarcoma, poorly differentiated",Si,Malignant
+167,Synovial sarcoma (9040-9043),Spindle cell sinovial sarcoma (9041),/3,9041/3,"Synovial sarcoma, spindle cell",Si,Malignant
+168,Synovial sarcoma (9040-9043),Spindle cell sinovial sarcoma (9041),/3,9041/3,"                          Synovial sarcoma, monophasic",Si,Malignant
+169,Synovial sarcoma (9040-9043),Epithelioid sinovial sarcoma (9042),/3,9042/3,"Synovial sarcoma, epithelioid cell",Si,Malignant
+170,Synovial sarcoma (9040-9043),Biphasic sinovial sarcoma (9043),/3,9043/3,"Synovial sarcoma, biphasic",Si,Malignant
+171,Clear cell sarcoma (9044),Clear cell sarcoma (9044),/3,9044/3,Clear cell sarcoma NOS,Si,Malignant
+172,Clear cell sarcoma (9044),Clear cell sarcoma (9044),/3,9044/3,Clear cell sarcoma,Si,Malignant
+,,,/3,9045/3,biphenotypic sinonasal sarcoma,Si,Malignant
+173,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),/0,9120/0,Haemangioma NOS,Si,Benign
+174,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),/0,9120/0,                          Anastomosing haemangioma,Si,Benign
+175,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),,,Dieulafoy lesion,No,
+176,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),,,Gastric antral vascular ectasia (GAVE),No,
+177,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),,,Angiodysplasia,No,
+178,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),,,Anastomosing haemangioma,si,Benign
+179,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),,,Infantile haemangioma,Si,Benign
+180,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),,,Diffuse hepatic haemangiomatosis,No,
+181,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),,,Hepatic small vessel neoplasm,No,
+182,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),/0,9120/0,Angiomatosis,si,Benign
+183,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),,,Usual angiomatosis,Si,Benign
+184,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),,,Capillary angiomatosis,Si,Benign
+185,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),/3,9120/3,Angiosarcoma,Si,Malignant
+186,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),/3,9120/3,Postradiation angiosarcoma,Si,Malignant
+187,"Angiosarcoma (9120, 9170)",Hemangiosarcoma (9120),/3,9120/3,                          Epithelioid angiosarcoma,Si,Malignant
+,"Hemangioendothelioma (9130, 9133)","Haemangioendothelioma, malignant (composito, kaposiform, retiform) (9130)",/0,9130/0,"Hemangioendothelioma, benign",,
+,"Hemangioendothelioma (9130, 9133)","Haemangioendothelioma, malignant (composito, kaposiform, retiform) (9130)",/1,9130/1,Kaposiform haemangioendothelioma,Si,Borderline
+,"Hemangioendothelioma (9130, 9133)","Haemangioendothelioma, malignant (composito, kaposiform, retiform) (9130)",/3,9130/3,"Hemangioendothelioma, malignant",,
+188,"Hemangioendothelioma (9130, 9133)","Epithelioid hemangioendothelioma, malignant (9133)",/3,9133/3,Epithelioid haemangioendothelioma NOS,Si,Malignant
+189,"Hemangioendothelioma (9130, 9133)","Epithelioid hemangioendothelioma, malignant (9133)",/3,9133/3,Epithelioid haemangioendothelioma,Si,Malignant
+190,"Hemangioendothelioma (9130, 9133)","Epithelioid hemangioendothelioma, malignant (9133)",/3,9133/3,Epithelioid haemangioendothelioma with WWTR1-CAMTA1 fusion,Si,Malignant
+191,"Hemangioendothelioma (9130, 9133)","Epithelioid hemangioendothelioma, malignant (9133)",/3,9133/3,Epithelioid haemangioendothelioma with YAP1-TFE3 fusion,Si,Malignant
+192,Intimal sarcoma (9137),Intimal sarcoma (9137),/0,9137/0,Myointimoma,boh!,
+193,Intimal sarcoma (9137),Intimal sarcoma (9137),/3,9137/3,Intimal sarcoma,Si,Malignant
+194,,,/3,9140/3,Kaposi sarcoma,NO,Malignant
+195,,,,,Classic indolent Kaposi sarcoma,NO,Malignant
+196,,,/3,9140/3,Endemic African Kaposi sarcoma,NO,Malignant
+197,,,,,AIDS-associated Kaposi sarcoma,NO,Malignant
+198,,,,,Iatrogenic Kaposi sarcoma,NO,Malignant
+199,,,/3,9140/3,          Epidemic Kaposi sarcoma,NO,Malignant
+200,,,/3,9140/3,          Iatrogenic/transplantation-related Kaposi sarcoma,NO,Malignant
+201,,,/3,9140/3,          Sporadic/immunodeficiency-related Kaposi sarcoma,NO,Malignant
+202,"Angiosarcoma (9120, 9170)",Lymphangiosarcoma (9170),/0,9170/0,Lymphangioma NOS,Si,Benign
+203,"Angiosarcoma (9120, 9170)",Lymphangiosarcoma (9170),,,               Common (cystic) lymphatic malformation,Si,Benign
+204,"Angiosarcoma (9120, 9170)",Lymphangiosarcoma (9170),,,               Generalized lymphatic anomaly,Si,Benign
+205,"Angiosarcoma (9120, 9170)",Lymphangiosarcoma (9170),,,"               Central conduction lymphatic anomaly, also known as channel-type lymphatic malformati",Si,Benign
+206,"Angiosarcoma (9120, 9170)",Lymphangiosarcoma (9170),,,               Kaposiform lymphangiomatosis,Si,Benign
+207,"Angiosarcoma (9120, 9170)",Lymphangiosarcoma (9170),,,               Primary lymphoedema,Si,Benign
+208,"Angiosarcoma (9120, 9170)",Lymphangiosarcoma (9170),,,Lymphangiomatosis,Si,Benign
+209,"Angiosarcoma (9120, 9170)",Lymphangiosarcoma (9170),/3,9170/3,Diffuse lymphangiomatosis†,Si,Boh!
+210,,,/3,9174/3,Lymphangioleiomyomatosis,Si,Borderline
+211,"Extra-skeletal osteosarcoma (9180-9183,9185)",Extra-skeletal osteosarcoma (9180),/0,9180/0,Fibro-osseous tumour of digits,Si,Benign
+212,"Extra-skeletal osteosarcoma (9180-9183,9185)",Extra-skeletal osteosarcoma (9180),,,     Fibrodysplasia ossificans progressiva,NO,
+213,"Extra-skeletal osteosarcoma (9180-9183,9185)",Extra-skeletal osteosarcoma (9180),,,Radiation-associated sarcoma,Si,Malignant
+,"Extra-skeletal osteosarcoma (9180-9183,9185)",Extra-skeletal osteosarcoma (9180),/3,9180/3,"Osteosarcoma, extraskeletal",Si,Malignant
+,"Extra-skeletal osteosarcoma (9180-9183,9185)",Chondroblastic osteosarcoma (9181),/3,9181/3,Chondroblastic osteosarcoma,,
+,"Extra-skeletal osteosarcoma (9180-9183,9185)",Fibroblastic osteosarcoma (9182),/3,9182/3,Fibroblastic osteosarcoma,,
+,"Extra-skeletal osteosarcoma (9180-9183,9185)",Telangectasic osteosarcoma (9183),/3,9183/3,Telangiectatic osteosarcoma,,
+,"Extra-skeletal osteosarcoma (9180-9183,9185)",Small cell/round cell osteosarcoma (9185),/3,9185/3,Small cell osteosarcoma,,
+214,,,/0,9220/0,Chondroma,Si,Benign
+215,,,/0,9220/0,Chondroma NOS,Si,Benign
+216,,,,,Chondroblastoma-like soft tissue chondroma,Si,Benign
+217,,,/1,9220/1,Enchondromatosis†,Si,Borderline
+218,,,/1,9220/1,          Enchondromatosis in Ollier disease†,Si,Borderline
+219,,,/1,9220/1,          Enchondromatosis in Maffucci syndrome†,Si,Borderline
+220,Extraskeletal myxoid chondrosarcoma/chordoid sarcoma (9231),Extraskeletal myxoid chondrosarcoma/chordoid sarcoma (9231),/3,9231/3,Extraskeletal myxoid chondrosarcoma,Si,Malignant
+,Extraskeletal mesenchymal chondrosarcoma (9240),Extraskeletal mesenchymal chondrosarcoma (9240),/3,9240/3,Mesenchymal chondrosarcoma,,
+221,"Malignant tenosynovial giant cell tumor/giant cell tumor of tendon sheath, malignant (9252)","Malignant tenosynovial giant cell tumor/giant cell tumor of tendon sheath, malignant (9252)",/0,9252/0,Tenosynovial giant cell tumour NOS,Si,Benign
+222,"Malignant tenosynovial giant cell tumor/giant cell tumor of tendon sheath, malignant (9252)","Malignant tenosynovial giant cell tumor/giant cell tumor of tendon sheath, malignant (9252)",/1,9252/1,"Tenosynovial giant cell tumour, diffuse",Si,Borderline
+223,"Malignant tenosynovial giant cell tumor/giant cell tumor of tendon sheath, malignant (9252)","Malignant tenosynovial giant cell tumor/giant cell tumor of tendon sheath, malignant (9252)",/3,9252/3,Malignant tenosynovial giant cell tumour,Si,Malignant
+224,,,/0,9261/0,Osteofibrous dysplasia,NO,Benign
+225,,,/1,9261/1,Osteofibrous dysplasia-like adamantinoma,Sì,Borderline
+226,,,/3,9261/3,Classic adamantinoma (malignant),Si,Malignant
+227,"Extra-skeletal Ewing sarcoma (9260, 9364, 9365, 9503)",Extra-skeletal Ewing sarcoma (9364),/3,9364/3,Ewing sarcoma,Si,Malignant
+228,"Extra-skeletal Ewing sarcoma (9260, 9364, 9365, 9503)",Extra-skeletal Ewing sarcoma (9364),/3,9364/3,          Adamantinoma-like Ewing sarcoma†,Si,Malignant
+229,"Extra-skeletal Ewing sarcoma (9260, 9364, 9365, 9503)",Extra-skeletal Ewing sarcoma (9364),/3,9364/3,Renal Ewing sarcoma,Si,Malignant
+,"Extra-skeletal Ewing sarcoma (9260, 9364, 9365, 9503)",Askin tumour (9365),/3,9365/3,Askin tumor,,
+230,,,/3,9366/3,Round cell sarcoma with EWSR1-non-ETS fusions,Si,Malignant
+231,,,/3,9366/3,          Round cell sarcoma with EWSR1/FUS::NFATC2†,Si,Malignant
+232,,,/3,9366/3,          Round cell sarcoma with EWSR1::PATZ1†,Si,Malignant
+233,,,/3,9367/3,CIC-rearranged sarcoma,Si,Malignant
+234,,,/3,9368/3,Sarcoma with BCOR genetic alterations,Si,Malignant
+235,,,,,     Notochordal tumours,Si,Benign
+,,,,9370/0,Benign notochordal cell tumor,,Benign
+,,,,9370/3,Chordoma ,Si,Malignant
+,,,,9370/3,Poorly differentiated chordoma ,Si,Malignant
+,,,,9372/3,Dedifferentiated chordoma ,Si,Malignant
+236,,,/3,9480/3,"Primary intracranial sarcoma, DICER1-mutant†",Si,Malignant
+,"Extra-skeletal Ewing sarcoma (9260, 9364, 9365, 9503)","Neuroepithelioma, malignant (9503)",/3,9503/3,"Neuroepithelioma, NOS",,
+237,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),/0,9540/0,Neurofibroma NOS,Si,Benign
+238,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),/0,9540/0,Neurofibroma,Si,Benign
+239,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),/0,9540/0,Ancient neurofibroma,Si,Benign
+240,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),/0,9540/0,Cellular neurofibroma,Si,Benign
+241,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),/0,9540/0,Diffuse neurofibroma,Si,Benign
+242,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),/0,9540/0,          Nodular neurofibroma†,Si,Benign
+243,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),/0,9540/0,          Massive soft tissue neurofibroma†,Si,Benign
+244,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),,,Atypical neurofibroma,Si,Benign
+245,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),/1,9540/1,         Atypical neurofibroma / atypical neurofibromatous neoplasm of uncertain biological potentia,Si,Borderline
+246,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),/3,9540/3,Malignant peripheral nerve sheath tumour NOS,Si,Malignant
+247,"MPNST (9540, 9542, 9560-9561, 9571)",MPNST (9540),/3,9540/3,Malignant melanotic nerve sheath tumour,Si,Malignant
+248,"MPNST (9540, 9542, 9560-9561, 9571)",Epithelioid MPNST (9542),/3,9542/3,"Malignant peripheral nerve sheath tumour, epithelioid",Si,Malignant
+,"MPNST (9540, 9542, 9560-9561, 9571)",Epithelioid MPNST (9542),/3,9542/3,Epithelioid MPNST,,
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",/0,9560/0,Schwannoma,Si,Benigno
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",/0,9560/0,Schwannoma NOS,Si,Benigno
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",/0,9560/0,Ancient schwannoma,Si,Benigno
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",/0,9560/0,Cellular schwannoma,Si,Benigno
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",/0,9560/0,Plexiform schwannoma,Si,Benigno
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",/0,9560/0,Epithelioid schwannoma,Si,Benigno
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",/0,9560/0,Microcystic/reticular schwannoma,Si,Benigno
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",,,Melanotic schwannoma,Si,Benigno
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",,,Mucosal Schwann cell hamartoma,Si,Benigno
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",/1,9560/1,Melanotic schwannoma,,
+,"MPNST (9540, 9542, 9560-9561, 9571)","Malignant schwannoma, NOS (9560)",/3,9560/3,"Malignant schwannoma, NOS",,
+,"MPNST (9540, 9542, 9560-9561, 9571)",Malignant Triton Tumor (9561),/3,9561/3,"Triton tumor, malignant",,
+,"MPNST (9540, 9542, 9560-9561, 9571)",Malignant Triton Tumor (9561),/3,9561/3,MPNST with rhabdomyoblastic differentiation,,
+249,"MPNST (9540, 9542, 9560-9561, 9571)","Perineuroma, malignant (9571)",/0,9571/0,Perineurioma NOS,Si,Benign
+250,"MPNST (9540, 9542, 9560-9561, 9571)","Perineuroma, malignant (9571)",/0,9571/0,Perineurioma,Si,Benign
+251,"MPNST (9540, 9542, 9560-9561, 9571)","Perineuroma, malignant (9571)",,,Reticular perineurioma,Si,Benign
+252,"MPNST (9540, 9542, 9560-9561, 9571)","Perineuroma, malignant (9571)",,,Sclerosing perineurioma,Si,Benign
+253,"MPNST (9540, 9542, 9560-9561, 9571)","Perineuroma, malignant (9571)",/3,9571/3,"Perineurioma, malignant",Si,Malignant
+254,Malignant granular cell tumour (9580),Malignant granular cell tumour (9580),/0,9580/0,Granular cell tumour NOS,Si,Benign
+255,Malignant granular cell tumour (9580),Malignant granular cell tumour (9580),/0,9580/0,Granular cell tumour,Si,Benign
+256,Malignant granular cell tumour (9580),Malignant granular cell tumour (9580),/3,9580/3,"Granular cell tumour, malignant",Si,Malignant
+257,Alveolar soft part sarcoma (9581),Alveolar soft part sarcoma (9581),/3,9581/3,Alveolar soft part sarcoma,Si,Malignant
+258,,,/3,9740/3,Mast cell sarcoma,No,
+259,,,/1,9749/1,Juvenile xanthogranuloma†,Si,Borderline
+260,,,/3,9755/3,Histiocytic sarcoma,Si,Malignant
+,,,/3,9756/3,Langherans cell sarcoma ,Si,Malignant
+261,,,/3,9758/3,Follicular dendritic cell sarcoma,Si,Malignant
+,,,/3,9759/3,fibroblastic reticular cell tumors,Si,Malignant
+262,,,/3,9930/3,Myeloid sarcoma,No,

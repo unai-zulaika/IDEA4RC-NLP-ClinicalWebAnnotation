@@ -1,0 +1,52 @@
+SITE,Sub-site,icdo3_code
+LIP,External lip upper,C00.0
+,External lip lower,C00.1
+,External lip NOS,C00.2
+,"Upper lip, mucosa",C00.3
+,"Lower lip, mucosa",C00.4
+,"Mucosa lip, NOS",C00.5
+,Commissure lip,C00.6
+,Overlapping lesion of lip,C00.8
+,"Lip, NOS",C00.9
+ORAL CAVITY,"Dorsal surface tongue, NOS",C02.0
+,Border of tongue,C02.1
+,Ventral surface of tongue NOS,C02.2
+,Anterior 2/3 of tongue NOS,C02.3
+,Overlapping lesion of tongue,C02.8
+,Upper gum,C03.0
+,Lower gum,C03.1
+,Anterior floor of mouth,C04.0
+,Lateral floor of mouth,C04.1
+,Overlapping lesion of floor of mouth,C04.8
+,Hard palate,C05.0
+,Cheek mucosa,C06.0
+,Vestibule of mouth,C06.1
+,Retromolar area,C06.2
+,Overlapping lesion of other and unspecified parts of mouth,C06.8
+,,
+,,
+OROPHARYNX,"Base of tongue, NOS",C01.9
+,Soft palate NOS (excludes Nasopharyngcal surface C11.3),C05.1
+,Uvula,C05.2
+,Tonsillar fossa,C09.0
+,Lingual tonsil,C02.4
+,Tonsillar pillar,C09.1
+,Vallecula,C10.0
+,Anterior surface of epiglottis,C10.1
+,Lateral wall oropharynx,C10.2
+,Posterior wall oropharynx,C10.3
+,Branchial cleft (site of neoplosm),C10.4
+,Overlapping lesion of oropharynx,C10.8
+,"Oropharynx, NOS",C10.9
+HYPOPHARYNX,Pyriform sinus,C12.9
+,Postcricoid region,C13.0
+,Hypopharyngeal aspect of aryepiglottic fold,C13.1
+,Posterior wall hypopharynx,C13.2
+,Overlapping lesion of hypopharynx,C13.8
+,"Hypopharynx, NOS",C13.9
+LARYNX,Glottis,C32.0
+,Supraglottis,C32.1
+,Subglottis,C32.2
+,Laryngeal cartilage,C32.3
+,Overlapping lesion of larynx,C32.8
+,"Larynx, NOS",C32.9

@@ -1,0 +1,136 @@
+﻿Type,Subtype,codes
+Squamous ,Squamous subtype,
+,Keratinizing squamous cell carcinoma; epidermoid carcinoma,8071/3
+, Non-keratinizing squamous cell carcinoma,8072/3 (+ old 8121)
+, Non-keratinizing squamous cell carcinoma SMARCB1 (INI-1)-deficient Sinonasal Carcinoma ,8044/3
+,"Non-keratinizing squamous cell carcinoma Transitional (cylindrical cell, Schneiderian) carcinoma ",
+,Spindle cell (sarcomatoid) squamous cell carcinoma,8074/3
+,Spindle cell (sarcomatoid) squamous cell carcinoma SMARCB1 (INI-1)-deficient Sinonasal Carcinoma ,
+,Lymphoepithelial carcinoma; lymphoepithelioma like carcinoma,8082/3
+,Basaloid squamous cell carcinoma,8083/3
+,"Squamous cell carcinoma: conventional,  NOS, clear cell, microinvasive, adenoid, acantholytic, pseudoglandular, giant cell ",8070/3 (+ old codes 8075; 8076; 8031)
+,,
+,,
+,,
+,,
+,,
+,"Verrucous squamous cell carcinoma/cuniculatum carcinoma/Ackerman tumor; Verrucous carcinoma, NOS",8051/3
+,,
+,Papillary squamous cell carcinoma    ,8052/3
+,Squamous cell carcinoma,
+,"Squamous cell carcinoma, HPV-positive  ",8085/3
+,"Squamous cell carcinoma, HPV-negative   ",8086/3
+Adenocarcinoma ,Adenocarcinoma sub-type,
+,Intestinal-type (sinonasal) adenocarcinoma ,8144/3
+," NOS, non–intestinal-type (sinonasal), Endolymphatic sac low grade, Intestinal-type (salivary gland), cystoadenocarcinoma, mucinous, Ceruminous  (only in ear)",8140/3 (+ ex 8440/3; 8480/3) + 8420
+,,
+,,
+,,
+,,
+,,
+,"Nasopharyngeal papillary adenocarcinoma, thyroid like low grade nasopharingeal papillary adenocarcinoma",8260/3
+,Adenoid cystic carcinoma    ,8200/3
+,"Adenoid cystic carcinoma, solid type (> 30% solid)",8200/3
+,Mucoepidermoid carcinoma   ,8430/3
+,"Polymorphous, Cribriform  of minor salivary glands, Polymorphous (low grade) , terminal duct carcinoma, lobular carcinoma",8525/3
+,,
+,Acinic cell carcinoma,8550/3
+,"Clear cell carcinoma, hyalinising clear cell carcinoma",8310/3
+,"Basal cell adenocarcinoma, malignant dermal analog tumor",8147/3
+,"Salivary duct carcinoma, high grade ductal carcinoma",8500/3
+,"Salivary secretory adenocarcinoma (mammary analog, MASC)",8502/3
+,Secretory carcinoma,8542/3
+,"Myoepithelial carcinoma, malignant myoepithelioma",8982/3
+,"Epithelial–myoepithelial carcinoma, adenomyoepithelioma",8562/3
+,"Carcinoma ex pleomorphic adenoma,  NOS,  Intracapsular, minimally invasive, largely invasive",8941/3
+,,
+,,
+,,
+,"Sebaceous adenocarcinoma, Sebaceous lymphadenocarcinoma",8410/3
+,Carcinosarcoma,8980/3
+,"Oncocytic carcinoma, Oncocytic (oxyphilic) carcinoma, oncocytic adenocarcinoma, oncocytic malignant oncocytoma",8290/3
+,Salivary gland intraductal carcinoma (cribriform low grade adenocarcinoma),8440/3
+,HPV-related multiphenotypic sinonasal carcinoma,8483/3
+,Sclerosing microcystic adenocarcinoma,8407/3
+,Ceruminous adenocarcinoma,8420/3
+Neuroendocrine ,Neuroendocrine sub-type,
+,"Small cell neuroendocrine carcinoma (SmCC)​,Poorly differentiated neuroendocrine carcinoma, small cell (grade 3)",8041/3
+,Combined small cell carcinoma,8045/3
+,"Large cell neuroendocrine carcinoma (LCNEC)​, Poorly differentiated neuroendocrine carcinoma, large cell (grade 3)",8013/3
+,"Well-differentiated neuroendocrine carcinoma, Middle ear carcinoid tumor",8240/3
+,Moderately differentiated neuroendocrine carcinoma,8249/3
+SNUC,Sinonasal undifferentiated carcinoma  (SNUC) subtype,
+,SMARCB1 (INI-1)-deficient Sinonasal undifferentiated Carcinoma,
+,Sinonasal SMARCA4 deficient carcinoma,8020/3
+,IDH2-mutated sinonasal undifferentiated neoplasm,8020/3
+Adenosquamous carcinoma  ,Adenosquamous carcinoma  ,8560/3
+Teratocarcinosarcoma   ,Teratocarcinosarcoma   ,9081/3
+NUT carcinoma    ,NUT carcinoma    ,8023/3
+HPV-related Multiphenotypic Sinonasal Carcinoma,HPV-related Multiphenotypic Sinonasal Carcinoma,8483/3
+Olfactory neuroblastoma (esthesioneuroblastoma; esthesioneurocytoma; esthesioneuroepithelioma; olfactory placode tumor),Olfactory neuroblastoma (esthesioneuroblastoma; esthesioneurocytoma; esthesioneuroepithelioma; olfactory placode tumor),9522/3
+Odontogenic carcinoma sub-type,Odontogenic carcinoma sub-type,
+,"Odontogenic carcinoma, NOS; Ameloblastic carcinoma, primary; Ameloblastic carcinoma, secondary intraosseous; Ameloblastic carcinoma, secondary peripheral; Primary intraosseous carcinoma; Intraosseous carcinoma developped on odontogenic cyst; sclerosing odontogenic carcinoma",9270/3
+,"Ameloblastoma, metastasizing",9310/3
+,Clear cell odontogenic carcinoma,9341/3
+,Odontogenic carcinosarcoma,9342/3
+,Gosht cell odontogenic carcinoma,9302/3
+Carcinoma/carcinoma undifferentiated,Carcinoma/carcinoma undifferentiated,"8010/3, 8020/3"
+Tumours of uncertain histogenesis,Tumours of uncertain histogenesis subtype,
+,"Melanotic neuroectodermal tumour, malignant",9363/3
+,"Granular cell tumour, malignant",9580/3
+Haematolymphoid proliferations,Haematolymphoid proliferations subtype,
+,Myeloid sarcoma,9930/3
+,Extranodal marginal zone lymphoma,9699/3
+,Mantle cell lymphoma,9673/3
+,Follicular lymphoma,9690/3
+,Paediatric-type follicular lymphoma,9690/3
+,Large B-cell lymphoma with IRF4 rearrangement,9698/3
+,"Diffuse large B-cell lymphoma, NOS",9680/3
+,"Burkitt lymphoma, NOS",9687/3
+,Endemic Burkitt lymphoma,9687/3
+,Sporadic Burkitt lymphoma,9687/3
+,Immunodeficiency-associated Burkitt lymphoma,9687/3
+,Plasmacytoma of bone,9731/3
+,Plasmablastic lymphoma,9735/3
+,T-lymphoblastic leukaemia/lymphoma,9837/3
+,Cortical T-lymphoblastic leukaemia/lymphoma,9837/3
+,Medullary T-lymphoblastic leukaemia/lymphoma,9837/3
+,Early thymic precursor T-lymphoblastic leukaemia/lymphoma,9837/3
+,Extranodal NK/T-cell lymphoma,9719/3
+,"Nasal lymphoma, involving the nasal and/or paranasal region",9719/3
+,"Extranasal lymphoma, arising from the skin, gastrointestinal tract, testis, or soft tissue",9719/3
+,"Classic Hodgkin lymphoma, NOS",9650/3
+,"Classic Hodgkin lymphoma, nodular sclerosis",9663/3
+,"Classic Hodgkin lymphoma, mixed cellularity",9652/3
+,"Classic Hodgkin lymphoma, lymphocyte-rich",9651/3
+,"Classic Hodgkin lymphoma, lymphocyte depletion",9653/3
+,"Hodgkin lymphoma, nodular lymphocyte-predominant type",9659/3
+,Erdheim–Chester disease,9749/3
+,Rosai–Dorfman–Destombes disease,9749/3
+,"Langerhans cell histiocytosis, disseminated",9751/3
+,Follicular dendritic cell sarcoma,9758/3
+,EBV-positive inflammatory follicular dendritic cell sarcoma,9758/3
+Melanocytic tumours,Melanocytic tumours subtype,
+,Mucosal melanoma,8720/3
+,Desmoplastic mucosal melanoma,8745/3
+,Mucosal lentiginous melanoma,8746/3
+,Nodular melanoma,8721/3
+Tumours and tumour-like lesions of the neck and lymph nodes,Tumours and tumour-like lesions of the neck and lymph nodes subtype,
+,Heterotopia-associated carcinoma,8010/3
+,Thyroid carcinoma,8010/3
+,Salivary carcinoma,8010/3
+Germ cell tumours,Germ cell tumours subtype,
+,Immature teratoma,9080/3
+,Teratoma with somatic-type malignancy,9084/3
+,Germinoma,9064/3
+,Embryonal carcinoma,9070/3
+,Yolk sac tumour,9071/3
+,Choriocarcinoma,9100/3
+,Mixed germ cell tumour,9085/3
+Paraganglion tumours,Germ cell tumours subtype,
+,Head and neck paraganglioma,8693/3
+,Composite paraganglioma,8693/3
+,Carotid body paraganglioma,8692/3
+,Vagal paraganglioma,8693/3
+,Middle ear paraganglioma,8690/3
+,Laryngeal paraganglioma,8693/3
