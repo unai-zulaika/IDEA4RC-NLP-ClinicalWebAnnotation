@@ -31,6 +31,7 @@ Serve with vLLM (max throughput flags):
 import argparse
 import time
 
+from datasets import load_dataset
 from transformers import AutoProcessor, Gemma3ForConditionalGeneration
 
 from llmcompressor import oneshot
@@ -45,16 +46,44 @@ def quantize_w4a16_gptq(model, processor, model_id):
     Following the official multimodal vision example:
     - Pass the full model (not a sub-module)
     - Use ignore patterns to skip lm_head, vision_tower, and multi_modal_projector
-    - Let oneshot handle dataset loading and tokenization internally
+    - Pre-process the dataset manually and pass it as a dataset object to oneshot
     """
     save_dir = model_id.rstrip("/").split("/")[-1] + "-W4A16-G128"
 
-    # Oneshot arguments
     BATCH_SIZE = 4
     NUM_CALIBRATION_SAMPLES = 512
     MAX_SEQUENCE_LENGTH = 2048
-    DATASET_ID = "flickr30k"
-    DATASET_SPLIT = {"calibration": f"test[:{NUM_CALIBRATION_SAMPLES}]"}
+    DATASET_ID = "FreedomIntelligence/medical-o1-reasoning-SFT"
+
+    # Load from the only available split ("train"); config "en" for English
+    print(f"Loading calibration dataset ({NUM_CALIBRATION_SAMPLES} samples)...")
+    ds = load_dataset(DATASET_ID, name="en", split=f"train[:{NUM_CALIBRATION_SAMPLES}]")
+
+    # Format Question + Complex_CoT + Response into Gemma3 chat-template text
+    def preprocess(example):
+        messages = [
+            {"role": "user", "content": example["Question"]},
+            {"role": "assistant", "content": example["Complex_CoT"] + "\n\n" + example["Response"]},
+        ]
+        return {
+            "text": processor.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=False
+            )
+        }
+
+    ds = ds.map(preprocess, remove_columns=ds.column_names)
+
+    # Tokenize — processor.tokenizer for Gemma3's AutoProcessor
+    def tokenize(sample):
+        return processor.tokenizer(
+            sample["text"],
+            padding=False,
+            max_length=MAX_SEQUENCE_LENGTH,
+            truncation=True,
+            add_special_tokens=False,
+        )
+
+    ds = ds.map(tokenize, remove_columns=ds.column_names)
 
     # Recipe — ignore lm_head, vision tower, and multimodal projector
     # per official docs: https://docs.vllm.ai/projects/llm-compressor/en/latest/examples/multimodal_vision/#customizing-gptqmodifier-parameters
@@ -73,12 +102,9 @@ def quantize_w4a16_gptq(model, processor, model_id):
     print(f"Running GPTQ W4A16 quantization ({NUM_CALIBRATION_SAMPLES} calibration samples)...")
     oneshot(
         model=model,
-        processor=processor,
-        dataset=DATASET_ID,
-        splits=DATASET_SPLIT,
+        dataset=ds,
         recipe=recipe,
         batch_size=BATCH_SIZE,
-        shuffle_calibration_samples=False,
         max_seq_length=MAX_SEQUENCE_LENGTH,
         num_calibration_samples=NUM_CALIBRATION_SAMPLES,
         output_dir=save_dir,
