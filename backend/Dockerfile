@@ -20,7 +20,7 @@ COPY . .
 # Create non-root user and necessary directories
 RUN groupadd --system --gid 1001 appuser && \
     useradd --system --uid 1001 --gid appuser appuser && \
-    mkdir -p sessions data/faiss_store && \
+    mkdir -p sessions data/faiss_store data/presets hf_cache && \
     chown -R appuser:appuser /app
 
 USER appuser
