@@ -426,6 +426,9 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
     batch_size = 8
     timeout = 30
 
+    max_new_tokens_standard = 2048
+    max_new_tokens_fast = 512
+
     if config_path and config_path.exists():
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
@@ -435,6 +438,8 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
                 model_name = config.get("model_name", model_name)
                 batch_size = config.get("batch_size", batch_size)
                 timeout = config.get("timeout", timeout)
+                max_new_tokens_standard = config.get("max_new_tokens_standard", max_new_tokens_standard)
+                max_new_tokens_fast = config.get("max_new_tokens_fast", max_new_tokens_fast)
         except Exception as e:
             print(f"[WARN] Failed to load VLLM config from {config_path}: {e}")
 
@@ -451,13 +456,19 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
         timeout = int(os.getenv("VLLM_TIMEOUT"))
     if os.getenv("VLLM_MAX_TOKENS"):
         max_tokens = int(os.getenv("VLLM_MAX_TOKENS"))
+    if os.getenv("VLLM_MAX_NEW_TOKENS_STANDARD"):
+        max_new_tokens_standard = int(os.getenv("VLLM_MAX_NEW_TOKENS_STANDARD"))
+    if os.getenv("VLLM_MAX_NEW_TOKENS_FAST"):
+        max_new_tokens_fast = int(os.getenv("VLLM_MAX_NEW_TOKENS_FAST"))
 
     return {
         "use_vllm": use_vllm,
         "vllm_endpoint": vllm_endpoint,
         "model_name": model_name,
         "batch_size": batch_size,
-        "timeout": timeout
+        "timeout": timeout,
+        "max_new_tokens_standard": max_new_tokens_standard,
+        "max_new_tokens_fast": max_new_tokens_fast,
     }
 
 
