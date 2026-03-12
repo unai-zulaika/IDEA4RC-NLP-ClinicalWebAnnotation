@@ -90,12 +90,21 @@ class CodeResolver:
 
     def __init__(self, dict_path: Optional[str] = None):
         if dict_path is None:
-            # Try shared data directory first, then fallback to project root
-            shared_path = Path(__file__).parent.parent.parent / "data" / "dictionaries" / "id2codes_dict.json"
-            if shared_path.exists():
-                dict_path = str(shared_path)
-            else:
-                dict_path = str(Path(__file__).parent.parent.parent / "id2codes_dict.json")
+            # base = /app in Docker, backend/ in local dev
+            base = Path(__file__).parent.parent
+            candidates = [
+                base / "data" / "dictionaries" / "id2codes_dict.json",         # Docker: /app/data/...
+                base.parent / "data" / "dictionaries" / "id2codes_dict.json",  # local dev: <project>/data/...
+                base.parent / "id2codes_dict.json",                             # legacy fallback
+            ]
+            for candidate in candidates:
+                if candidate.exists():
+                    dict_path = str(candidate)
+                    break
+            if dict_path is None:
+                raise FileNotFoundError(
+                    f"id2codes_dict.json not found. Searched: {[str(c) for c in candidates]}"
+                )
         self._dict_path = dict_path
         # Reverse index: {category_normalized: {label_normalized: code_id}}
         self._index: Dict[str, Dict[str, str]] = {}
