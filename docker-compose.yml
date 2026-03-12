@@ -14,6 +14,7 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - annotation-sessions:/app/sessions
+      - ./data:/app/data:ro
     networks:
       - clinical-network
     restart: unless-stopped
