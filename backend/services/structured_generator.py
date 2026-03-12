@@ -15,6 +15,8 @@ _RE_JSON_OBJ_SINGLE = re.compile(r'\{[^{}]*"evidence"[^{}]*"reasoning"[^{}]*"fin
 _RE_FAST_JSON = re.compile(r'\{[^{}]*"final_output"\s*:[^{}]*\}', re.DOTALL)
 # Strip model thinking blocks: <unused94>thought ... </unused94>
 _RE_THINKING_BLOCK = re.compile(r'<unused\d+>\w+.*?</unused\d+>\s*', re.DOTALL | re.IGNORECASE)
+# MedGemma format: <unused94>thinking<unused95>response  (second token has no closing slash)
+_RE_THINKING_BLOCK_MEDGEMMA = re.compile(r'<unused\d+>.*?<unused\d+>\s*', re.DOTALL | re.IGNORECASE)
 # Fallback: strip unclosed thinking block (token budget exhausted before </unusedXX> appeared)
 _RE_THINKING_BLOCK_UNCLOSED = re.compile(r'<unused\d+>.*$', re.DOTALL | re.IGNORECASE)
 _RE_EVIDENCE = re.compile(r'Evidence:\s*(.+?)(?:\.|$|Reasoning:)', re.IGNORECASE | re.DOTALL)
@@ -276,7 +278,10 @@ def generate_structured_annotation_fallback(
     Returns:
         StructuredAnnotation instance
     """
-    # Strip model thinking blocks (e.g. <unused94>thought...</unused94>) before parsing
+    # Strip model thinking blocks before parsing.
+    # Try MedGemma format first: <unused94>thinking<unused95>response (no closing slash on second token)
+    raw_output = _RE_THINKING_BLOCK_MEDGEMMA.sub('', raw_output, count=1).strip()
+    # Then strip any remaining XML-style blocks: <unused94>thinking</unused94>
     raw_output = _RE_THINKING_BLOCK.sub('', raw_output).strip()
     # Fallback: if thinking block was truncated (no closing tag, i.e. token budget hit mid-thought),
     # try to salvage the intended answer from inside the thinking text before discarding it.

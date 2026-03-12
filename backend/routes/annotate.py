@@ -632,7 +632,10 @@ async def _process_single_prompt(
         # (MedGemma emits <unused94>thought</unused94> blocks before the JSON answer;
         # too-small budgets exhaust mid-thought leaving nothing to parse).
         raw_response = None
-        fast_max_tokens = 512 if fast_mode else 1024
+        fast_max_tokens = (
+            vllm_client.config.get("max_new_tokens_fast", 512) if fast_mode
+            else vllm_client.config.get("max_new_tokens_standard", 2048)
+        )
         # Extra kwargs for fast mode: try to suppress thinking tokens at the API level.
         # vLLM forwards unknown extra_body keys to the backend; if the model/server
         # doesn't support it the parameter is silently ignored.
@@ -654,7 +657,7 @@ async def _process_single_prompt(
                             vllm_endpoint=vllm_client.config["vllm_endpoint"],
                             model_name=vllm_client.config["model_name"],
                             csv_date=csv_date,
-                            max_new_tokens=1024,
+                            max_new_tokens=vllm_client.config.get("max_new_tokens_standard", 2048),
                             temperature=0.0
                         )
                     except Exception:
