@@ -7,10 +7,13 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    environment:
+      - HF_HOME=/app/hf_cache
     volumes:
       - ./backend:/app
-      - ./data:/app/data:ro
+      - ./data/dictionaries:/app/data/dictionaries:ro
       - annotation-sessions:/app/sessions
+      - annotation-hf-cache:/app/hf_cache
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
 
   annotation-web:

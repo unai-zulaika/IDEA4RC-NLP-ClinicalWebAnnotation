@@ -12,9 +12,15 @@ services:
     environment:
       - VLLM_ENDPOINT=${VLLM_API_URL:-http://host.docker.internal:8000}/v1
       - PYTHONUNBUFFERED=1
+      - HF_HOME=/app/hf_cache
     volumes:
       - annotation-sessions:/app/sessions
-      - ./data:/app/data:ro
+      - ./backend/data/latest_prompts:/app/data/latest_prompts
+      - ./backend/data/fast_prompts:/app/data/fast_prompts
+      - ./data/dictionaries:/app/data/dictionaries:ro
+      - annotation-faiss:/app/data/faiss_store
+      - annotation-presets:/app/data/presets
+      - annotation-hf-cache:/app/hf_cache
     networks:
       - clinical-network
     restart: unless-stopped
@@ -80,6 +86,12 @@ services:
 
 volumes:
   annotation-sessions:
+    driver: local
+  annotation-faiss:
+    driver: local
+  annotation-presets:
+    driver: local
+  annotation-hf-cache:
     driver: local
   pipeline-results:
     driver: local
