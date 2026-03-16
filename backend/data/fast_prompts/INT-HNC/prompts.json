@@ -1,0 +1,398 @@
+{
+  "alcohol-habits": {
+    "template": "You are a medical annotator. Read the note and identify the patient's alcohol habit status.\n\nAllowed values:\n1. Alcohol habits: History of alcohol dependence.\n2. Alcohol habits: Current.\n3. Alcohol habits: Never.\nIf not mentioned, output: \"Alcohol habits: Unknown.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "beam-quality": {
+    "template": "You are a medical annotator. Read the note and identify the beam quality used in radiotherapy.\n\nAllowed values:\n1. Beam quality: External Beam RT Carbons.\n2. Beam quality: External Beam RT Photons.\n3. Beam quality: External Beam RT Protons.\nIf not mentioned, output: \"Unknown beam quality.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "before-treatment-patient-diagnosed": {
+    "template": "You are a medical annotator. Read the note and extract comorbidities diagnosed BEFORE oncologic treatment.\n\nAllowed values:\n- atrial fibrillation\n- cholecystectomy\n- dementia\n- diabetes (without complications)\n- peripheral vascular disease\n- mild liver disease\n- moderate to severe liver disease\n- myocardial infarction\n- moderate to severe renal disease\n- chronic pulmonary disease\n- solid tumor (non metastatic)\n\nIf multiple, list separated by comma and space, ordered alphabetically.\nIf none, output: \"Before treatment Patient was diagnosed of following comorbidities: none.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "chemotherapy_start": {
+    "template": "You are a medical annotator. Read the note and extract chemotherapy start details.\n\nOutput format:\n[setting] chemotherapy with [select intent] intent started on [provide date] [location].\n\nAllowed settings: Concomitant Chemotherapy, Neo-adjuvant Chemotherapy, Systemic treatment alone Chemotherapy, Chemotherapy.\nAllowed intents: curative, palliative.\nAllowed locations: at the hospital, outside of the hospital.\nIf setting is missing, keep [Select setting of systemic treatment]. If date is missing, keep [provide date]. If intent is missing, keep [select intent].\nIf chemotherapy start is not mentioned, output: \"Unknown chemotherapy start.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "SystemicTreatment",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[select intent]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "intent",
+          "value_code_mappings": {
+            "curative": "4162591",
+            "palliative": "4179711"
+          }
+        },
+        {
+          "template_placeholder": "[provide date]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "startDateSystemicTreatment"
+        },
+        {
+          "template_placeholder": "[select regimen]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "regimen",
+          "value_code_mappings": {}
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "setting",
+          "value_code_mappings": {
+            "pre-operative concomitant to systemic treatment": "2000100031",
+            "post-operative concomitant to systemic treatment": "2000100032",
+            "definitive concomitant to systemic treatment": "2000100034",
+            "pre-operative": "4059384",
+            "post-operative": "4058775",
+            "definitive": "2000100033"
+          }
+        }
+      ]
+    }
+  },
+  "clinical-tnmstaging": {
+    "template": "You are a medical annotator. Read the note and extract clinical TNM staging.\n\nOutput format: cTT[T_value]NN[N_value]MM[M_value]\nAlways prefix with \"cTT\", \"NN\", and \"MM\".\nIf M component is missing, output '[select m]' for M value.\nIf not mentioned, output: \"Unknown clinical TNM staging.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "disease-status": {
+    "template": "You are a medical annotator. Read the note and extract the most recent disease status update.\n\nOutput format:\nUpdate of the disease status done <at the hospital / outside of the hospital>: <status>, episode date: <dd-mm-yyyy>.\n\nAllowed status values: Complete response, Partial response, Stable disease, Progression, Recurrence.\nIf status is unclear, use [please select]. If date is missing, use [provide date].\nIf not mentioned, output: \"Unknown disease status.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "histological-tipo": {
+    "template": "You are a medical annotator. Read the note and identify the histological type of the tumor.\n\nAllowed values:\nHistology subgroup Adenocarcinoma: Adenocarcinoma intestinal type.\nHistology subgroup Adenocarcinoma: Adenocarcinoma.\nHistology subgroup Adenocarcinoma: Adenoid cystic carcinoma.\nHistology subgroup Adenocarcinoma: Basal cell adenocarcinoma.\nHistology subgroup Adenocarcinoma: Carcinoma ex pleomorphic adenoma.\nHistology subgroup Adenocarcinoma: Infiltrating duct carcinoma.\nHistology subgroup Adenocarcinoma: Mucoepidermoid carcinoma.\nHistology subgroup Adenocarcinoma: Polymorphous low grade adenocarcinoma.\nHistology subgroup Carcinoma or carcinoma undifferentiated.\nHistology subgroup Neuroendocrine: [choose from the list].\nHistology subgroup NUT carcinoma.\nHistology subgroup Sinonasal undifferentiated carcinoma: Carcinoma undifferentiated.\nHistology subgroup Sinonasal undifferentiated carcinoma: SMARCB1 (INI-1)-deficient Sinonasal undifferentiated Carcinoma.\nHistology subgroup Squamous: Basaloid squamous cell carcinoma.\nHistology subgroup Squamous: Human papillomavirus negative squamous cell carcinoma.\nHistology subgroup Squamous: Non-keratinizing squamous cell carcinoma: Transitional (cylindrical cell/Schneiderian) carcinoma.\nHistology subgroup Squamous: Squamous cell carcinoma keratinizing.\nHistology subgroup Squamous: Squamous cell carcinoma spindle cell.\nHistology subgroup Squamous: Squamous cell carcinoma.\nHistology subgroup Teratocarcinosarcoma.\nIf not mentioned, output: \"Unknown histological type.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis.histologySubgroup",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "histologySubgroup"
+        }
+      ]
+    }
+  },
+  "hpv-status": {
+    "template": "You are a medical annotator. Read the note and identify the patient's HPV status.\n\nAllowed values:\n1. HPV status in oropharyngeal carcinomas: positive.\n2. HPV status in oropharyngeal carcinomas: negative.\nIf not mentioned, output: \"HPV status unknown.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "last-followup-date": {
+    "template": "You are a medical annotator. Read the note and extract the last follow-up date.\n\nOutput format: Last follow-up date: dd-mm-yyyy.\nSelect the most recent date corresponding to a clinical visit, follow-up visit, or documented clinical status assessment.\nDo not select future scheduled appointments or treatment-only dates.\nIf not mentioned, output: \"Last follow-up date: [put date].\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "neck-surgery-laterality": {
+    "template": "You are a medical annotator. Read the note and extract neck surgery laterality and date.\n\nOutput format: <LATERALITY> neck surgery was performed on <DATE>.\n\nAllowed laterality values: Bilateral, Ipsilateral.\nIf laterality is not stated, use [select laterality]. If date is missing, use [provide date].\nIf no neck surgery is mentioned, output: \"[select laterality] neck surgery was performed on [provide date].\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "pathological-tnmstaging": {
+    "template": "You are a medical annotator. Read the note and extract pathological TNM staging.\n\nOutput format: pTT[T_value]NN[N_value]MM[M_value]\nExtract only pathological staging (pT, pN). Ignore clinical staging (cT, cN, cM).\nIf pM is not stated but metastatic disease is described, set MM1. Otherwise set MM0.\nIf not mentioned, output: \"Unknown pathological TNM staging.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "patient-status": {
+    "template": "You are a medical annotator. Read the note and extract the patient status at last follow-up.\n\nAllowed values:\n1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED).\n2. Status of the patient at last follow-up: Dead of Disease (DOD).\n3. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([sites]).\n4. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor.\n5. Status of the patient at last follow-up: Dead of Other Cause (DOC).\n6. Status of the patient at last follow-up: Dead of Unknown Cause (DUC).\nFor metastases, list all mentioned sites in parentheses.\nIf not mentioned, output: \"Unknown patient status.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "PatientFollowUp.statusAtLastFollowUp",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "PatientFollowUp",
+          "field_name": "statusOfPatientAtLastFollowUp",
+          "value_code_mappings": {
+            "Alive, No Evidence of Disease (NED)": "2000100071",
+            "Alive With Disease (AWD) - metastases ([please select sites])": "2000100075",
+            "Alive With Disease (AWD) - localised tumor": "2000100075",
+            "Alive With Disease (AWD) - metastases (lung).": "2000100075",
+            "Alive With Disease (AWD) - metastases (lung. other).": "2000100075",
+            "Alive With Disease (AWD) - metastases (lung. soft tissue. other).": "2000100075",
+            "Dead of Disease (DOD)": "2000100072",
+            "Dead of Other Cause (DOC)": "2000100073",
+            "Dead of Unknown Cause (DUC)": "2000100074",
+            "Alive": "4230556",
+            "Alive With Disease (AWD) - localised tumor.": "2000100075"
+          }
+        }
+      ]
+    }
+  },
+  "plasmatic-ebv-dna-status": {
+    "template": "You are a medical annotator. Read the note and identify the patient's Plasmatic EBV DNA status.\n\nAllowed values:\n1. Plasmatic EBV DNA at baseline: negative.\n2. Plasmatic EBV DNA at baseline: not tested.\n3. Plasmatic EBV DNA at baseline: positive.\nIf no clear result is present, output: \"Plasmatic EBV DNA at baseline: not tested.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "radiotherapy_end": {
+    "template": "You are a medical annotator. Read the note and extract radiotherapy end details.\n\nOutput format: Radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [provide date].\nIf dosage is missing, keep [put total dose]. If number is missing, keep [put number of]. If date is missing, keep [provide date].\nIf radiotherapy end is not mentioned, output: \"Unknown radiotherapy end.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Radiotherapy",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[put total dose]",
+          "entity_type": "Radiotherapy",
+          "field_name": "totalDoseGy"
+        },
+        {
+          "template_placeholder": "[put number of]",
+          "entity_type": "Radiotherapy",
+          "field_name": "numberOfFractions"
+        },
+        {
+          "template_placeholder": "[put date]",
+          "entity_type": "Radiotherapy",
+          "field_name": "endDate"
+        },
+        {
+          "template_placeholder": "[select reason]",
+          "entity_type": "Radiotherapy",
+          "field_name": "rtTreatmentCompletedAsPlanned",
+          "value_code_mappings": {
+            "completion": "44788181",
+            "toxicity": "4161588",
+            "comorbidity": "2000100030",
+            "patient intolerance": "4105297",
+            "discontinued": "37017062",
+            "death": "4306655"
+          }
+        }
+      ]
+    }
+  },
+  "radiotherapy_location": {
+    "template": "You are a medical annotator. Read the note and extract the location of radiotherapy.\n\nOutput format: Radiotherapy on [location].\n\nAllowed location values:\n- distant metastasis (bone).\n- distant metastasis (brain).\n- distant metastasis (lung).\n- Primary and Bilateral Neck.\n- Primary and Ipsilateral Neck.\n- Primary only.\nIf not mentioned, output: \"Unknown radiotherapy location.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "radiotherapy_start": {
+    "template": "You are a medical annotator. Read the note and extract radiotherapy start details.\n\nOutput format: [select type] radiotherapy with [select intention] intention was started [please select where] on [provide date].\n\nAllowed types: Definitive concomitant to systemic treatment, Definitive, Postoperative concomitant to systemic treatment, Postoperative.\nAllowed intentions: curative, palliative.\nAllowed locations: at the hospital, outside of the hospital.\nIf type is missing, keep [select type]. If date is missing, keep [provide date]. If place is missing, keep [please select where]. If intention is missing, keep [select intention].\nIf radiotherapy start is not mentioned, output: \"Unknown radiotherapy start.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Radiotherapy",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[select intention]",
+          "entity_type": "Radiotherapy",
+          "field_name": "intent",
+          "value_code_mappings": {
+            "curative": "4162591",
+            "palliative": "4179711"
+          }
+        },
+        {
+          "template_placeholder": "[please select where]",
+          "entity_type": "Radiotherapy",
+          "field_name": "radiotherapyHospital"
+        },
+        {
+          "template_placeholder": "[put date]",
+          "entity_type": "Radiotherapy",
+          "field_name": "startDate"
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "Radiotherapy",
+          "field_name": "setting",
+          "value_code_mappings": {
+            "pre-operative concomitant to systemic treatment": "2000100031",
+            "post-operative concomitant to systemic treatment": "2000100032",
+            "definitive concomitant to systemic treatment": "2000100034",
+            "pre-operative": "4059384",
+            "post-operative": "4058775",
+            "definitive": "2000100033"
+          }
+        }
+      ]
+    }
+  },
+  "site-of-metastatic": {
+    "template": "You are a medical annotator. Read the note and extract the site(s) of metastatic disease.\n\nAllowed values: brain, liver, lung, bone, distant lymph node, soft tissue, other viscera.\nIf multiple sites, list separated by comma and space, ordered alphabetically.\nIf no metastatic disease, output: \"Site of metastatic disease: none.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "smoking-status": {
+    "template": "You are a medical annotator. Read the note and identify the patient's smoking status.\n\nAllowed values:\n1. Smoking status: Current tobacco smoker.\n2. Smoking status: Former smoker (at least for 12 months).\n3. Smoking status: Never smoker.\n4. Smoking status: Unknown.\nIf not mentioned, output: \"Smoking status: Unknown.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "staging-classification": {
+    "template": "You are a medical annotator. Read the note and extract the explicitly written cancer stage.\n\nRules:\n- Extract only stages explicitly written as \"stadio X\", \"Stadio X\", or \"stage X\".\n- Do NOT infer stage from TNM.\n- Preserve sub-stages exactly (IVA, IVB, IVC).\n- Allowed Roman numerals: I, III, IV, IVA, IVB, IVC.\n\nOutput format:\nStaging classification (pathological): <stage>. (if near pT/pN or after surgery)\nStaging classification (clinical): <stage>. (if near cT/cN or explicitly clinical)\nStaging classification: <stage>. (if no clinical/pathological context)\nIf not mentioned, output: \"Staging classification (clinical): [please select].\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "surgery-reconstruction": {
+    "template": "You are a medical annotator. Read the note and extract surgery type, reconstruction, date, location, and intention.\n\nOutput format: <surgery type> <with/without> reconstruction was performed on <DATE> <LOCATION> with a <INTENTION> intention.\n\nAllowed surgery types: Craniofacial, External/open, Transnasal, Transoral.\nAllowed intentions: curative, palliative.\nAllowed locations: at the hospital, outside of the hospital.\nIf surgery type is missing, keep [select surgery type]. If date is missing, keep [provide date]. If location is missing, keep [select where]. If intention is missing, keep [select intention]. If reconstruction is unclear, keep [with/without] reconstruction.\nIf no surgery is mentioned, output: \"No surgery information.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": null
+  },
+  "surgerymargins": {
+    "template": "You are a medical annotator. Read the note and classify the surgical resection margin status.\n\nOutput format: Margins after surgery: [R0 or R1 or R2]\nR0 = radical, tumor-free margins. A \"small but clear\" margin = still R0.\nIf not mentioned, output: \"Unknown surgery margins.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Surgery.marginsAfterSurgery",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[R0 or R1 or R2]",
+          "entity_type": "Surgery",
+          "field_name": "marginsAfterSurgery",
+          "value_code_mappings": {
+            "R0": "1634643",
+            "R1": "1633801",
+            "R2": "1634484"
+          }
+        }
+      ]
+    }
+  },
+  "surgical-specimen-grading": {
+    "template": "You are a medical annotator. Read the note and extract the surgical specimen grading (FNCLCC).\n\nOutput format: Surgical specimen grading (FNCLCC): [grade or description].\nAllowed values: 1, 2, 3, High, Low.\nIf not mentioned, output: \"Unknown surgical specimen grading.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[grade or description]",
+          "entity_type": "Surgery",
+          "field_name": "surgicalSpecimenGradingOnlyInUntreatedTumours",
+          "value_code_mappings": {
+            "1": "1634371",
+            "2": "1634752",
+            "3": "1633749",
+            "Other classification system high": "1635587",
+            "high": "1635587",
+            "Other classification system low": "1634085",
+            "low": "1634085"
+          }
+        }
+      ]
+    }
+  },
+  "systemic-treatment-ended": {
+    "template": "You are a medical annotator. Read the note and extract systemic treatment end details.\n\nOutput format: Systemic treatment ended on <DATE> after <NUMBER> cycles because of <REASON>.\n\nAllowed reasons: toxicity, completion, progression.\nIf number of cycles is missing, keep [provide number]. If reason is missing, keep [select reason]. If date is missing, keep [provide date].\nIf no treatment end is mentioned, output: \"No systemic treatment end mentioned.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "SystemicTreatment",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[provide date]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "endDateSystemicTreatment"
+        },
+        {
+          "template_placeholder": "[provide number]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "numberOfCycles/Administrations"
+        },
+        {
+          "template_placeholder": "[select reason]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "reasonForEndOfTreatment",
+          "value_code_mappings": {
+            "completion": "44788181",
+            "toxicity": "4162594",
+            "comorbidity": "2000100030",
+            "patient intolerance": "4240582",
+            "discontinued": "37017062",
+            "death": "4306655"
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "setting",
+          "value_code_mappings": {
+            "pre-operative concomitant to systemic treatment": "2000100031",
+            "post-operative concomitant to systemic treatment": "2000100032",
+            "definitive concomitant to systemic treatment": "2000100034",
+            "pre-operative": "4059384",
+            "post-operative": "4058775",
+            "definitive": "2000100033"
+          }
+        }
+      ]
+    }
+  },
+  "systemic-treatment-started": {
+    "template": "You are a medical annotator. Read the note and extract systemic treatment start details.\n\nOutput format: Systemic treatment alone <TREATMENT_TYPE> with <INTENT> intent started on <DATE> <LOCATION>.\n\nAllowed treatment types: Immunotherapy, Target therapy.\nAllowed intents: curative, palliative.\nAllowed locations: at the hospital, outside of the hospital.\nIf date is missing, keep [provide date]. If location is missing, keep [select where]. If intent is missing, keep [please select].\nIf no qualifying treatment start is mentioned, output: \"No systemic treatment initiation mentioned.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "SystemicTreatment",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[select intent]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "intent",
+          "value_code_mappings": {
+            "curative": "4162591",
+            "palliative": "4179711"
+          }
+        },
+        {
+          "template_placeholder": "[provide date]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "startDateSystemicTreatment"
+        },
+        {
+          "template_placeholder": "[select regimen]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "regimen",
+          "value_code_mappings": {}
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "setting",
+          "value_code_mappings": {
+            "pre-operative concomitant to systemic treatment": "2000100031",
+            "post-operative concomitant to systemic treatment": "2000100032",
+            "definitive concomitant to systemic treatment": "2000100034",
+            "pre-operative": "4059384",
+            "post-operative": "4058775",
+            "definitive": "2000100033"
+          }
+        }
+      ]
+    }
+  },
+  "tumorbiopsytype": {
+    "template": "You are a medical annotator. Read the note and extract the biopsy type and date.\n\nOutput format: Baseline/primary tumor [biopsy type] biopsy has been performed on [put date] in [describe where].\nIf date is missing, keep [put date]. If place is not mentioned, keep [describe where].\nIf no biopsy is mentioned, output: \"Unknown biopsy type.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[biopsy type]",
+          "entity_type": "Diagnosis",
+          "field_name": "typeOfBiopsy",
+          "value_code_mappings": {
+            "FNA": "4171863",
+            "core-trucut": "4321878",
+            "incisional": "4321986",
+            "excisional": "4228202",
+            "unplanned excision (tumor rupture)": "4279903",
+            "unplanned excision (no tumor rupture)": "4279903"
+          }
+        },
+        {
+          "template_placeholder": "[date]",
+          "entity_type": "Diagnosis",
+          "field_name": "dateOfDiagnosis"
+        },
+        {
+          "template_placeholder": "[place]",
+          "entity_type": "Diagnosis",
+          "field_name": "biopsyDoneBy"
+        }
+      ]
+    }
+  },
+  "tumorsite": {
+    "template": "You are a medical annotator. Read the note and identify the tumor location category and exact site.\n\nOutput format: Tumor site: [category] - [site].\n\nAllowed values:\nTumor site: Hypopharynx - [please select].\nTumor site: Hypopharynx - Structure of piriform recess.\nTumor site: Larynx - [please select].\nTumor site: Larynx - Glottis structure.\nTumor site: Larynx - Laryngeal cartilage structure.\nTumor site: Larynx - Supraglottis structure.\nTumor site: Lip subsite - Structure of vermilion border of upper lip.\nTumor site: Middle ear.\nTumor site: Nasal cavity and paranasal sinuses - [please select].\nTumor site: Nasal cavity and paranasal sinuses - Ethmoid sinus structure.\nTumor site: Nasal cavity and paranasal sinuses - Maxillary sinus structure.\nTumor site: Nasal cavity and paranasal sinuses - Nasal cavity structure.\nTumor site: Nasopharynx - [please select].\nTumor site: Nasopharynx - Structure of lateral wall of nasopharynx.\nTumor site: Nasopharynx - Structure of superior wall of nasopharynx.\nTumor site: Oral cavity - [please select].\nTumor site: Oral cavity - Hard palate structure.\nTumor site: Oral cavity - Overlapping lesion of other and unspecified parts of mouth.\nTumor site: Oral cavity - Overlapping lesion of tongue.\nTumor site: Oral cavity - Structure of anterior floor of mouth.\nTumor site: Oral cavity - Structure of border of tongue.\nTumor site: Oral cavity - Structure of gum of mandible.\nTumor site: Oral cavity - Structure of gum of maxilla.\nTumor site: Oral cavity - Structure of inferior surface of tongue.\nTumor site: Oropharynx - [please select].\nTumor site: Oropharynx - Palatine arch structure.\nTumor site: Oropharynx - Palatine tonsillar structure.\nTumor site: Oropharynx - Soft palate structure.\nTumor site: Oropharynx - Structure of root of tongue.\nTumor site: Oropharynx - Structure of vallecula of epiglottis.\nTumor site: Oropharynx - Tonsillar fossa structure.\nTumor site: Parotid gland.\nIf not mentioned, output: \"Tumor category unknown.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "entity_mapping": {
+      "entity_type": "Diagnosis.subsite",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "subsite"
+        }
+      ]
+    }
+  }
+}

@@ -330,7 +330,7 @@ class FewshotBuilder:
         force_rebuild: bool = False
     ):
         """
-        Build FAISS indexes for all INT prompt types.
+        Build FAISS indexes for all prompt types across all centers.
         
         Args:
             json_file_path: Path to annotated_patient_notes.json
@@ -338,12 +338,15 @@ class FewshotBuilder:
             patient_indices: Patient indices to use for fewshot examples
             force_rebuild: If True, rebuild even if index exists
         """
-        # Load INT prompt keys
+        # Load prompt keys from all centers
         with open(prompts_json_path, 'r', encoding='utf-8') as f:
             prompts_data = json.load(f)
-        
-        int_prompts = prompts_data.get('INT', {})
-        prompt_keys = list(int_prompts.keys())
+
+        # Collect prompt keys from all centers (INT-SARC, INT-HNC, etc.)
+        prompt_keys = []
+        for center_data in prompts_data.values():
+            if isinstance(center_data, dict):
+                prompt_keys.extend(center_data.keys())
         
         # Extract patients
         patients = self.extract_patients_for_fewshot(json_file_path, patient_indices)

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
 const STORAGE_KEY = 'defaultCenter'
-const FALLBACK = 'INT'
+const FALLBACK = 'INT-SARC'
 
 /**
  * Custom hook that persists the selected center to localStorage.

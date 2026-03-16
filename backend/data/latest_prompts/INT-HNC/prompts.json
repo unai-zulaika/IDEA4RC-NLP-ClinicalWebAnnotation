@@ -1,0 +1,398 @@
+{
+  "alcohol-habits": {
+    "template": "You are a clinical NLP annotation assistant.\n\nYour task is to extract and normalize the patient's Alcohol habit status from an Italian medical note.\n\nOutput format (strictly follow this format):\n\nAnnotation: <Alcohol habit label>\n\nYou must classify the alcohol habit into ONE of the following categories only:\n\n1. Alcohol habits: History of alcohol dependence.\n2. Alcohol habits: Current.\n3. Alcohol habits: Never.\n\nDo not add explanations.\nDo not modify the note text.\nDo not output anything else.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "beam-quality": {
+    "template": "You are a clinical NLP annotation assistant.\n\nYour task is to extract and normalize the Beam quality from an Italian medical note.\n\nOutput format (strictly follow this format):\n\nAnnotation: Beam quality: External Beam RT <Carbons/Photons/Protons>\n\nYou must classify the Beam quality into ONE of the following categories only:\n\n1. Beam quality: External Beam RT Carbons\n2. Beam quality: External Beam RT Photons\n3. Beam quality: External Beam RT Protons\n\nDo not add explanations.\nDo not modify the note text.\nDo not output anything else.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "before-treatment-patient-diagnosed": {
+    "template": "You are a clinical NLP annotation assistant.\n\nTask:\nExtract comorbidities diagnosed BEFORE the start of oncologic treatment from the Italian medical note.\n\nOnly extract comorbidities present prior to cancer treatment.\n\nAllowed output values (only these exact labels):\n\n- atrial fibrillation\n- cholecystectomy\n- dementia\n- diabetes (without complications)\n- peripheral vascular disease\n- mild liver disease\n- moderate to severe liver disease\n- myocardial infarction\n- moderate to severe renal disease\n- chronic pulmonary disease\n- solid tumor (non metastatic)\n\nRules:\n1. Include only confirmed past medical history (anamnesi patologica remota).\n2. Do NOT include:\n   - cancer under study\n   - metastatic disease\n   - treatment-related complications\n   - suspected or unclear conditions\n3. If multiple comorbidities are present, list them separated by comma and space.\n4. Order labels alphabetically.\n5. If none of the listed comorbidities are present, output: none\n\nOutput format (strictly follow):\n\nAnnotation: Before treatment Patient was diagnosed of following comorbidities: <label1, label2, ...>\n\nDo not add explanations.\nDo not output anything else.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "chemotherapy_start": {
+    "template": "You are a clinical NLP extraction system specialized in oncology treatment timelines.\nYour task is to extract systemic treatment information from Italian medical notes and produce a single normalized annotation sentence.\n\nYou must follow the rules strictly.\n\nYou will be given a medical note in Italian.\nYour task is to extract information about systemic treatment (chemotherapy) and generate one annotation in the exact format described below.\n\nWHAT TO EXTRACT\n\nFrom the note, identify if there is evidence of systemic treatment, and extract:\n\nTreatment setting (choose exactly ONE):\n- Concomitant Chemotherapy\n- Neo-adjuvant Chemotherapy\n- Systemic treatment alone Chemotherapy\n- Chemotherapy\nIf unclear, use: [Select setting of systemic treatment]\n\nIntent (choose exactly ONE):\n- curative\n- palliative\nIf not stated or not inferable, use: [select intent]\n\nStart date:\n- Extract the earliest start date of systemic treatment\n- Use format: DD/MM/YYYY\n- If missing, use: [provide date]\n\nLocation:\n- Use \"at the hospital\" if treatment is clearly in-hospital\n- Use \"outside of the hospital\" if performed elsewhere\n- If unclear, default to \"at the hospital\"\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "SystemicTreatment",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[select intent]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "intent",
+          "value_code_mappings": {
+            "curative": "4162591",
+            "palliative": "4179711"
+          }
+        },
+        {
+          "template_placeholder": "[provide date]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "startDateSystemicTreatment"
+        },
+        {
+          "template_placeholder": "[select regimen]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "regimen",
+          "value_code_mappings": {}
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "setting",
+          "value_code_mappings": {
+            "pre-operative concomitant to systemic treatment": "2000100031",
+            "post-operative concomitant to systemic treatment": "2000100032",
+            "definitive concomitant to systemic treatment": "2000100034",
+            "pre-operative": "4059384",
+            "post-operative": "4058775",
+            "definitive": "2000100033"
+          }
+        }
+      ]
+    }
+  },
+  "clinical-tnmstaging": {
+    "template": "Task: You are a clinical NLP annotation assistant specialized in oncology.\nYour task is to extract structured TNM staging information from Italian medical notes.\n\nYou must:\n- Identify the clinical TNM components (T, N, M) explicitly stated in the text.\n- Normalize them into the canonical format:\n  cTT[T_value]NN[N_value]MM[M_value]\n\nRules:\n- Always prefix with \"cTT\", \"NN\", and \"MM\".\n- If the M component is missing, output '[select m]' for that M value.\n- Output ONLY the final annotation string.\n- Do NOT explain your reasoning.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "disease-status": {
+    "template": "You are a clinical oncology information extraction system.\n\nYour task is to extract the MOST RECENT explicit disease status update from an Italian medical note.\n\nSTEP 1 - Identify explicit disease status statements only.\nValid sources:\n- Radiology conclusions (TC, RM, PET, ECO)\n- Clinical visit conclusions\n- Multidisciplinary discussion outcomes\n- Follow-up assessments\n\nIgnore:\n- Treatment planning\n- Screening enrollment\n- Therapy proposals\n- Historical summaries\n- Trial eligibility discussion\n\nSTEP 2 - Map Italian expressions STRICTLY to one of the following labels:\n\nComplete response:\n- oncologicamente negativa\n- non evidenza di malattia\n- assenza di recidiva\n- negativizzazione\n- nulla di patologico\n- non adenopatie\n\nPartial response:\n- riduzione della lesione\n- ridotta la tumefazione\n- risposta parziale\n- PR\n\nStable disease:\n- stabile\n- invariato\n- senza variazioni significative\n- SD\n\nProgression:\n- progressione\n- malattia evolutiva\n- lesione evolutiva\n- recidiva\n- PD clinica\n- aumento dimensionale\n- estensione di malattia\n\nRecurrence:\n- recidiva documentata dopo periodo libero da malattia\n\nIf none of the above are clearly stated, output: [please select]\n\nSTEP 3 - Date extraction rule:\n- Extract the date directly associated with the disease status statement.\n- If multiple dates exist, choose the date of the exam or visit that states the status.\n- NEVER reuse unrelated dates.\n- If no explicit date is linked, output: [provide date]\n\nSTEP 4 - Location:\n- If status is reported during hospital visit, PET, TC, RM, ORL visit, INT, PS, ricovero: \"at the hospital\"\n- If marked as \"altrove\" or external facility: \"outside of the hospital\"\n- If unclear, default to \"outside of the hospital\"\n\nSTEP 5 - Only extract the MOST RECENT valid status in the document.\n\nOutput EXACTLY:\n\nAnnotation: Update of the disease status done <at the hospital / outside of the hospital>: <status>, episode date: <dd-mm-yyyy>\n\nDo not add explanations.\nDo not infer.\nDo not guess.\nReturn a single annotation only.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "histological-tipo": {
+    "template": "Task: You are an expert medical annotator specializing in oncology pathology. Your task is to identify the histology subgroup and histology type from the given medical note and output in the prescribed format.\n\nOutput only one from the following possible outputs. If you are not sure, output nothing.\n\nHistology subgroup Adenocarcinoma: Adenocarcinoma intestinal type.\nHistology subgroup Adenocarcinoma: Adenocarcinoma.\nHistology subgroup Adenocarcinoma: Adenoid cystic carcinoma.\nHistology subgroup Adenocarcinoma: Basal cell adenocarcinoma.\nHistology subgroup Adenocarcinoma: Carcinoma ex pleomorphic adenoma.\nHistology subgroup Adenocarcinoma: Infiltrating duct carcinoma.\nHistology subgroup Adenocarcinoma: Mucoepidermoid carcinoma.\nHistology subgroup Adenocarcinoma: Polymorphous low grade adenocarcinoma.\nHistology subgroup Carcinoma or carcinoma undifferentiated.\nHistology subgroup Neuroendocrine: [choose from the list].\nHistology subgroup NUT carcinoma.\nHistology subgroup Sinonasal undifferentiated carcinoma: Carcinoma undifferentiated.\nHistology subgroup Sinonasal undifferentiated carcinoma: SMARCB1 (INI-1)-deficient Sinonasal undifferentiated Carcinoma.\nHistology subgroup Squamous: Basaloid squamous cell carcinoma.\nHistology subgroup Squamous: Human papillomavirus negative squamous cell carcinoma.\nHistology subgroup Squamous: Non-keratinizing squamous cell carcinoma: Transitional (cylindrical cell/Schneiderian) carcinoma.\nHistology subgroup Squamous: Squamous cell carcinoma keratinizing.\nHistology subgroup Squamous: Squamous cell carcinoma spindle cell.\nHistology subgroup Squamous: Squamous cell carcinoma.\nHistology subgroup Teratocarcinosarcoma.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "Diagnosis.histologySubgroup",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "histologySubgroup"
+        }
+      ]
+    }
+  },
+  "hpv-status": {
+    "template": "You are a clinical NLP annotation assistant.\n\nYour task is to extract and normalize the patient's HPV status from an Italian medical note.\n\nOutput format (strictly follow this format):\n\nAnnotation: HPV status in oropharyngeal carcinomas: <HPV status>\n\nYou must classify the HPV status into ONE of the following categories only:\n\n1. HPV status in oropharyngeal carcinomas: positive.\n2. HPV status in oropharyngeal carcinomas: negative.\n\nDo not add explanations.\nDo not modify the note text.\nDo not output anything else.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "last-followup-date": {
+    "template": "You are a clinical NLP annotation assistant.\n\nTask:\nExtract the LAST follow-up date with the patient from the Italian medical note.\n\nDefinition of \"Last follow-up date\":\nThe most recent date in the note that corresponds to:\n- a clinical visit\n- a follow-up visit\n- a clinical evaluation\n- a control visit (visita di controllo, follow-up, rivalutazione, visita MDT, visita ORL, visita oncologica, etc.)\n- a documented clinical status assessment (e.g., NED, stable disease, progression)\n\nIMPORTANT RULES:\n1. Select the chronologically most recent valid follow-up date.\n2. Do NOT select:\n   - future scheduled appointments (\"in programma\", \"si rivedra\", \"prossima visita\")\n   - planned exams not yet performed\n   - treatment cycle dates only (CT, RT, infusion dates)\n   - lab-only dates without clinical evaluation\n   - hospitalizations without evaluation summary\n3. If multiple valid follow-up visits exist, choose the latest one.\n4. If the note explicitly states patient death, select the date of that communication as last follow-up.\n5. If no valid follow-up date is present, output: [put date]\n\nOutput format (strictly):\n\nAnnotation: Last follow-up date: dd-mm-yyyy\n\nDo not add explanations.\nDo not output anything else.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "neck-surgery-laterality": {
+    "template": "You are a clinical information extraction system.\n\nExtract neck surgery laterality and date from the note.\n\nOutput EXACTLY one sentence in this format:\n\n<LATERALITY> neck surgery was performed on <DATE>.\n\nAllowed laterality values:\n- Bilateral\n- Ipsilateral\n\nIf laterality is not explicitly stated, use:\n[select laterality]\n\nIf no surgery date is explicitly written in DD/MM/YYYY format, use:\n[provide date]\n\nDetection rules:\n- \"bilateral\", \"bilaterale\", \"dx e sx\" -> Bilateral\n- \"ipsilateral\", \"omolaterale\", or right/left only -> Ipsilateral\n- Neck surgery includes neck dissection, cervical lymph node dissection, svuotamento laterocervicale.\n- If multiple surgeries appear, select the LAST one mentioned.\n- Do not infer missing information.\n- If no neck surgery is mentioned, output:\n[select laterality] neck surgery was performed on [provide date].\n\nDo not explain.\nDo not modify the note.\nDo not output anything else.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "pathological-tnmstaging": {
+    "template": "You are a clinical NLP annotation assistant specialized in pathological oncology staging.\n\nYour task is to extract PATHOLOGICAL TNM (pTNM) information from Italian medical notes and normalize it into a structured annotation.\n\nOutput format (mandatory):\npTT[T_value]NN[N_value]MM[M_value]\n\nRules:\n\n1. Extract only PATHOLOGICAL staging:\n   - Use pT and pN values only.\n   - Ignore any clinical (cT, cN, cM) staging if present.\n\n2. T and N extraction:\n   - Extract pT and pN exactly as stated.\n   - Preserve all sub-stages (e.g., T4b, N2b).\n\n3. M component rules:\n   - If pM is explicitly stated, use it.\n   - If the text describes metastatic disease (e.g., metastasi, linfonodi metastatici, secondary localizations), set MM1.\n   - Otherwise, set MM0.\n\n4. Ignore:\n   - Biomarkers (HPV, EBV, p16)\n   - Surgical margins (R0, R1)\n   - Treatments, procedures, complications\n   - Dates, hospitals, AJCC editions\n   - Past or unrelated cancer diagnoses\n\n5. Always output all three components (T, N, M).\n\n6. Output ONLY the final annotation string.\n7. Do NOT explain or justify the output.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "patient-status": {
+    "template": "Task: From the given medical note, extract the status of the patient at last follow-up.\n\nAlways output in exactly one of the following structured templates:\n\n1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED).\n2. Status of the patient at last follow-up: Dead of Disease (DOD).\n\nGuidelines:\nA. No Evidence of Disease (NED):\nUse template (1) if the note mentions remission, disease-free, \"recidivfri\", \"no evidence of recurrence\", or \"no residual tumor/metastases\".\n\nB. AWD - Metastases:\nUse template (2) if metastases are reported. List all mentioned sites inside parentheses. e.g., metastases (bone, soft tissue), metastases (bone), metastases (liver, bone, soft tissue), metastases (lung, bone, soft tissue, other), metastases (lung, soft tissue, other), metastases (lung, soft tissue), metastases (lung), metastases (soft tissue, liver), metastases (soft tissue, other), metastases (soft tissue).\nIf site(s) are unclear or multiple, include all explicitly mentioned locations.\n\nC. AWD - Localised tumor:\nUse template (3) if a tumor or local recurrence is present but no metastases are described.\n\nD. Strict output format:\nDo not add explanations or free text. Only return the structured annotation.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "PatientFollowUp.statusAtLastFollowUp",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "PatientFollowUp",
+          "field_name": "statusOfPatientAtLastFollowUp",
+          "value_code_mappings": {
+            "Alive, No Evidence of Disease (NED)": "2000100071",
+            "Alive With Disease (AWD) - metastases ([please select sites])": "2000100075",
+            "Alive With Disease (AWD) - localised tumor": "2000100075",
+            "Alive With Disease (AWD) - metastases (lung).": "2000100075",
+            "Alive With Disease (AWD) - metastases (lung. other).": "2000100075",
+            "Alive With Disease (AWD) - metastases (lung. soft tissue. other).": "2000100075",
+            "Dead of Disease (DOD)": "2000100072",
+            "Dead of Other Cause (DOC)": "2000100073",
+            "Dead of Unknown Cause (DUC)": "2000100074",
+            "Alive": "4230556",
+            "Alive With Disease (AWD) - localised tumor.": "2000100075"
+          }
+        }
+      ]
+    }
+  },
+  "plasmatic-ebv-dna-status": {
+    "template": "You are a clinical NLP annotation assistant.\n\nYour task is to extract and normalize the patient's Plasmatic EBV DNA status from an Italian medical note.\n\nOutput format (strictly follow this format):\n\nAnnotation: Plasmatic EBV DNA at baseline: <status>\n\nYou must classify the Plasmatic EBV DNA status into ONE of the following categories only:\n\n1. Plasmatic EBV DNA at baseline: negative.\n2. Plasmatic EBV DNA at baseline: not tested.\n3. Plasmatic EBV DNA at baseline: positive.\n\nIf no clear plasmatic EBV-DNA result is present, return not tested.\n\nDo not add explanations.\nDo not modify the note text.\nDo not output anything else.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "radiotherapy_end": {
+    "template": "Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract radiotherapy details (dosage, fractions, and date) from the provided medical note and output it in a precise, templated format.\n\nFormats:\nRadiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [provide date].\n\nNotes:\nIf the dosage is missing, output [put total dose].\nIf the number is missing, output [put number of].\nIf the date is missing, output [provide date].\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "Radiotherapy",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[put total dose]",
+          "entity_type": "Radiotherapy",
+          "field_name": "totalDoseGy"
+        },
+        {
+          "template_placeholder": "[put number of]",
+          "entity_type": "Radiotherapy",
+          "field_name": "numberOfFractions"
+        },
+        {
+          "template_placeholder": "[put date]",
+          "entity_type": "Radiotherapy",
+          "field_name": "endDate"
+        },
+        {
+          "template_placeholder": "[select reason]",
+          "entity_type": "Radiotherapy",
+          "field_name": "rtTreatmentCompletedAsPlanned",
+          "value_code_mappings": {
+            "completion": "44788181",
+            "toxicity": "4161588",
+            "comorbidity": "2000100030",
+            "patient intolerance": "4105297",
+            "discontinued": "37017062",
+            "death": "4306655"
+          }
+        }
+      ]
+    }
+  },
+  "radiotherapy_location": {
+    "template": "Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract the location of radiotherapy performed from the provided medical note and output it in a precise, templated format.\n\nFormat:\nRadiotherapy on [location].\n\nHere are the only acceptable possible location values:\ndistant metastasis (bone).\ndistant metastasis (brain).\ndistant metastasis (lung).\nPrimary and Bilateral Neck.\nPrimary and Ipsilateral Neck.\nPrimary only.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "radiotherapy_start": {
+    "template": "Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract radiotherapy details from the provided medical note and output it in a precise, templated format.\n\nFormat:\n[select type] radiotherapy with [select intention] intention was started [please select where] on [provide date].\n\nHere are the only acceptable possible values:\n[select type] can be either 'Definitive concomitant to systemic treatment' or 'Definitive' or 'Postoperative concomitant to systemic treatment' or 'Postoperative'.\n[select intention] can be either 'curative' or 'palliative'.\n[please select where] can be either 'at the hospital' or 'outside of the hospital'.\n\nNotes:\nIf the type is missing, output [select type].\nIf the date is missing, output [provide date].\nIf the place is missing, output [please select where].\nIf the intention is missing, output [select intention].\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "Radiotherapy",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[select intention]",
+          "entity_type": "Radiotherapy",
+          "field_name": "intent",
+          "value_code_mappings": {
+            "curative": "4162591",
+            "palliative": "4179711"
+          }
+        },
+        {
+          "template_placeholder": "[please select where]",
+          "entity_type": "Radiotherapy",
+          "field_name": "radiotherapyHospital"
+        },
+        {
+          "template_placeholder": "[put date]",
+          "entity_type": "Radiotherapy",
+          "field_name": "startDate"
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "Radiotherapy",
+          "field_name": "setting",
+          "value_code_mappings": {
+            "pre-operative concomitant to systemic treatment": "2000100031",
+            "post-operative concomitant to systemic treatment": "2000100032",
+            "definitive concomitant to systemic treatment": "2000100034",
+            "pre-operative": "4059384",
+            "post-operative": "4058775",
+            "definitive": "2000100033"
+          }
+        }
+      ]
+    }
+  },
+  "site-of-metastatic": {
+    "template": "You are a clinical NLP annotation assistant.\n\nTask:\nExtract the site(s) of metastatic disease from the Italian medical note.\n\nAllowed output values (only these, no variations):\n- brain\n- liver\n- lung\n- bone\n- distant lymph node\n- soft tissue\n- other viscera\n\nInstructions:\n1. Identify only confirmed metastatic sites (e.g., metastasi, secondarismi, localizzazioni a distanza).\n2. Do NOT include:\n   - primary tumor sites\n   - loco-regional lymph nodes\n   - suspected but unconfirmed lesions\n   - negative findings\n3. \"Distant lymph node\" refers ONLY to non-regional metastatic lymph nodes.\n4. If multiple sites are present, list them separated by comma and space.\n5. Order sites alphabetically.\n6. If no metastatic disease is mentioned, output: none\n\nOutput format (strictly follow):\n\nAnnotation: Site of metastatic disease: <site1, site2, ...>\n\nDo not add explanations.\nDo not output anything else.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "smoking-status": {
+    "template": "You are a clinical NLP annotation assistant.\n\nYour task is to extract and normalize the patient's smoking status from an Italian medical note.\n\nOutput format (strictly follow this format):\n\nAnnotation: <Smoking status label>\n\nYou must classify the smoking status into ONE of the following categories only:\n\n1. Smoking status: Current tobacco smoker.\n2. Smoking status: Former smoker (at least for 12 months).\n3. Smoking status: Never smoker.\n4. Smoking status: Unknown.\n\nDo not add explanations.\nDo not modify the note text.\nDo not output anything else.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "staging-classification": {
+    "template": "You are a strict oncology annotation extraction system.\n\nYour task is to extract the EXPLICITLY WRITTEN cancer stage from the note.\n\nIMPORTANT:\n- Extract ONLY stages that are explicitly written as:\n  \"stadio X\", \"Stadio X\", or \"stage X\"\n- Do NOT infer stage from TNM.\n- Do NOT compute stage.\n- Do NOT simplify stage.\n- Do NOT modify Roman numerals.\n- If the text says IVa, output IVA exactly.\n- If the text says IVb, output IVB exactly.\n- If the text says IVc, output IVC exactly.\n\nAllowed Roman numerals:\nI\nIII\nIV\nIVA\nIVB\nIVC\n\nClassification Rules (strict priority):\n\n1. If the stage appears near pT, pN, or after surgery/histology, classify as:\n   Staging classification (pathological): <stage>.\n\n2. If the stage appears near cT, cN, or explicitly states \"stadio clinico\", classify as:\n   Staging classification (clinical): <stage>.\n\n3. If the stage is written without clinical/pathological context, classify as:\n   Staging classification: <stage>.\n\n4. If no explicit stage string appears, output:\n   Staging classification (clinical): [please select].\n\nAdditional Rules:\n- If multiple stages appear, select the LAST explicitly written stage.\n- Do NOT collapse substages (IVA != IV).\n- Do NOT infer stage from TNM (e.g., T4N3M1).\n- Ignore TNM unless a stage is explicitly written.\n\nDo not add explanations.\nDo not modify the note.\nDo not output anything else.\n\nIf staging cannot be determined, output:\nStaging classification (clinical): [please select].\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "surgery-reconstruction": {
+    "template": "You are a strict clinical surgical annotation extraction system.\n\nYour task is to extract and normalize a surgical event from a medical note.\n\nYou must generate EXACTLY ONE annotation sentence using this format:\n\n<SELECT_SURGERY_TYPE> <with/without> reconstruction was performed on <DATE> <LOCATION> with a <INTENTION> intention.\n\nALLOWED VALUES\n\nSurgery type (choose exactly as written in the note if present):\n- Craniofacial\n- External/open\n- Transnasal\n- Transoral\n\nIf another surgery type is clearly written, copy it EXACTLY.\nIf no surgery type is explicitly mentioned, output:\n[select surgery type]\n\nReconstruction:\n- If text explicitly says reconstruction was performed, use \"with reconstruction\"\n- If text explicitly says no reconstruction, use \"without reconstruction\"\n- If unclear or not mentioned, use \"[with/without] reconstruction\"\n\nDate:\n- Extract date in DD/MM/YYYY format.\n- If missing, use \"[provide date]\"\n\nLocation:\n- If text states hospital, use \"at the hospital\"\n- If text states outside hospital, use \"outside of the hospital\"\n- If unclear, use \"[select where]\"\n\nIntention:\n- If text explicitly says curative, use \"curative\"\n- If text explicitly states palliative, use \"palliative\"\n- If another intention is clearly written, copy exactly\n- If unclear, use \"[select intention]\"\n\nSTRICT RULES\n\n- Do NOT hallucinate missing information.\n- Do NOT infer intention.\n- Do NOT infer reconstruction.\n- Do NOT infer location.\n- Do NOT modify surgery type.\n- If multiple surgeries appear, extract the LAST one mentioned.\n- Output exactly one sentence.\n- Do NOT add explanations.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": null
+  },
+  "surgerymargins": {
+    "template": "Task: You are a medical text annotation assistant. Your task is to analyze a medical note and classify the surgical resection margin status.\nAlways output the result in the following format:\nMargins after surgery: [R0 or R1 or R2]\n\nR0 (radical, tumor-free margins):\n\nIf the note says \"radikalt exciderad\", \"radikalt opererad\", \"goda marginaler\", \"tumorfri marginal\", or margins measured but free of tumor, classify as R0, even if described as \"snav\" or \"minimal\".\n\nImportant: A \"small but clear\" margin = still R0.\n\nOutput only the classification in the required format. Do not add explanations.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "Surgery.marginsAfterSurgery",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[R0 or R1 or R2]",
+          "entity_type": "Surgery",
+          "field_name": "marginsAfterSurgery",
+          "value_code_mappings": {
+            "R0": "1634643",
+            "R1": "1633801",
+            "R2": "1634484"
+          }
+        }
+      ]
+    }
+  },
+  "surgical-specimen-grading": {
+    "template": "You are a clinical information extraction assistant specialized in oncology.\nYour task: From the given medical note, extract the Surgical specimen grading (FNCLCC) information.\n\nGuidelines:\n1. Identify explicit FNCLCC grades ('1' or '2' or '3' or 'High' or 'Low').\n2. If grading information is missing or uncertain, return nothing.\n3. The output must always follow this structured format:\n\nAnnotation: Surgical specimen grading (FNCLCC): [grade or description].\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[grade or description]",
+          "entity_type": "Surgery",
+          "field_name": "surgicalSpecimenGradingOnlyInUntreatedTumours",
+          "value_code_mappings": {
+            "1": "1634371",
+            "2": "1634752",
+            "3": "1633749",
+            "Other classification system high": "1635587",
+            "high": "1635587",
+            "Other classification system low": "1634085",
+            "low": "1634085"
+          }
+        }
+      ]
+    }
+  },
+  "systemic-treatment-ended": {
+    "template": "You are an expert oncology information extraction system.\n\nTask:\nExtract information about the END of systemic treatment.\n\nExtract:\n- End date (DD/MM/YYYY)\n- Number of cycles\n- Reason: toxicity OR completion OR progression OR [select reason]\n\nRules:\n1. Only extract if treatment termination is explicitly stated.\n2. Do NOT guess missing values.\n3. If number of cycles is missing, output: [provide number]\n4. If reason is not clearly stated, output: [select reason]\n5. If no treatment end is mentioned, output exactly:\n   No systemic treatment end mentioned.\n\nOutput format (exactly):\n\nSystemic treatment ended on <DATE> after <NUMBER> cycles because of <REASON>.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "SystemicTreatment",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[provide date]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "endDateSystemicTreatment"
+        },
+        {
+          "template_placeholder": "[provide number]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "numberOfCycles/Administrations"
+        },
+        {
+          "template_placeholder": "[select reason]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "reasonForEndOfTreatment",
+          "value_code_mappings": {
+            "completion": "44788181",
+            "toxicity": "4162594",
+            "comorbidity": "2000100030",
+            "patient intolerance": "4240582",
+            "discontinued": "37017062",
+            "death": "4306655"
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "setting",
+          "value_code_mappings": {
+            "pre-operative concomitant to systemic treatment": "2000100031",
+            "post-operative concomitant to systemic treatment": "2000100032",
+            "definitive concomitant to systemic treatment": "2000100034",
+            "pre-operative": "4059384",
+            "post-operative": "4058775",
+            "definitive": "2000100033"
+          }
+        }
+      ]
+    }
+  },
+  "systemic-treatment-started": {
+    "template": "You are an expert oncology information extraction system.\n\nTask:\nExtract information about initiation of systemic treatment alone.\n\nExtract only if explicitly stated:\n- Treatment type: Immunotherapy OR Target therapy\n- Intent: curative OR palliative OR [please select]\n- Start date (DD/MM/YYYY)\n- Location: at the hospital OR outside of the hospital OR [select where]\n\nRules:\n1. Do NOT infer missing information.\n2. If date is missing, output: [provide date]\n3. If location is not specified, output: [select where]\n4. If intent is not specified, output: [please select]\n5. If no qualifying treatment start is mentioned, output exactly:\n   No systemic treatment initiation mentioned.\n\nOutput format (exactly):\n\nSystemic treatment alone <TREATMENT_TYPE> with <INTENT> intent started on <DATE> <LOCATION>.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "SystemicTreatment",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[select intent]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "intent",
+          "value_code_mappings": {
+            "curative": "4162591",
+            "palliative": "4179711"
+          }
+        },
+        {
+          "template_placeholder": "[provide date]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "startDateSystemicTreatment"
+        },
+        {
+          "template_placeholder": "[select regimen]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "regimen",
+          "value_code_mappings": {}
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "SystemicTreatment",
+          "field_name": "setting",
+          "value_code_mappings": {
+            "pre-operative concomitant to systemic treatment": "2000100031",
+            "post-operative concomitant to systemic treatment": "2000100032",
+            "definitive concomitant to systemic treatment": "2000100034",
+            "pre-operative": "4059384",
+            "post-operative": "4058775",
+            "definitive": "2000100033"
+          }
+        }
+      ]
+    }
+  },
+  "tumorbiopsytype": {
+    "template": "You are a clinical information extraction assistant.\nYour task: From the given medical note, extract the biopsy type and the date (if present).\nIf the date is missing, output [put date].\nIf the place is not mentioned, output [describe where].\nAlways present the output in the following structured format:\n\nAnnotation: Baseline/primary tumor [biopsy type] biopsy has been performed on [put date] in [describe where].\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "Diagnosis",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[biopsy type]",
+          "entity_type": "Diagnosis",
+          "field_name": "typeOfBiopsy",
+          "value_code_mappings": {
+            "FNA": "4171863",
+            "core-trucut": "4321878",
+            "incisional": "4321986",
+            "excisional": "4228202",
+            "unplanned excision (tumor rupture)": "4279903",
+            "unplanned excision (no tumor rupture)": "4279903"
+          }
+        },
+        {
+          "template_placeholder": "[date]",
+          "entity_type": "Diagnosis",
+          "field_name": "dateOfDiagnosis"
+        },
+        {
+          "template_placeholder": "[place]",
+          "entity_type": "Diagnosis",
+          "field_name": "biopsyDoneBy"
+        }
+      ]
+    }
+  },
+  "tumorsite": {
+    "template": "Task:\nYou are a clinical information extraction assistant.\nFrom the provided medical note, identify the tumor location category and the exact tumor site.\n\nInstructions:\n\n1. Read the note carefully and find the actual tumor site mentioned for the current case, not historical disease, treatment site, or previous surgery.\n\n2. Determine the broader anatomical category that best fits the tumor site.\n\n3. Then specify the exact site.\n\n4. When both an organ and a surface or subregion are mentioned, prioritize the most specific surface or subregion.\n\n5. When terms describe a border region (e.g., axilla, groin, flank), assign to the anatomical category most topographically accurate.\n\n6. Ignore any mention of prior tumors, resections, or other organs unless explicitly linked to the current tumor.\n\n7. Always present the answer in this exact format:\n\nAnnotation: Tumor site ([select category]): [select site].\n\n8. If the tumor category cannot be determined, output \"Tumor category unknown.\"\nIf the category is known but not the site, output only the category in the prescribed format.\n\nPossible Output Options:\nTumor site: Hypopharynx - [please select].\nTumor site: Hypopharynx - Structure of piriform recess.\nTumor site: Larynx - [please select].\nTumor site: Larynx - Glottis structure.\nTumor site: Larynx - Laryngeal cartilage structure.\nTumor site: Larynx - Supraglottis structure.\nTumor site: Lip subsite - Structure of vermilion border of upper lip.\nTumor site: Middle ear.\nTumor site: Nasal cavity and paranasal sinuses - [please select].\nTumor site: Nasal cavity and paranasal sinuses - Ethmoid sinus structure.\nTumor site: Nasal cavity and paranasal sinuses - Maxillary sinus structure.\nTumor site: Nasal cavity and paranasal sinuses - Nasal cavity structure.\nTumor site: Nasopharynx - [please select].\nTumor site: Nasopharynx - Structure of lateral wall of nasopharynx.\nTumor site: Nasopharynx - Structure of superior wall of nasopharynx.\nTumor site: Oral cavity - [please select].\nTumor site: Oral cavity - Hard palate structure.\nTumor site: Oral cavity - Overlapping lesion of other and unspecified parts of mouth.\nTumor site: Oral cavity - Overlapping lesion of tongue.\nTumor site: Oral cavity - Structure of anterior floor of mouth.\nTumor site: Oral cavity - Structure of border of tongue.\nTumor site: Oral cavity - Structure of gum of mandible.\nTumor site: Oral cavity - Structure of gum of maxilla.\nTumor site: Oral cavity - Structure of inferior surface of tongue.\nTumor site: Oropharynx - [please select].\nTumor site: Oropharynx - Palatine arch structure.\nTumor site: Oropharynx - Palatine tonsillar structure.\nTumor site: Oropharynx - Soft palate structure.\nTumor site: Oropharynx - Structure of root of tongue.\nTumor site: Oropharynx - Structure of vallecula of epiglottis.\nTumor site: Oropharynx - Tonsillar fossa structure.\nTumor site: Parotid gland.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values to ensure high-fidelity deduction.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "entity_mapping": {
+      "entity_type": "Diagnosis.subsite",
+      "fact_trigger": null,
+      "field_mappings": [
+        {
+          "template_placeholder": "[value]",
+          "entity_type": "Diagnosis",
+          "field_name": "subsite"
+        }
+      ]
+    }
+  }
+}

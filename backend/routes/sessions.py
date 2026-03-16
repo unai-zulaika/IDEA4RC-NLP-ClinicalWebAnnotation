@@ -180,12 +180,22 @@ async def create_session(session: SessionCreate):
     # Infer center from prompt_types if not explicitly provided
     center = session.center
     if not center and session.prompt_types:
-        # Extract center suffix from prompt_types (e.g. "biopsygrading-int" -> "INT")
+        # Extract center suffix from prompt_types by matching against known centers
+        # e.g. "alcohol-habits-int-hnc" with known center "INT-HNC" → match suffix "-int-hnc"
+        from routes.prompts import get_latest_prompts_dir
+        prompts_dir = get_latest_prompts_dir()
+        known_centers = sorted(
+            (d.name for d in prompts_dir.iterdir()
+             if d.is_dir() and (d / "prompts.json").exists()),
+            key=len, reverse=True  # longest first to match "INT-SARC" before "INT"
+        ) if prompts_dir.is_dir() else []
         center_votes: Dict[str, int] = {}
         for pt in session.prompt_types:
-            if '-' in pt:
-                suffix = pt.rsplit('-', 1)[-1].upper()
-                center_votes[suffix] = center_votes.get(suffix, 0) + 1
+            for kc in known_centers:
+                suffix = f"-{kc.lower()}"
+                if pt.endswith(suffix):
+                    center_votes[kc] = center_votes.get(kc, 0) + 1
+                    break
         if center_votes:
             center = max(center_votes, key=center_votes.get)
             print(f"[INFO] Inferred center '{center}' from prompt_types")
@@ -394,7 +404,7 @@ async def add_prompt_types(session_id: str, update: SessionPromptTypesUpdate):
     # Validate that prompt types exist
     from routes.prompts import load_prompts_json
     prompts = load_prompts_json()
-    # Prompts are nested: { "INT": { "gender-int": {...}, ... }, "MSCI": {...}, ... }
+    # Prompts are nested: { "INT-SARC": { "gender-int-sarc": {...}, ... }, "MSCI": {...}, ... }
     # Flatten to get all available prompt types
     available_prompt_types = []
     for category, category_prompts in prompts.items():
@@ -472,7 +482,7 @@ def _build_prompt_to_core_variable_mapping() -> Dict[str, str]:
     # Try to load mappings from prompts.json entity_mapping
     try:
         prompts = load_prompts_json()
-        for category in ['INT', 'MSCI', 'VGR']:
+        for category in prompts:
             if category not in prompts:
                 continue
             for prompt_key, prompt_data in prompts[category].items():

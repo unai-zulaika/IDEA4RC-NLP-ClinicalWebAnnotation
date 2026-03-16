@@ -17,7 +17,7 @@ from models.schemas import PromptInfo, PromptUpdate, PromptRename, EntityMapping
 
 router = APIRouter()
 
-DEFAULT_CENTER = "INT"
+DEFAULT_CENTER = "INT-SARC"
 
 
 def _get_prompts_dir(mode: str = "standard") -> Path:
@@ -43,7 +43,7 @@ def load_prompts_json(mode: str = "standard") -> Dict:
 
     Returns:
         Dict with shape {center: {suffixed_key: prompt_data}}
-        e.g. {"INT": {"biopsygrading-int": {...}}, "VGR": {"biopsygrading-vgr": {...}}}
+        e.g. {"INT-SARC": {"biopsygrading-int-sarc": {...}}, "VGR": {"biopsygrading-vgr": {...}}}
     """
     prompts_dir = _get_prompts_dir(mode)
     if not prompts_dir.is_dir():
@@ -62,7 +62,7 @@ def load_prompts_json(mode: str = "standard") -> Dict:
         raise HTTPException(status_code=404, detail=f"No center directories found in {prompts_dir}")
 
     for center_dir in center_dirs:
-        center = center_dir.name  # e.g. "INT"
+        center = center_dir.name  # e.g. "INT-SARC"
         center_lower = center.lower()
         prompts_file = center_dir / "prompts.json"
 
@@ -200,7 +200,7 @@ async def create_center(body: CenterCreate, mode: str = Query("standard", descri
 
 @router.get("", response_model=List[PromptInfo])
 async def list_prompts(
-    center: Optional[str] = Query(None, description="Filter by center; default INT"),
+    center: Optional[str] = Query(None, description="Filter by center; default INT-SARC"),
     mode: str = Query("standard", description="Prompt mode: standard or fast"),
 ):
     """List prompts for a center. If center omitted, defaults to INT."""
@@ -261,7 +261,7 @@ async def create_prompt(create: PromptInfo, mode: str = Query("standard", descri
 @router.get("/{prompt_type}", response_model=PromptInfo)
 async def get_prompt(
     prompt_type: str,
-    center: Optional[str] = Query(None, description="Center; default INT"),
+    center: Optional[str] = Query(None, description="Center; default INT-SARC"),
     mode: str = Query("standard", description="Prompt mode: standard or fast"),
 ):
     """Get a specific prompt by type and center."""
@@ -287,7 +287,7 @@ async def get_prompt(
 async def update_prompt(
     prompt_type: str,
     update: PromptUpdate,
-    center: Optional[str] = Query(None, description="Center; default INT"),
+    center: Optional[str] = Query(None, description="Center; default INT-SARC"),
     mode: str = Query("standard", description="Prompt mode: standard or fast"),
 ):
     """Update prompt template and/or entity mapping."""
@@ -315,7 +315,7 @@ async def update_prompt(
 async def rename_prompt(
     prompt_type: str,
     rename: PromptRename,
-    center: Optional[str] = Query(None, description="Center; default INT"),
+    center: Optional[str] = Query(None, description="Center; default INT-SARC"),
     mode: str = Query("standard", description="Prompt mode: standard or fast"),
 ):
     """Rename a prompt type within a center."""
@@ -352,7 +352,7 @@ async def rename_prompt(
 @router.delete("/{prompt_type}", status_code=204)
 async def delete_prompt(
     prompt_type: str,
-    center: Optional[str] = Query(None, description="Center; default INT"),
+    center: Optional[str] = Query(None, description="Center; default INT-SARC"),
     mode: str = Query("standard", description="Prompt mode: standard or fast"),
 ):
     """Delete a prompt from a center."""

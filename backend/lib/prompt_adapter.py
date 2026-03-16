@@ -108,7 +108,7 @@ def adapt_all_prompts_from_dir(prompts_dir: str | Path) -> Dict[str, Dict[str, s
         raise ValueError(f"No center subdirectories with prompts.json found in {prompts_dir}")
 
     for center_dir in center_dirs:
-        center_name = center_dir.name  # e.g. "INT", "VGR", "MSCI"
+        center_name = center_dir.name  # e.g. "INT-SARC", "INT-HNC", "VGR", "MSCI"
         center_lower = center_name.lower()
         prompts_file = center_dir / "prompts.json"
 
@@ -181,7 +181,7 @@ def get_adapted_prompt(prompt_key: str, prompts_json_path: str | Path) -> str:
     Get a single adapted prompt template by key.
 
     Args:
-        prompt_key: The prompt key (e.g., 'biopsygrading-int')
+        prompt_key: The prompt key (e.g., 'biopsygrading-int-sarc')
         prompts_json_path: Path to prompts.json
 
     Returns:

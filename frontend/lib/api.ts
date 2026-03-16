@@ -549,7 +549,7 @@ export const promptsApi = {
     const response = await api.post('/api/prompts', {
       prompt_type,
       template,
-      center: center || 'INT',
+      center: center || 'INT-SARC',
     }, { params })
     return response.data
   },
