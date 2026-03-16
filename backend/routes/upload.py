@@ -347,7 +347,7 @@ async def get_report_type_mappings(center: Optional[str] = Query(None)):
     """Get saved report type to prompt type mappings, scoped by center.
 
     The file stores mappings nested by center:
-      { "INT": { "Pathology": ["biopsygrading-int", ...] }, "MSCI": { ... } }
+      { "INT-SARC": { "Pathology": ["biopsygrading-int-sarc", ...] }, "MSCI": { ... } }
 
     If center is provided, returns only that center's mappings (flat dict).
     If center is omitted, returns the entire nested structure.

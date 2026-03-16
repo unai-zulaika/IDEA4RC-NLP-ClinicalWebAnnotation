@@ -14,7 +14,7 @@ interface PromptEditorProps {
   onDelete?: () => void
 }
 
-export default function PromptEditor({ promptType, center = 'INT', mode = 'standard', onSave, onDelete }: PromptEditorProps) {
+export default function PromptEditor({ promptType, center = 'INT-SARC', mode = 'standard', onSave, onDelete }: PromptEditorProps) {
   const [prompt, setPrompt] = useState<PromptInfo | null>(null)
   const [template, setTemplate] = useState('')
   const [promptName, setPromptName] = useState('')

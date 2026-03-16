@@ -5,6 +5,8 @@ small_testing_data/*
 backend/data/presets/*
 pipeline/api/data/results/*
 
+backend/data/INT-HNC-Scripts/
+
 data/diagnosis_codes/diagnosis-codes-list.csv
 test_data/
 medgemma-1.5-4b-it-W4A16-G128/
@@ -103,3 +105,4 @@ SARC_V2(in).csv
 synthetic_idea4rc_csv.csv
 IDEA4RC_DM_V2 (2).xlsx
 docs/RUNAI_DEPLOYMENT.md
+docs/RUNAI_DEPLOYMENT.pdf

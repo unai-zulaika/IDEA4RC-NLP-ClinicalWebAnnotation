@@ -77,11 +77,11 @@ def sync(source_path: Path, target_path: Path, label: str) -> None:
 
 
 if __name__ == "__main__":
-    # 1. latest_INT → fast_INT
+    # 1. latest_INT-SARC → fast_INT-SARC
     sync(
-        LATEST / "INT" / "prompts.json",
-        FAST   / "INT" / "prompts.json",
-        "latest_INT → fast_INT",
+        LATEST / "INT-SARC" / "prompts.json",
+        FAST   / "INT-SARC" / "prompts.json",
+        "latest_INT-SARC → fast_INT-SARC",
     )
 
     # 2. latest_MSCI → fast_MSCI
@@ -91,18 +91,18 @@ if __name__ == "__main__":
         "latest_MSCI → fast_MSCI",
     )
 
-    # 3. latest_INT → latest_VGR  (add INT mappings for shared variables)
+    # 3. latest_INT-SARC → latest_VGR  (add INT mappings for shared variables)
     sync(
         LATEST / "INT"  / "prompts.json",
         LATEST / "VGR"  / "prompts.json",
-        "latest_INT → latest_VGR",
+        "latest_INT-SARC → latest_VGR",
     )
 
-    # 4. latest_INT → fast_VGR
+    # 4. latest_INT-SARC → fast_VGR
     sync(
         LATEST / "INT"  / "prompts.json",
         FAST   / "VGR"  / "prompts.json",
-        "latest_INT → fast_VGR",
+        "latest_INT-SARC → fast_VGR",
     )
 
     print("\nDone.")

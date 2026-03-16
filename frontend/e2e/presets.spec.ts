@@ -7,11 +7,11 @@ async function createPresetViaAPI(request: any) {
   const resp = await request.post(`${API_BASE}/api/presets`, {
     data: {
       name: 'Test Preset',
-      center: 'INT',
+      center: 'INT-SARC',
       description: 'E2E test preset',
       report_type_mapping: {
-        pathology: ['histology-int', 'grading-int'],
-        radiology: ['imaging-int'],
+        pathology: ['histology-int-sarc', 'grading-int-sarc'],
+        radiology: ['imaging-int-sarc'],
       },
     },
   })
