@@ -74,10 +74,12 @@ export default function AnnotationViewer({
   // Check if annotation has been processed (has annotation text or status)
   const isProcessed = !!(annotation.annotation_text || annotation.status || annotation.raw_response)
   const templateIncomplete = isProcessed && isTemplateIncomplete(annotation.annotation_text)
+  const hasHallucination = isProcessed && annotation.hallucination_flags && annotation.hallucination_flags.length > 0
+  const hallucinationHigh = hasHallucination && annotation.hallucination_flags!.some(f => f.severity === 'high')
 
   return (
     <>
-      <div className={`border-2 ${colorClasses.border} rounded-lg p-4 space-y-4 ${isProcessed ? 'hover:shadow-md transition-shadow cursor-pointer' : ''} bg-white`} onClick={() => isProcessed && setShowDetailView(true)}>
+      <div className={`border-2 ${hasHallucination ? (hallucinationHigh ? 'border-red-400 bg-red-50/30' : 'border-orange-400 bg-orange-50/30') : `${colorClasses.border} bg-white`} rounded-lg p-4 space-y-4 ${isProcessed ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`} onClick={() => isProcessed && setShowDetailView(true)}>
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <h3 className="text-sm font-semibold" style={{ color: titleColor }}>
@@ -170,6 +172,33 @@ export default function AnnotationViewer({
             </button>
           )}
         </div>
+
+      {/* Hallucination warning banner - full width, highly visible */}
+      {isProcessed && annotation.hallucination_flags && annotation.hallucination_flags.length > 0 && (
+        <div className={`rounded-md p-3 flex items-start gap-3 ${
+          annotation.hallucination_flags.some(f => f.severity === 'high')
+            ? 'bg-red-50 border-2 border-red-400'
+            : 'bg-orange-50 border-2 border-orange-400'
+        }`}>
+          <span className="text-2xl flex-shrink-0">{'\u26A0\uFE0F'}</span>
+          <div>
+            <p className={`text-sm font-bold ${
+              annotation.hallucination_flags.some(f => f.severity === 'high')
+                ? 'text-red-800'
+                : 'text-orange-800'
+            }`}>
+              Possible hallucination detected
+            </p>
+            {annotation.hallucination_flags.map((flag, idx) => (
+              <p key={idx} className={`text-xs mt-0.5 ${
+                flag.severity === 'high' ? 'text-red-700' : 'text-orange-700'
+              }`}>
+                {flag.message} (field: <span className="font-semibold">{flag.field}</span>, {Math.round(flag.duplicate_ratio * 100)}% duplicated)
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Only show expected annotation if note has been processed */}
       {isProcessed && expectedAnnotation && expectedAnnotation !== annotation.annotation_text && (

@@ -295,48 +295,55 @@ async def upload_csv(file: UploadFile = File(...)):
 
 
 @router.post("/fewshots")
-async def upload_fewshots(file: UploadFile = File(...)):
+async def upload_fewshots(file: UploadFile = File(...), center: str = Query(..., description="Center to associate few-shots with (e.g., INT-SARC, MSCI, VGR, INT-HNC)")):
     """
-    Upload few-shot examples CSV.
+    Upload few-shot examples CSV for a specific center.
     Expected format: prompt_type, note_text, annotation
+    The prompt_type values are automatically suffixed with the center name
+    to match the prompt key format (e.g., 'gender' → 'gender-int-sarc').
     """
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="File must be a CSV")
-    
+
+    center_lower = center.lower()
+
     contents = await file.read()
-    
+
     contents_str = contents.decode('utf-8')
     required_columns = ['prompt_type', 'note_text', 'annotation']
     df = _parse_csv_flexible(contents_str, required_columns)
-    
+
     # Import the few-shot storage from annotate module (lazy import to avoid circular dependency)
     import importlib
     annotate_module = importlib.import_module('routes.annotate')
     _simple_fewshots = getattr(annotate_module, '_simple_fewshots', {})
-    
+
     # Load existing fewshots from disk if memory is empty
     if not _simple_fewshots:
         _simple_fewshots.update(_load_fewshots_from_disk())
-    
-    # Group by prompt_type and store
+
+    # Group by prompt_type and store, suffixing with center
     fewshot_count = 0
     for _, row in df.iterrows():
         prompt_type = str(row['prompt_type']).strip()
         note_text = str(row['note_text']).strip()
         annotation = str(row['annotation']).strip()
-        
+
         if prompt_type and note_text and annotation:
-            if prompt_type not in _simple_fewshots:
-                _simple_fewshots[prompt_type] = []
-            _simple_fewshots[prompt_type].append((note_text, annotation))
+            # Suffix with center to match prompt keys (e.g., "gender" → "gender-int-sarc")
+            full_key = f"{prompt_type}-{center_lower}"
+            if full_key not in _simple_fewshots:
+                _simple_fewshots[full_key] = []
+            _simple_fewshots[full_key].append((note_text, annotation))
             fewshot_count += 1
-    
+
     # Save to disk for persistence
     _save_fewshots_to_disk(_simple_fewshots)
-    
+
     return {
         "success": True,
-        "message": f"Uploaded {fewshot_count} few-shot examples",
+        "message": f"Uploaded {fewshot_count} few-shot examples for center '{center}'",
+        "center": center,
         "prompt_types": list(_simple_fewshots.keys()),
         "counts_by_prompt": {pt: len(examples) for pt, examples in _simple_fewshots.items()}
     }
@@ -415,18 +422,18 @@ async def save_report_type_mappings(
 
 
 @router.get("/fewshots/status")
-async def get_fewshots_status():
-    """Get status of uploaded few-shot examples"""
+async def get_fewshots_status(center: Optional[str] = Query(None, description="Filter by center (e.g., INT-SARC, MSCI)")):
+    """Get status of uploaded few-shot examples, optionally filtered by center"""
     import importlib
     annotate_module = importlib.import_module('routes.annotate')
     _simple_fewshots = getattr(annotate_module, '_simple_fewshots', {})
-    
+
     # Load from disk if memory is empty
     if not _simple_fewshots:
         _simple_fewshots.update(_load_fewshots_from_disk())
         # Also update the annotate module's storage
         setattr(annotate_module, '_simple_fewshots', _simple_fewshots)
-    
+
     # Also check if FAISS builder is available
     try:
         from routes.annotate import _get_fewshot_builder
@@ -434,45 +441,71 @@ async def get_fewshots_status():
         faiss_available = builder is not None
     except:
         faiss_available = False
-    
+
+    # Filter by center if specified
+    if center:
+        center_lower = center.lower()
+        center_suffix = f"-{center_lower}"
+        # Match exact center suffix, e.g. center="INT-SARC" matches "gender-int-sarc"
+        # Legacy "-int" keys only match INT-SARC (the original center)
+        legacy_suffix = "-int"
+        match_legacy = center_lower == "int-sarc"
+        filtered = {}
+        for k, v in _simple_fewshots.items():
+            if k.endswith(center_suffix):
+                filtered[k] = v
+            elif match_legacy and k.endswith(legacy_suffix):
+                filtered[k] = v
+    else:
+        filtered = _simple_fewshots
+
     return {
         "faiss_available": faiss_available,
-        "simple_fewshots_available": len(_simple_fewshots) > 0,
-        "prompt_types_with_fewshots": list(_simple_fewshots.keys()),
-        "counts_by_prompt": {pt: len(examples) for pt, examples in _simple_fewshots.items()},
-        "total_examples": sum(len(examples) for examples in _simple_fewshots.values())
+        "simple_fewshots_available": len(filtered) > 0,
+        "prompt_types_with_fewshots": list(filtered.keys()),
+        "counts_by_prompt": {pt: len(examples) for pt, examples in filtered.items()},
+        "total_examples": sum(len(examples) for examples in filtered.values())
     }
 
 
 @router.delete("/fewshots")
-async def delete_fewshots():
+async def delete_fewshots(center: Optional[str] = Query(None, description="Delete only few-shots for this center. If omitted, deletes all.")):
     """
-    Delete all few-shot examples.
-    Clears both in-memory storage and disk storage of few-shot examples.
+    Delete few-shot examples, optionally filtered by center.
+    If center is provided, only deletes few-shots for that center.
+    If omitted, deletes all few-shot examples.
     """
     import importlib
     annotate_module = importlib.import_module('routes.annotate')
     _simple_fewshots = getattr(annotate_module, '_simple_fewshots', {})
-    
+
     # Load from disk if memory is empty
     if not _simple_fewshots:
         _simple_fewshots.update(_load_fewshots_from_disk())
-    
-    # Count examples before deletion
-    total_examples = sum(len(examples) for examples in _simple_fewshots.values())
-    prompt_types_count = len(_simple_fewshots)
-    
-    # Clear the dictionary
-    _simple_fewshots.clear()
-    setattr(annotate_module, '_simple_fewshots', _simple_fewshots)
-    
-    # Also delete from disk
-    fewshots_file = _get_fewshots_file()
-    if fewshots_file.exists():
-        try:
-            fewshots_file.unlink()
-        except Exception as e:
-            print(f"[WARN] Failed to delete fewshots file from disk: {e}")
+
+    if center:
+        # Delete only keys for the specified center
+        center_suffix = f"-{center.lower()}"
+        keys_to_delete = [k for k in _simple_fewshots if k.endswith(center_suffix)]
+        total_examples = sum(len(_simple_fewshots[k]) for k in keys_to_delete)
+        for k in keys_to_delete:
+            del _simple_fewshots[k]
+        prompt_types_count = len(keys_to_delete)
+        # Save remaining to disk
+        _save_fewshots_to_disk(_simple_fewshots)
+    else:
+        # Delete all
+        total_examples = sum(len(examples) for examples in _simple_fewshots.values())
+        prompt_types_count = len(_simple_fewshots)
+        _simple_fewshots.clear()
+        setattr(annotate_module, '_simple_fewshots', _simple_fewshots)
+        # Delete disk file
+        fewshots_file = _get_fewshots_file()
+        if fewshots_file.exists():
+            try:
+                fewshots_file.unlink()
+            except Exception as e:
+                print(f"[WARN] Failed to delete fewshots file from disk: {e}")
     
     return {
         "success": True,

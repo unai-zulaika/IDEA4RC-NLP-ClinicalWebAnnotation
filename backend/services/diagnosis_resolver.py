@@ -54,6 +54,10 @@ def _classify_prompt_type(prompt_type: str) -> Optional[str]:
 
 def _extract_site_text(text: str) -> Optional[str]:
     """Extract the site description from a tumor site annotation."""
+    stripped = text.strip()
+    # Guard: reject raw JSON blobs (unparsed structured output)
+    if stripped.startswith('{') or stripped.startswith('['):
+        return None
     # "Tumor site (Category): Site." → "Site"
     m = re.search(
         r'Tumor site\s*(?:\([^)]*\))?\s*:\s*(.+?)(?:\s*\(ICD-O-3.*?\))?\s*\.?\s*$',
@@ -61,7 +65,7 @@ def _extract_site_text(text: str) -> Optional[str]:
     )
     if m:
         return m.group(1).strip()
-    return text.strip().rstrip('.')
+    return stripped.rstrip('.')
 
 
 def _extract_site_category(text: str) -> Optional[str]:
@@ -210,6 +214,14 @@ class DiagnosisResolver:
                 if classification is None:
                     continue
 
+                # Skip annotations flagged with HIGH severity hallucination
+                hallucination_flags = ann.get('hallucination_flags', [])
+                if isinstance(hallucination_flags, list) and any(
+                    isinstance(f, dict) and f.get('severity') == 'high'
+                    for f in hallucination_flags
+                ):
+                    continue
+
                 # Extract code from annotation text (primary) with fallback
                 code = _extract_code_from_annotation(ann, classification)
                 if not code:
@@ -232,7 +244,9 @@ class DiagnosisResolver:
                         site_desc = _extract_site_text(annotation_text) or ''
                         if not site_desc:
                             icdo3 = ann.get('icdo3_code') or {}
-                            site_desc = (icdo3.get('description', '') if isinstance(icdo3, dict) else '') or ''
+                            raw = (icdo3.get('description', '') if isinstance(icdo3, dict) else '') or ''
+                            # Guard: reject long/JSON descriptions (likely unparsed output)
+                            site_desc = raw if raw and len(raw) < 200 and not raw.strip().startswith('{') else ''
                         topography_codes[code] = {
                             'code': code,
                             'note_id': note_id,

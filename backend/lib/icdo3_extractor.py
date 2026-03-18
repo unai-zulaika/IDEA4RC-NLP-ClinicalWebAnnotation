@@ -33,6 +33,12 @@ def _is_site_prompt(prompt_type: str) -> bool:
     return 'tumorsite' in pt or ('site' in pt and 'tumor' in pt)
 
 
+def _is_histology_prompt(prompt_type: str) -> bool:
+    """Check if a prompt type is a histological type prompt."""
+    pt = prompt_type.lower()
+    return 'histolog' in pt
+
+
 def is_histology_or_site_prompt(prompt_type: str) -> bool:
     """Check if a prompt type requires ICD-O-3 code extraction"""
     return prompt_type.lower() in HISTOLOGY_SITE_PROMPTS or \
@@ -86,7 +92,14 @@ def extract_icdo3_from_text(
     if not existing_code and note_text:
         existing_code = _extract_existing_code(note_text)
 
-    # Strategy 1.5: For site prompts, use TopographyResolver to resolve
+    # For histology prompts, discard topography-only codes — they are irrelevant
+    # and would cause Strategy 3 to return location-based instead of morphology-based results.
+    if existing_code and _is_histology_prompt(prompt_type):
+        if existing_code.get('topography_code') and not existing_code.get('morphology_code'):
+            print(f"[INFO] Discarding topography-only code {existing_code['topography_code']} for histology prompt")
+            existing_code = None
+
+    # Strategy 1.5a: For site prompts, use TopographyResolver to resolve
     # the site text to a topography code from condition_files.
     # This is fast and deterministic — no LLM call needed.
     if _is_site_prompt(prompt_type) and not existing_code:
@@ -94,6 +107,14 @@ def extract_icdo3_from_text(
         if topo_result:
             existing_code = topo_result
             print(f"[INFO] TopographyResolver matched site text → {topo_result['topography_code']}")
+
+    # Strategy 1.5b: For histology prompts, use MorphologyResolver to resolve
+    # the histology text to a morphology code from condition_files.
+    if _is_histology_prompt(prompt_type) and not existing_code:
+        morph_result = _resolve_morphology_from_annotation(text)
+        if morph_result:
+            existing_code = morph_result
+            print(f"[INFO] MorphologyResolver matched histology text → {morph_result['morphology_code']}")
 
     # Strategy 2: Use LLM to extract search terms and get candidates from CSV
     # This is the primary strategy - CSV is the source of truth
@@ -228,12 +249,25 @@ async def extract_icdo3_from_text_async(
     if not existing_code and note_text:
         existing_code = _extract_existing_code(note_text)
 
-    # Strategy 1.5: For site prompts, use TopographyResolver
+    # For histology prompts, discard topography-only codes
+    if existing_code and _is_histology_prompt(prompt_type):
+        if existing_code.get('topography_code') and not existing_code.get('morphology_code'):
+            print(f"[INFO] Discarding topography-only code {existing_code['topography_code']} for histology prompt")
+            existing_code = None
+
+    # Strategy 1.5a: For site prompts, use TopographyResolver
     if _is_site_prompt(prompt_type) and not existing_code:
         topo_result = _resolve_topography_from_annotation(text)
         if topo_result:
             existing_code = topo_result
             print(f"[INFO] TopographyResolver matched site text → {topo_result['topography_code']}")
+
+    # Strategy 1.5b: For histology prompts, use MorphologyResolver
+    if _is_histology_prompt(prompt_type) and not existing_code:
+        morph_result = _resolve_morphology_from_annotation(text)
+        if morph_result:
+            existing_code = morph_result
+            print(f"[INFO] MorphologyResolver matched histology text → {morph_result['morphology_code']}")
 
     # Strategy 2: Use async LLM to extract search terms and get candidates from CSV
     if vllm_client:
@@ -738,6 +772,77 @@ def _resolve_topography_from_annotation(text: str) -> Optional[Dict[str, Any]]:
         'histology_code': None,
         'behavior_code': None,
         'description': f"{entry['subsite']} ({entry.get('site', '')})" if entry.get('site') else entry['subsite'],
+        'confidence': 0.85
+    }
+
+
+def _resolve_morphology_from_annotation(text: str) -> Optional[Dict[str, Any]]:
+    """
+    Extract the histology text from a histological type annotation and resolve
+    it to a morphology code using the MorphologyResolver (condition_files CSVs).
+
+    Handles annotation formats like:
+      - "Histological type (SARC): Undifferentiated sarcoma (ICD-O-3: 8800/3)."
+      - "Histological type: Sarcoma NOS."
+      - "Undifferentiated sarcoma"
+
+    Returns dict compatible with existing_code format, or None.
+    """
+    try:
+        from lib.morphology_resolver import get_morphology_resolver
+        resolver = get_morphology_resolver()
+    except Exception as e:
+        print(f"[WARN] MorphologyResolver not available: {e}")
+        return None
+
+    # Extract histology text from annotation format
+    histology_text = None
+
+    # Pattern 1: "Histological type (Category): Type (ICD-O-3: xxxx/x)."
+    m = re.search(
+        r'Histolog\w+\s+type?\s*\([^)]*\)\s*:\s*(.+?)(?:\s*\(ICD-O-3:.*?\))?\s*\.?\s*$',
+        text, re.IGNORECASE
+    )
+    if m:
+        histology_text = m.group(1).strip()
+    else:
+        # Pattern 2: "Histological type: Type."
+        m = re.search(
+            r'Histolog\w+\s+type?\s*:\s*(.+?)(?:\s*\(ICD-O-3:.*?\))?\s*\.?\s*$',
+            text, re.IGNORECASE
+        )
+        if m:
+            histology_text = m.group(1).strip()
+        else:
+            # Pattern 3: use full text as histology description
+            histology_text = text.strip().rstrip('.')
+
+    if not histology_text:
+        return None
+
+    # Remove any trailing parenthetical like "(C64.0)" or "(ICD-O-3: ...)"
+    clean_text = re.sub(r'\s*\([^)]*\)\s*$', '', histology_text).strip()
+
+    # Try the cleaned text first, then original
+    entry = resolver.resolve_text(clean_text) or resolver.resolve_text(histology_text)
+    if not entry:
+        return None
+
+    code = entry['code']
+    histology_code = None
+    behavior_code = None
+    if '/' in code:
+        parts = code.split('/')
+        histology_code = parts[0]
+        behavior_code = parts[1] if len(parts) > 1 else None
+
+    return {
+        'code': code,
+        'morphology_code': code,
+        'topography_code': None,
+        'histology_code': histology_code,
+        'behavior_code': behavior_code,
+        'description': f"{entry['label']} ({entry.get('group', '')})" if entry.get('group') else entry['label'],
         'confidence': 0.85
     }
 

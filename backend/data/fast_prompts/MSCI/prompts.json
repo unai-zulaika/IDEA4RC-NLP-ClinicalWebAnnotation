@@ -183,7 +183,7 @@
     }
   },
   "histological": {
-    "template": "You are a medical annotator. Read the note and identify the histological type of the tumor. Select the most specific or final diagnosis.\n\nOutput format: Histological type: [selected type] ([ICD-O-3 code]).\nIf not mentioned, output: \"Unknown histological type.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "template": "You are a medical annotator. Read the note and identify the histological type of the tumor. Select the most specific or final diagnosis.\n\nOutput format: Histological type: [selected type] ([ICD-O-3 morphology code in XXXX/X format, e.g. 8800/3]).\nIf not mentioned, output: \"Unknown histological type.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
     "entity_mapping": {
       "entity_type": "Diagnosis.histologySubgroup",
       "fact_trigger": null,

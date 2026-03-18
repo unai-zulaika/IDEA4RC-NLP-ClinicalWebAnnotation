@@ -108,6 +108,104 @@ def _extract_label(text: str) -> Optional[str]:
     return None
 
 
+# --- Bare value re-wrapping ---
+# Regex to extract the output format line from a prompt template
+_RE_OUTPUT_FORMAT = re.compile(
+    r'Output format[^:\n]*:\s*(?:Annotation:\s*)?(.+?)(?:\n|$)',
+    re.IGNORECASE,
+)
+# Regex to find a bracketed placeholder with enumerated options (pipe or slash separated)
+_RE_ENUM_PLACEHOLDER = re.compile(r'\[([^\[\]]+)\]')
+
+
+def _parse_template_format(prompt_template: str) -> Optional[tuple]:
+    """
+    Parse the output format line from a prompt template.
+
+    Returns (label, options) where:
+      - label: the text before the placeholder (e.g., "Tumor depth")
+      - options: list of enumerated values (e.g., ["superficial", "deep"])
+    Returns None if the format can't be parsed or has multiple/free-text placeholders.
+    """
+    m = _RE_OUTPUT_FORMAT.search(prompt_template)
+    if not m:
+        return None
+
+    format_line = m.group(1).strip().rstrip('.')
+
+    # Find all bracketed placeholders
+    placeholders = _RE_ENUM_PLACEHOLDER.findall(format_line)
+    if len(placeholders) != 1:
+        # Multiple placeholders or none — too complex to re-wrap
+        return None
+
+    placeholder_text = placeholders[0]
+
+    # Check if it's enumerated options (pipe | or slash / separated)
+    if '|' in placeholder_text:
+        options = [o.strip() for o in placeholder_text.split('|')]
+    elif '/' in placeholder_text:
+        options = [o.strip() for o in placeholder_text.split('/')]
+    else:
+        # Single value placeholder like [value] — can't re-wrap
+        return None
+
+    # Filter out generic placeholders
+    generic = {'value', 'date', 'select', 'put', 'provide', 'choose'}
+    if all(o.lower() in generic for o in options):
+        return None
+
+    # Extract the label: everything before the placeholder bracket
+    bracket_start = format_line.index('[')
+    label = format_line[:bracket_start].strip().rstrip(':').strip()
+
+    return (label, options) if label else None
+
+
+def re_wrap_bare_value(annotation_text: str, prompt_template: str) -> str:
+    """
+    Re-wrap a bare LLM output value into the expected template format.
+
+    If the LLM outputs just "deep" but the template expects "Tumor depth: deep.",
+    this function reconstructs the full format.
+
+    Args:
+        annotation_text: The normalized annotation text (may be a bare value)
+        prompt_template: The raw prompt template text (used to extract expected format)
+
+    Returns:
+        Re-wrapped annotation text, or original if no re-wrapping needed
+    """
+    if not annotation_text or not prompt_template:
+        return annotation_text
+
+    text = annotation_text.strip()
+
+    parsed = _parse_template_format(prompt_template)
+    if not parsed:
+        return annotation_text
+
+    label, options = parsed
+
+    # If the text already contains the label prefix, no re-wrapping needed
+    if label.lower() in text.lower():
+        return annotation_text
+
+    # Check if text matches one of the enumerated options (case-insensitive)
+    text_lower = text.lower().rstrip('.')
+    for option in options:
+        if text_lower == option.lower():
+            return f"{label}: {option}."
+
+    # Also re-wrap absence indicators with the label
+    if _is_absence_indicator(text):
+        existing_label = _extract_label(text)
+        if not existing_label:
+            return f"{label}: {text}"
+
+    return annotation_text
+
+
 def normalize_annotation_output(
     final_output: str,
     prompt_type: Optional[str] = None,

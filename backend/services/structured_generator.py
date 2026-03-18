@@ -1,26 +1,62 @@
 """
-Structured generation service using Outlines and Pydantic
+Structured generation service for clinical annotations.
+
+Supports two modes:
+1. Guided decoding via vLLM response_format (json_schema) — guarantees valid JSON
+2. Fallback regex-based parsing for legacy vLLM versions or when guided decoding fails
+
+The primary entry point is `parse_structured_annotation()` which tries direct
+Pydantic parsing first, then falls back through increasingly permissive strategies.
 """
 import json
+import logging
 import re
 from typing import Optional, Dict, Any, Tuple
 from pathlib import Path
 
-# Pre-compiled regex patterns for JSON extraction
+from models.annotation_models import StructuredAnnotation, FastStructuredAnnotation, AnnotationDateInfo, HallucinationFlag
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# JSON Schemas for vLLM guided decoding (response_format parameter)
+# ---------------------------------------------------------------------------
+
+# Standard mode: all fields (reasoning, final_output, is_negated, date)
+ANNOTATION_JSON_SCHEMA: Dict[str, Any] = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "structured_annotation",
+        "schema": StructuredAnnotation.model_json_schema(),
+    }
+}
+
+# Fast mode: only final_output, is_negated, date (no reasoning)
+FAST_ANNOTATION_JSON_SCHEMA: Dict[str, Any] = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "fast_structured_annotation",
+        "schema": FastStructuredAnnotation.model_json_schema(),
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Pre-compiled regex patterns for fallback JSON extraction
+# ---------------------------------------------------------------------------
 _RE_MARKDOWN_JSON = re.compile(r'```(?:json)?\s*\n?(.*?)\n?```', re.DOTALL)
-_RE_JSON_OBJ = re.compile(r'\{.*?"evidence".*?"reasoning".*?"final_output".*?\}', re.DOTALL)
-_RE_JSON_ARRAY = re.compile(r'\[\s*\{.*?"evidence".*?"reasoning".*?"final_output".*?\}.*?\]', re.DOTALL)
-_RE_JSON_OBJ_SINGLE = re.compile(r'\{[^{}]*"evidence"[^{}]*"reasoning"[^{}]*"final_output"[^{}]*\}', re.DOTALL)
-# Fast mode: only final_output field (no evidence/reasoning)
+_RE_JSON_OBJ = re.compile(r'\{.*?"reasoning".*?"final_output".*?\}', re.DOTALL)
+_RE_JSON_ARRAY = re.compile(r'\[\s*\{.*?"reasoning".*?"final_output".*?\}.*?\]', re.DOTALL)
+_RE_JSON_OBJ_SINGLE = re.compile(r'\{[^{}]*"reasoning"[^{}]*"final_output"[^{}]*\}', re.DOTALL)
+# Also match legacy format with evidence field (backward compat with old outputs)
+_RE_JSON_OBJ_LEGACY = re.compile(r'\{.*?"evidence".*?"final_output".*?\}', re.DOTALL)
 _RE_FAST_JSON = re.compile(r'\{[^{}]*"final_output"\s*:[^{}]*\}', re.DOTALL)
-# Strip model thinking blocks: <unused94>thought ... </unused94>
+
+# Strip model thinking blocks
 _RE_THINKING_BLOCK = re.compile(r'<unused\d+>\w+.*?</unused\d+>\s*', re.DOTALL | re.IGNORECASE)
-# MedGemma format: <unused94>thinking<unused95>response  (second token has no closing slash)
 _RE_THINKING_BLOCK_MEDGEMMA = re.compile(r'<unused\d+>.*?<unused\d+>\s*', re.DOTALL | re.IGNORECASE)
-# Fallback: strip unclosed thinking block (token budget exhausted before </unusedXX> appeared)
 _RE_THINKING_BLOCK_UNCLOSED = re.compile(r'<unused\d+>.*$', re.DOTALL | re.IGNORECASE)
-_RE_EVIDENCE = re.compile(r'Evidence:\s*(.+?)(?:\.|$|Reasoning:)', re.IGNORECASE | re.DOTALL)
-_RE_EVIDENCE_QUOTED = re.compile(r'"([^"]+)"')
+
+# Fallback text extraction patterns
 _RE_REASONING = re.compile(r'Reasoning:\s*(.+?)(?:\.|$|Final)', re.IGNORECASE | re.DOTALL)
 _RE_REASONING_INF = re.compile(r'Inference:\s*(.+?)(?:\.|$)', re.IGNORECASE | re.DOTALL)
 _RE_ANNOTATION = re.compile(r'Annotation:\s*(.+?)(?:\.|$)', re.IGNORECASE | re.DOTALL)
@@ -29,28 +65,83 @@ _RE_DATE_SLASH = re.compile(r'\d{2}/\d{2}/\d{4}')
 _RE_DATE_ISO = re.compile(r'\d{4}-\d{2}-\d{2}')
 _RE_DATE_FLEX = re.compile(r'\d{1,2}/\d{1,2}/\d{4}')
 
-# Patterns used to mine an answer from inside an unclosed thinking block
+# Patterns for mining answers from unclosed thinking blocks
 _RE_THINK_FINAL_JSON = re.compile(r'\{[^{}]*"final_output"\s*:\s*"([^"]+)"[^{}]*\}', re.DOTALL)
 _RE_THINK_SHOULD_OUTPUT = re.compile(
     r'(?:final_output should be|I should output|output should be|the output is|output:\s*)["\s]*([^\n"]{4,200})',
     re.IGNORECASE,
 )
-_RE_THINK_LAST_SENTENCE = re.compile(r'([A-Z][^\n.]{10,200}\.)\s*$', re.DOTALL)
 
+
+# ---------------------------------------------------------------------------
+# Repetition / looping hallucination detection
+# ---------------------------------------------------------------------------
+
+_RE_SENTENCE_SPLIT = re.compile(r'[.!?]\s+|\n')
+
+
+def _detect_repetition(text: str, threshold: float = 0.5) -> Optional[Dict[str, Any]]:
+    """Detect looping/repetition hallucination in a single text field.
+
+    Returns a dict with detection info if repetition found, None otherwise.
+    """
+    if not text or len(text) < 50:
+        return None
+
+    sentences = [s.strip() for s in _RE_SENTENCE_SPLIT.split(text) if len(s.strip()) > 20]
+    if len(sentences) < 3:
+        return None
+
+    unique = set(sentences)
+    duplicate_ratio = 1.0 - (len(unique) / len(sentences))
+
+    if duplicate_ratio >= threshold:
+        return {
+            "severity": "high" if duplicate_ratio > 0.8 else "medium",
+            "duplicate_ratio": round(duplicate_ratio, 2),
+            "total_sentences": len(sentences),
+            "unique_sentences": len(unique),
+        }
+    return None
+
+
+def detect_repetition_hallucination(
+    reasoning: str = "",
+    raw_output: str = "",
+) -> Optional[list[HallucinationFlag]]:
+    """Run repetition detection on reasoning and raw output.
+
+    Returns a list of HallucinationFlag if any repetition found, None otherwise.
+    """
+    flags: list[HallucinationFlag] = []
+
+    for field_name, text in [("reasoning", reasoning), ("raw_output", raw_output)]:
+        result = _detect_repetition(text)
+        if result:
+            flags.append(HallucinationFlag(
+                type="repetition_loop",
+                field=field_name,
+                severity=result["severity"],
+                duplicate_ratio=result["duplicate_ratio"],
+                message=f"Repetitive output detected: {result['unique_sentences']}/{result['total_sentences']} unique sentences",
+            ))
+
+    return flags if flags else None
+
+
+# ---------------------------------------------------------------------------
+# Helper functions
+# ---------------------------------------------------------------------------
 
 def _try_extract_from_thinking(thinking_text: str) -> Optional[str]:
     """
     Try to extract the intended annotation from inside an unclosed thinking block.
     Called as a last resort when the model ran out of tokens before producing JSON.
-
-    Returns the extracted string, or None if nothing useful was found.
     """
-    # 1. Literal {"final_output": "..."} JSON anywhere in the thinking text
     m = _RE_THINK_FINAL_JSON.search(thinking_text)
     if m:
         return m.group(1).strip()
 
-    # 2. "final_output should be ..." / "I should output ..." patterns
     m = _RE_THINK_SHOULD_OUTPUT.search(thinking_text)
     if m:
         candidate = m.group(1).strip().strip('"').strip("'")
@@ -59,351 +150,85 @@ def _try_extract_from_thinking(thinking_text: str) -> Optional[str]:
 
     return None
 
-try:
-    import outlines
-    # Version 0.1.11 has a different API that's incompatible with our code
-    # Disabling for now and using fallback parsing
-    OUTLINES_AVAILABLE = False
-    print("[INFO] Outlines v0.1.11 detected but using fallback parsing (API incompatible)")
-except ImportError as e:
-    OUTLINES_AVAILABLE = False
-    print(f"[WARN] Outlines not available: {e}")
-except Exception as e:
-    OUTLINES_AVAILABLE = False
-    print(f"[ERROR] Failed to import Outlines: {e}")
-    import traceback
-    traceback.print_exc()
 
-from models.annotation_models import StructuredAnnotation
+def _strip_thinking_blocks(raw_output: str) -> str:
+    """Strip MedGemma/model thinking blocks from raw output."""
+    # MedGemma format: <unused94>thinking<unused95>response
+    cleaned = _RE_THINKING_BLOCK_MEDGEMMA.sub('', raw_output, count=1).strip()
+    # XML-style: <unused94>thinking</unused94>
+    cleaned = _RE_THINKING_BLOCK.sub('', cleaned).strip()
+    return cleaned
 
 
-def generate_structured_annotation(
-    prompt: str,
-    vllm_endpoint: str,
-    model_name: str,
-    csv_date: Optional[str] = None,
-    max_new_tokens: int = 1024,
-    temperature: float = 0.0  # Deterministic output
-) -> Tuple[StructuredAnnotation, Optional[str]]:
-    """
-    Generate structured annotation using Outlines with vLLM.
-    
-    Args:
-        prompt: The prompt to send to the LLM
-        vllm_endpoint: vLLM server endpoint
-        model_name: Model name
-        csv_date: Optional CSV date to include in date info
-        max_new_tokens: Maximum tokens to generate
-        temperature: Sampling temperature
-    
-    Returns:
-        Tuple of (StructuredAnnotation instance, raw_response string or None)
-    """
-    if not OUTLINES_AVAILABLE:
-        raise ImportError("Outlines is not available. Install with: pip install outlines>=0.0.40")
-    
-    try:
-        # Clean endpoint
-        base_endpoint = vllm_endpoint.rstrip('/')
-        if base_endpoint.endswith('/v1'):
-            base_endpoint = base_endpoint[:-3]
-        
-        # Use Outlines with OpenAI-compatible API
-        # Create OpenAI client pointing to vLLM
-        try:
-            from openai import OpenAI
-            client = OpenAI(
-                base_url=f"{base_endpoint}/v1",
-                api_key="not-needed"  # vLLM doesn't require key
-            )
-            
-            # Create Outlines model from OpenAI client
-            # OpenAI constructor: (client, config, system_prompt=None)
-            # config can be None or an empty dict
-            model = outlines.models.OpenAI(client, None)
-            
-            # Generate structured JSON using Outlines
-            # Outlines will ensure output matches StructuredAnnotation schema
-            generator = outlines.generate.json(model, StructuredAnnotation)
-            result = generator(prompt, max_tokens=max_new_tokens, temperature=temperature)
-            
-            # Store raw response - try to get the actual API response
-            # Outlines might not expose the raw response, so we'll serialize the result
-            raw_response_str = None
-            if isinstance(result, StructuredAnnotation):
-                try:
-                    raw_response_str = json.dumps(result.dict(), indent=2, ensure_ascii=False)
-                except:
-                    raw_response_str = str(result)
-            elif isinstance(result, dict):
-                raw_response_str = json.dumps(result, indent=2, ensure_ascii=False)
-            else:
-                raw_response_str = str(result)
-        except Exception as e1:
-            # Fallback: try creating client and model again with different approach
-            print(f"[WARN] OpenAI client approach failed: {e1}, trying alternative client creation")
-            try:
-                # Create OpenAI client with different parameters
-                from openai import OpenAI
-                client = OpenAI(
-                    base_url=f"{base_endpoint}/v1",
-                    api_key="not-needed"
-                )
-                # Create Outlines model
-                model = outlines.models.OpenAI(client, None)
-                # Generate JSON
-                generator = outlines.generate.json(model, StructuredAnnotation)
-                result = generator(prompt, max_tokens=max_new_tokens, temperature=temperature)
-                
-                # Set raw_response_str for this path too
-                if isinstance(result, StructuredAnnotation):
-                    try:
-                        raw_response_str = json.dumps(result.dict(), indent=2, ensure_ascii=False)
-                    except:
-                        raw_response_str = str(result)
-                elif isinstance(result, dict):
-                    raw_response_str = json.dumps(result, indent=2, ensure_ascii=False)
-                else:
-                    raw_response_str = str(result)
-            except Exception as e2:
-                print(f"[ERROR] Direct Outlines approach also failed: {e2}")
-                import traceback
-                traceback.print_exc()
-                raise
-        
-        # Parse result - handle markdown code blocks
-        if isinstance(result, StructuredAnnotation):
-            ann = result
-        elif isinstance(result, dict):
-            ann = StructuredAnnotation(**result)
-        elif isinstance(result, str):
-            # Try to extract JSON from markdown code blocks first
-            json_str = result
-            # Look for ```json ... ``` or ``` ... ```
-            markdown_match = _RE_MARKDOWN_JSON.search(result)
-            if markdown_match:
-                json_str = markdown_match.group(1).strip()
-            # Also try to find JSON object directly
-            json_obj_match = _RE_JSON_OBJ.search(json_str)
-            if json_obj_match:
-                json_str = json_obj_match.group(0)
-            
-            try:
-                parsed_json = json.loads(json_str)
-                # Handle case where LLM returns an array instead of a single object
-                if isinstance(parsed_json, list):
-                    if len(parsed_json) > 0:
-                        # Use the first item in the array
-                        parsed_json = parsed_json[0]
-                        print(f"[INFO] LLM returned array with {len(parsed_json)} items, using first item")
-                    else:
-                        raise ValueError("LLM returned empty array")
-                ann = StructuredAnnotation(**parsed_json)
-            except json.JSONDecodeError as e:
-                print(f"[WARN] Failed to parse JSON string: {e}")
-                print(f"[DEBUG] JSON string was: {json_str[:500]}")
-                raise
-            except (TypeError, ValueError) as e:
-                print(f"[WARN] Failed to create StructuredAnnotation: {e}")
-                if 'parsed_json' in locals():
-                    print(f"[DEBUG] Parsed JSON was: {parsed_json}")
-                raise
-        else:
-            raise ValueError(f"Unexpected result type: {type(result)}")
-        
-        # Update date info if CSV date is provided
-        if csv_date and ann.date and ann.date.source == "derived_from_csv":
-            ann.date.csv_date = csv_date
-        
-        # Fallback: If date is None but csv_date is available, use csv_date
-        if not ann.date and csv_date:
-            from models.annotation_models import AnnotationDateInfo
-            ann.date = AnnotationDateInfo(
-                date_value=csv_date,
-                source="derived_from_csv",
-                csv_date=csv_date
-            )
-        
-        # Try to get raw response
-        # Use the raw_response_str we set above if available
-        final_raw_response = None
-        if 'raw_response_str' in locals() and raw_response_str:
-            final_raw_response = raw_response_str
-        elif isinstance(result, str):
-            final_raw_response = result
-        elif isinstance(ann, StructuredAnnotation):
-            # Convert StructuredAnnotation to JSON string
-            try:
-                final_raw_response = json.dumps(ann.dict(), indent=2, ensure_ascii=False)
-            except:
-                final_raw_response = str(ann)
-        elif hasattr(result, '__str__'):
-            final_raw_response = str(result)
-        else:
-            final_raw_response = None
-        
-        return ann, final_raw_response
-        
-    except Exception as e:
-        print(f"[ERROR] Structured generation with Outlines failed: {e}")
-        import traceback
-        traceback.print_exc()
-        # Fallback: return a basic structure
-        return (
-            StructuredAnnotation(
-                evidence="",
-                reasoning=f"Generation failed: {str(e)}",
-                final_output="",
-                is_negated=False,
-                date=None
-            ),
-            None
+def _apply_csv_date(annotation: StructuredAnnotation, csv_date: Optional[str]) -> None:
+    """Apply CSV date to annotation if needed (mutates in place)."""
+    if csv_date and annotation.date and annotation.date.source == "derived_from_csv":
+        annotation.date.csv_date = csv_date
+    if not annotation.date and csv_date:
+        annotation.date = AnnotationDateInfo(
+            date_value=csv_date,
+            source="derived_from_csv",
+            csv_date=csv_date,
         )
 
 
-def generate_structured_annotation_fallback(
-    prompt: str,
-    raw_output: str,
-    csv_date: Optional[str] = None
-) -> StructuredAnnotation:
-    """
-    Fallback method to parse raw LLM output into structured format.
-    Used when Outlines is not available or fails.
-    
-    Args:
-        prompt: The prompt (for context)
-        raw_output: Raw LLM output
-        csv_date: Optional CSV date
-    
-    Returns:
-        StructuredAnnotation instance
-    """
-    # Strip model thinking blocks before parsing.
-    # Try MedGemma format first: <unused94>thinking<unused95>response (no closing slash on second token)
-    raw_output = _RE_THINKING_BLOCK_MEDGEMMA.sub('', raw_output, count=1).strip()
-    # Then strip any remaining XML-style blocks: <unused94>thinking</unused94>
-    raw_output = _RE_THINKING_BLOCK.sub('', raw_output).strip()
-    # Fallback: if thinking block was truncated (no closing tag, i.e. token budget hit mid-thought),
-    # try to salvage the intended answer from inside the thinking text before discarding it.
-    if '<unused' in raw_output.lower():
-        # Try direct JSON/markdown extraction before parsing thinking text.
-        # Handles Format B: <unusedN>thinking...<unusedM>```json{...}```
-        # where <unusedM> is a response-section marker (no closing tag).
-        _md_match = _RE_MARKDOWN_JSON.search(raw_output)
-        if _md_match:
-            try:
-                _json_str = _md_match.group(1).strip()
-                _parsed = json.loads(_json_str)
-                if isinstance(_parsed, dict) and 'final_output' in _parsed:
-                    if csv_date and isinstance(_parsed.get("date"), dict) \
-                            and _parsed["date"].get("source") == "derived_from_csv":
-                        _parsed["date"]["csv_date"] = csv_date
-                    try:
-                        return StructuredAnnotation(**_parsed)
-                    except Exception as e:
-                        print(f"[WARN] StructuredAnnotation parse failed from early markdown block: {e}")
-            except json.JSONDecodeError:
-                pass
-
-        salvaged = _try_extract_from_thinking(raw_output)
-        if salvaged:
-            print(f"[INFO] Extracted annotation from unclosed thinking block: {salvaged[:80]!r}")
-            return StructuredAnnotation(
-                evidence="",
-                reasoning="Extracted from model thinking block (token budget was exhausted before JSON output)",
-                final_output=salvaged,
-                is_negated=False,
-                date=None,
-            )
-        raw_output = _RE_THINKING_BLOCK_UNCLOSED.sub('', raw_output).strip()
-
-    # Try to extract JSON from output
-    json_match = None
-    json_str = None
-
-    # First, try to extract JSON from markdown code blocks
-    markdown_match = _RE_MARKDOWN_JSON.search(raw_output)
-    if markdown_match:
-        json_str = markdown_match.group(1).strip()
+def _extract_json_string(text: str) -> Optional[str]:
+    """Try to extract a JSON string from text using multiple strategies."""
+    # 1. Markdown code blocks
+    md_match = _RE_MARKDOWN_JSON.search(text)
+    if md_match:
+        candidate = md_match.group(1).strip()
         try:
-            json_match = json.loads(json_str)
-        except json.JSONDecodeError as e:
-            print(f"[DEBUG] Failed to parse JSON from markdown block: {e}")
-            print(f"[DEBUG] JSON string was: {json_str[:200]}")
-            json_str = None
+            json.loads(candidate)
+            return candidate
+        except json.JSONDecodeError:
+            pass
 
-    # If markdown extraction didn't work, try direct JSON patterns
-    if not json_match:
-        # Try to match JSON array first (in case LLM returns array)
-        array_match = _RE_JSON_ARRAY.search(raw_output)
-        if array_match:
-            try:
-                json_match = json.loads(array_match.group(0))
-            except json.JSONDecodeError as e:
-                print(f"[DEBUG] Failed to parse JSON array from pattern: {e}")
+    # 2. JSON array pattern
+    array_match = _RE_JSON_ARRAY.search(text)
+    if array_match:
+        try:
+            parsed = json.loads(array_match.group(0))
+            if isinstance(parsed, list) and len(parsed) > 0:
+                return json.dumps(parsed[0])
+        except json.JSONDecodeError:
+            pass
 
-        # If no array found, try single object patterns
-        if not json_match:
-            for compiled_re in [_RE_JSON_OBJ, _RE_JSON_OBJ_SINGLE]:
-                match = compiled_re.search(raw_output)
-                if match:
-                    try:
-                        json_match = json.loads(match.group(0))
-                        break
-                    except json.JSONDecodeError as e:
-                        print(f"[DEBUG] Failed to parse JSON from pattern: {e}")
-                        continue
-
-        # Fast mode: try minimal {"final_output": "..."} pattern
-        if not json_match:
-            match = _RE_FAST_JSON.search(raw_output)
-            if match:
-                try:
-                    parsed = json.loads(match.group(0))
-                    if isinstance(parsed, dict) and "final_output" in parsed:
-                        json_match = {
-                            "evidence": "",
-                            "reasoning": "Fast mode: no reasoning captured",
-                            "final_output": parsed["final_output"],
-                            "is_negated": False,
-                            "date": None,
-                        }
-                except json.JSONDecodeError as e:
-                    print(f"[DEBUG] Failed to parse fast JSON: {e}")
-    
-    # If JSON found, use it
-    if json_match:
-        # Handle case where LLM returns an array instead of a single object
-        if isinstance(json_match, list):
-            if len(json_match) > 0:
-                # Use the first item in the array
-                json_match = json_match[0]
-                print(f"[INFO] LLM returned array with {len(json_match)} items, using first item")
-            else:
-                print(f"[WARN] LLM returned empty array")
-                json_match = None
-        
-        if json_match and isinstance(json_match, dict):
-            # Handle date info
-            if csv_date and json_match.get("date") and isinstance(json_match["date"], dict) and json_match["date"].get("source") == "derived_from_csv":
-                json_match["date"]["csv_date"] = csv_date
-            try:
-                return StructuredAnnotation(**json_match)
-            except Exception as e:
-                print(f"[WARN] Failed to parse JSON into StructuredAnnotation: {e}")
-                print(f"[DEBUG] JSON object was: {json_match}")
-    
-    # Fallback: create basic structure from raw output
-    print(f"[DEBUG] Fallback parsing, raw_output length: {len(raw_output)}")
-    print(f"[DEBUG] Fallback parsing, raw_output preview: {raw_output[:300]}")
-    
-    # Try to extract evidence (look for quoted text or "Evidence:" pattern)
-    evidence = ""
-    for compiled_re in [_RE_EVIDENCE, _RE_EVIDENCE_QUOTED]:
-        match = compiled_re.search(raw_output)
+    # 3. Full JSON object with known fields
+    for pattern in [_RE_JSON_OBJ, _RE_JSON_OBJ_SINGLE, _RE_JSON_OBJ_LEGACY]:
+        match = pattern.search(text)
         if match:
-            evidence = match.group(1).strip()
-            break
+            try:
+                json.loads(match.group(0))
+                return match.group(0)
+            except json.JSONDecodeError:
+                continue
+
+    # 4. Fast mode: minimal {"final_output": "..."}
+    match = _RE_FAST_JSON.search(text)
+    if match:
+        try:
+            parsed = json.loads(match.group(0))
+            if isinstance(parsed, dict) and "final_output" in parsed:
+                full = {
+                    "reasoning": "Fast mode: no reasoning captured",
+                    "final_output": parsed["final_output"],
+                    "is_negated": False,
+                    "date": None,
+                }
+                return json.dumps(full)
+        except json.JSONDecodeError:
+            pass
+
+    return None
+
+
+def _regex_fallback_parse(raw_output: str, csv_date: Optional[str] = None) -> StructuredAnnotation:
+    """
+    Last-resort regex extraction when no valid JSON can be found.
+    Extracts individual fields from free-form text.
+    """
+    logger.debug(f"Regex fallback parsing, output length: {len(raw_output)}")
 
     # Extract reasoning
     reasoning = ""
@@ -413,7 +238,7 @@ def generate_structured_annotation_fallback(
             reasoning = match.group(1).strip()
             break
 
-    # Extract final output (look for "Annotation:" or template format)
+    # Extract final output
     final_output = raw_output
     for compiled_re in [_RE_ANNOTATION, _RE_FINAL_OUTPUT]:
         match = compiled_re.search(raw_output)
@@ -427,7 +252,7 @@ def generate_structured_annotation_fallback(
         'no evidence', 'without', 'excluded'
     ])
 
-    # Try to extract date
+    # Extract date
     date_info = None
     for compiled_re in [_RE_DATE_SLASH, _RE_DATE_ISO, _RE_DATE_FLEX]:
         match = compiled_re.search(raw_output)
@@ -438,19 +263,273 @@ def generate_structured_annotation_fallback(
                 "csv_date": None
             }
             break
-    
-    # If no date in text but CSV date provided, use it
+
     if not date_info and csv_date:
         date_info = {
             "date_value": csv_date,
             "source": "derived_from_csv",
             "csv_date": csv_date
         }
-    
+
     return StructuredAnnotation(
-        evidence=evidence or "Not extracted",
         reasoning=reasoning or "Not extracted",
         final_output=final_output.strip(),
         is_negated=is_negated,
         date=date_info
+    )
+
+
+# ---------------------------------------------------------------------------
+# Primary entry point: parse LLM output into StructuredAnnotation
+# ---------------------------------------------------------------------------
+
+def parse_structured_annotation(
+    raw_output: str,
+    csv_date: Optional[str] = None,
+    used_guided_decoding: bool = False,
+    fast_mode: bool = False,
+) -> StructuredAnnotation:
+    """
+    Parse raw LLM output into a StructuredAnnotation.
+
+    Uses a layered approach:
+    1. Direct JSON parse (works when guided decoding produced valid JSON)
+    2. Extract JSON from markdown/wrapper text (thinking blocks, code fences)
+    3. Regex fallback for free-form text (legacy path)
+
+    In fast mode, tries FastStructuredAnnotation first (only final_output,
+    is_negated, date) and converts to full StructuredAnnotation.
+
+    Args:
+        raw_output: Raw text from the LLM
+        csv_date: Optional CSV date to apply
+        used_guided_decoding: Whether response_format was used (for logging)
+        fast_mode: Whether fast mode was used (tries FastStructuredAnnotation first)
+
+    Returns:
+        StructuredAnnotation instance
+    """
+    # --- Layer 1: Direct JSON parse (guided decoding output) ---
+    cleaned = _strip_thinking_blocks(raw_output)
+
+    # In fast mode with guided decoding, output matches FastStructuredAnnotation schema
+    if fast_mode:
+        try:
+            fast_ann = FastStructuredAnnotation.model_validate_json(cleaned)
+            annotation = fast_ann.to_structured_annotation()
+            _apply_csv_date(annotation, csv_date)
+            logger.debug("Parsed fast annotation via direct JSON (Layer 1 fast)")
+            return annotation
+        except Exception:
+            pass  # Fall through to standard parsing
+
+    try:
+        annotation = StructuredAnnotation.model_validate_json(cleaned)
+        _apply_csv_date(annotation, csv_date)
+        logger.debug("Parsed annotation via direct JSON (Layer 1)")
+        return annotation
+    except Exception:
+        if used_guided_decoding:
+            logger.warning(
+                "Guided decoding output failed direct JSON parse — "
+                "falling back to extraction. Output preview: %s",
+                cleaned[:200],
+            )
+
+    # --- Layer 2: Handle unclosed thinking blocks (token budget exhaustion) ---
+    if '<unused' in raw_output.lower():
+        # Try markdown/JSON extraction from within the thinking block
+        md_match = _RE_MARKDOWN_JSON.search(raw_output)
+        if md_match:
+            try:
+                json_str = md_match.group(1).strip()
+                parsed = json.loads(json_str)
+                if isinstance(parsed, dict) and 'final_output' in parsed:
+                    if csv_date and isinstance(parsed.get("date"), dict) \
+                            and parsed["date"].get("source") == "derived_from_csv":
+                        parsed["date"]["csv_date"] = csv_date
+                    try:
+                        return StructuredAnnotation(**parsed)
+                    except Exception as e:
+                        logger.warning("StructuredAnnotation parse failed from markdown block: %s", e)
+            except json.JSONDecodeError:
+                pass
+
+        salvaged = _try_extract_from_thinking(raw_output)
+        if salvaged:
+            logger.info("Extracted annotation from unclosed thinking block: %s", salvaged[:80])
+            return StructuredAnnotation(
+                reasoning="Extracted from model thinking block (token budget was exhausted before JSON output)",
+                final_output=salvaged,
+                is_negated=False,
+                date=None,
+            )
+        cleaned = _RE_THINKING_BLOCK_UNCLOSED.sub('', raw_output).strip()
+
+    # --- Layer 3: Extract JSON from markdown/wrapper text ---
+    json_str = _extract_json_string(cleaned)
+    if json_str:
+        # Fast mode: try FastStructuredAnnotation first
+        if fast_mode:
+            try:
+                fast_ann = FastStructuredAnnotation.model_validate_json(json_str)
+                annotation = fast_ann.to_structured_annotation()
+                _apply_csv_date(annotation, csv_date)
+                logger.debug("Parsed fast annotation via JSON extraction (Layer 3 fast)")
+                return annotation
+            except Exception:
+                pass
+        try:
+            annotation = StructuredAnnotation.model_validate_json(json_str)
+            _apply_csv_date(annotation, csv_date)
+            logger.debug("Parsed annotation via JSON extraction (Layer 3)")
+            return annotation
+        except Exception as e:
+            logger.debug("JSON extraction found string but Pydantic validation failed: %s", e)
+
+    # --- Layer 4: Regex fallback (legacy path) ---
+    logger.debug("Falling back to regex extraction (Layer 4)")
+    return _regex_fallback_parse(cleaned, csv_date)
+
+
+# ---------------------------------------------------------------------------
+# Legacy entry point (kept for backward compatibility)
+# ---------------------------------------------------------------------------
+
+def generate_structured_annotation_fallback(
+    prompt: str,
+    raw_output: str,
+    csv_date: Optional[str] = None
+) -> StructuredAnnotation:
+    """
+    Fallback method to parse raw LLM output into structured format.
+    Used when guided decoding is not available.
+
+    This is a thin wrapper around parse_structured_annotation() for
+    backward compatibility with existing callers.
+    """
+    return parse_structured_annotation(
+        raw_output=raw_output,
+        csv_date=csv_date,
+        used_guided_decoding=False,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Per-prompt schema generation (enum-constrained final_output)
+# ---------------------------------------------------------------------------
+
+def build_per_prompt_schema(
+    entity_mapping: Optional[Dict[str, Any]],
+    fast_mode: bool = False,
+) -> Optional[Dict[str, Any]]:
+    """
+    Generate a per-prompt JSON schema with enum-constrained final_output.
+
+    Inspects entity_mapping.field_mappings to determine if ALL fields have
+    value_code_mappings. If so, the prompt is a SIMPLE ENUM type and we can
+    constrain final_output to only those values (+ "Not applicable").
+
+    Returns None if the prompt cannot be constrained (template with free-text
+    fields, no entity_mapping, etc.), in which case callers should fall back
+    to the generic schema.
+    """
+    if not entity_mapping:
+        return None
+
+    field_mappings = entity_mapping.get("field_mappings", [])
+    if not field_mappings:
+        return None
+
+    # Collect all valid values from value_code_mappings across field_mappings
+    all_values: set = set()
+    has_unconstrained_field = False
+
+    for fm in field_mappings:
+        vcm = fm.get("value_code_mappings")
+        if vcm and isinstance(vcm, dict):
+            all_values.update(vcm.keys())
+        else:
+            # This field has no enum constraint (date, measurement, free text)
+            has_unconstrained_field = True
+
+    # If ANY field is unconstrained, we can't enum-constrain final_output
+    if has_unconstrained_field or not all_values:
+        return None
+
+    # Build enum list: sorted valid values + "Not applicable" as fallback
+    valid_values = sorted(all_values) + ["Not applicable"]
+
+    # Generate base schema from the appropriate Pydantic model
+    import copy
+    base_model = FastStructuredAnnotation if fast_mode else StructuredAnnotation
+    schema = copy.deepcopy(base_model.model_json_schema())
+    schema["properties"]["final_output"]["enum"] = valid_values
+
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "constrained_annotation",
+            "schema": schema,
+        }
+    }
+
+
+_per_prompt_schema_cache: Dict[str, Optional[Dict[str, Any]]] = {}
+
+
+def get_prompt_schema(
+    prompt_type: str,
+    entity_mapping: Optional[Dict[str, Any]],
+    fast_mode: bool = False,
+) -> Dict[str, Any]:
+    """
+    Get the appropriate JSON schema for a prompt type.
+
+    Returns a per-prompt constrained schema if the prompt's entity_mapping
+    defines value_code_mappings for all fields (SIMPLE ENUM). Otherwise
+    returns the generic ANNOTATION_JSON_SCHEMA or FAST_ANNOTATION_JSON_SCHEMA.
+    """
+    cache_key = f"{prompt_type}:{'fast' if fast_mode else 'std'}"
+
+    if cache_key not in _per_prompt_schema_cache:
+        constrained = build_per_prompt_schema(entity_mapping, fast_mode)
+        _per_prompt_schema_cache[cache_key] = constrained
+
+    cached = _per_prompt_schema_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    return FAST_ANNOTATION_JSON_SCHEMA if fast_mode else ANNOTATION_JSON_SCHEMA
+
+
+# ---------------------------------------------------------------------------
+# Legacy Outlines-based generation (deprecated, kept for reference)
+# ---------------------------------------------------------------------------
+
+try:
+    import outlines
+    OUTLINES_AVAILABLE = False  # Disabled: use vLLM native response_format instead
+    logger.info("Outlines detected but disabled — using vLLM native guided decoding")
+except ImportError:
+    OUTLINES_AVAILABLE = False
+except Exception:
+    OUTLINES_AVAILABLE = False
+
+
+def generate_structured_annotation(
+    prompt: str,
+    vllm_endpoint: str,
+    model_name: str,
+    csv_date: Optional[str] = None,
+    max_new_tokens: int = 1024,
+    temperature: float = 0.0
+) -> Tuple[StructuredAnnotation, Optional[str]]:
+    """
+    Legacy Outlines-based structured generation.
+    Deprecated: vLLM native response_format is preferred.
+    """
+    raise ImportError(
+        "Outlines-based generation is deprecated. "
+        "Use vLLM response_format with ANNOTATION_JSON_SCHEMA instead."
     )

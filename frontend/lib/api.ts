@@ -328,6 +328,14 @@ export interface ICDO3UnifiedCodeResponse {
   exists: boolean
 }
 
+export interface HallucinationFlag {
+  type: string
+  field: string
+  severity: 'medium' | 'high'
+  duplicate_ratio: number
+  message: string
+}
+
 export interface AnnotationResult {
   prompt_type: string
   annotation_text: string
@@ -345,6 +353,7 @@ export interface AnnotationResult {
   icdo3_code?: ICDO3CodeInfo  // ICD-O-3 code information (for histology/site prompts)
   timing_breakdown?: Record<string, number>  // Per-step timing breakdown
   derived_field_values?: Record<string, string>  // Values resolved via output_word_mappings at annotation time
+  hallucination_flags?: HallucinationFlag[]  // Detected hallucination patterns (e.g., repetition loops)
 }
 
 export interface ProcessNoteResponse {
@@ -445,6 +454,7 @@ export interface SessionAnnotation {
   evaluation_result?: EvaluationResult  // Evaluation metrics (only in evaluation mode)
   icdo3_code?: ICDO3CodeInfo  // ICD-O-3 code information (for histology/site prompts)
   derived_field_values?: Record<string, string>  // Values resolved via output_word_mappings at annotation time
+  hallucination_flags?: HallucinationFlag[]  // Detected hallucination patterns
 }
 
 export interface SessionData {
@@ -590,15 +600,16 @@ export const uploadApi = {
     return response.data
   },
 
-  uploadFewshots: async (file: File): Promise<{
+  uploadFewshots: async (file: File, center: string): Promise<{
     success: boolean
     message: string
+    center: string
     prompt_types: string[]
     counts_by_prompt: Record<string, number>
   }> => {
     const formData = new FormData()
     formData.append('file', file)
-    const response = await api.post('/api/upload/fewshots', formData, {
+    const response = await api.post(`/api/upload/fewshots?center=${encodeURIComponent(center)}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -606,24 +617,26 @@ export const uploadApi = {
     return response.data
   },
 
-  getFewshotsStatus: async (): Promise<{
+  getFewshotsStatus: async (center?: string): Promise<{
     faiss_available: boolean
     simple_fewshots_available: boolean
     prompt_types_with_fewshots: string[]
     counts_by_prompt: Record<string, number>
     total_examples: number
   }> => {
-    const response = await api.get('/api/upload/fewshots/status')
+    const params = center ? { center } : {}
+    const response = await api.get('/api/upload/fewshots/status', { params })
     return response.data
   },
 
-  deleteFewshots: async (): Promise<{
+  deleteFewshots: async (center?: string): Promise<{
     success: boolean
     message: string
     deleted_examples: number
     deleted_prompt_types: number
   }> => {
-    const response = await api.delete('/api/upload/fewshots')
+    const params = center ? { center } : {}
+    const response = await api.delete('/api/upload/fewshots', { params })
     return response.data
   },
 

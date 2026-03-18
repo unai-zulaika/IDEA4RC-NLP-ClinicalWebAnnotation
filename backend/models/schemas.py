@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field, ConfigDict, field_validator
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
+from models.annotation_models import HallucinationFlag
+
 
 # Server Status Schemas
 class ServerStatus(BaseModel):
@@ -179,6 +181,7 @@ class AnnotationResult(BaseModel):
     timing_breakdown: Optional[Dict[str, float]] = None  # Per-step timing breakdown
     chunk_info: Optional[ChunkInfo] = None  # Set when note was split into chunks due to context limit
     derived_field_values: Optional[Dict[str, str]] = None  # Values resolved via output_word_mappings at annotation time
+    hallucination_flags: Optional[List[HallucinationFlag]] = None  # Detected hallucination patterns (e.g., repetition loops)
 
 
 class ProcessNoteRequest(BaseModel):
@@ -283,6 +286,8 @@ class SessionAnnotation(BaseModel):
     # ICD-O-3 code information (for histology/site prompts)
     icdo3_code: Optional[Dict[str, Any]] = None  # ICD-O-3 code information with query_code, match_method, match_score
     chunk_info: Optional[ChunkInfo] = None  # Set when note was split into chunks due to context limit
+    derived_field_values: Optional[Dict[str, str]] = None  # Values resolved via output_word_mappings
+    hallucination_flags: Optional[List[Dict[str, Any]]] = None  # Detected hallucination patterns (e.g., repetition loops)
 
 
 class SessionData(BaseModel):

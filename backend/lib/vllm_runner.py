@@ -83,22 +83,25 @@ class VLLMClient:
             raise ConnectionError(f"Failed to connect to VLLM server at {self.endpoint}: {e}")
         except Exception as e:
             raise ConnectionError(f"Failed to connect to VLLM server at {self.endpoint}: {e}")
-    def generate(self, 
+    def generate(self,
                  prompt: str,
                  max_new_tokens: Optional[int] = None,
                  temperature: float = 0.1,
                  logprobs: Optional[int] = None,
+                 response_format: Optional[Dict[str, Any]] = None,
                  **kwargs) -> Dict[str, Any]:
         """
         Generate text using VLLM server.
-        
+
         Args:
             prompt: Input prompt
             max_new_tokens: Maximum tokens to generate
             temperature: Sampling temperature
             logprobs: Number of logprobs to return per token (None to disable)
+            response_format: Optional response format for structured output
+                             (e.g., {"type": "json_schema", "json_schema": {...}})
             **kwargs: Additional parameters
-        
+
         Returns:
             Dictionary with 'raw', 'normalized' output, and optionally 'logprobs'
         """
@@ -106,7 +109,7 @@ class VLLMClient:
             max_new_tokens = self.max_tokens
 
         url = f"{self.endpoint}/chat/completions"
-        
+
         # Determine if this is a simple completion prompt (no system message needed)
         # Simple prompts are very short and don't contain medical annotation instructions
         is_simple_prompt = (
@@ -116,7 +119,7 @@ class VLLMClient:
             "extract" not in prompt.lower() and
             "task" not in prompt.lower()
         )
-        
+
         # Build messages - use system message only for structured prompts
         messages = []
         if not is_simple_prompt:
@@ -128,7 +131,7 @@ class VLLMClient:
             "role": "user",
             "content": prompt
         })
-        
+
         payload = {
             "model": self.model_name,
             "messages": messages,
@@ -136,6 +139,10 @@ class VLLMClient:
             "temperature": temperature,
             **kwargs
         }
+
+        # Add response_format for guided decoding (vLLM structured output)
+        if response_format is not None:
+            payload["response_format"] = response_format
         
         # Try with logprobs first if requested
         if logprobs is not None:
@@ -261,6 +268,7 @@ class VLLMClient:
                        max_new_tokens: Optional[int] = None,
                        temperature: float = 0.1,
                        logprobs: Optional[int] = None,
+                       response_format: Optional[Dict[str, Any]] = None,
                        **kwargs) -> Dict[str, Any]:
         """
         Async version of generate() using httpx.AsyncClient.
@@ -270,6 +278,7 @@ class VLLMClient:
             max_new_tokens: Maximum tokens to generate
             temperature: Sampling temperature
             logprobs: Number of logprobs to return per token (None to disable)
+            response_format: Optional response format for structured output
 
         Returns:
             Dictionary with 'raw', 'normalized' output, and optionally 'logprobs'
@@ -307,6 +316,8 @@ class VLLMClient:
         }
         if logprobs is not None:
             payload["logprobs"] = logprobs
+        if response_format is not None:
+            payload["response_format"] = response_format
 
         async with httpx.AsyncClient(timeout=httpx.Timeout(self.timeout, connect=10.0)) as client:
             response = await client.post(url, json=payload)
@@ -428,6 +439,7 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
 
     max_new_tokens_standard = 2048
     max_new_tokens_fast = 512
+    structured_output = {"enabled": True, "backend": "auto"}
 
     if config_path and config_path.exists():
         try:
@@ -440,6 +452,7 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
                 timeout = config.get("timeout", timeout)
                 max_new_tokens_standard = config.get("max_new_tokens_standard", max_new_tokens_standard)
                 max_new_tokens_fast = config.get("max_new_tokens_fast", max_new_tokens_fast)
+                structured_output = config.get("structured_output", structured_output)
         except Exception as e:
             print(f"[WARN] Failed to load VLLM config from {config_path}: {e}")
 
@@ -469,6 +482,7 @@ def load_vllm_config(config_path: Optional[Path] = None) -> Dict:
         "timeout": timeout,
         "max_new_tokens_standard": max_new_tokens_standard,
         "max_new_tokens_fast": max_new_tokens_fast,
+        "structured_output": structured_output,
     }
 
 
@@ -511,31 +525,34 @@ def init_model_vllm(config_path: Optional[Path] = None) -> bool:
 def run_model_with_prompt_vllm(prompt: str,
                                max_new_tokens: Optional[int] = None,
                                temperature: float = 0.1,
-                               return_logprobs: bool = False) -> Dict[str, Any]:
+                               return_logprobs: bool = False,
+                               response_format: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Run model with prompt using VLLM backend.
-    
+
     Args:
         prompt: Input prompt
         max_new_tokens: Maximum tokens to generate
         temperature: Sampling temperature
         return_logprobs: If True, request logprobs from VLLM API
-    
+        response_format: Optional response format for structured output
+
     Returns:
         Dictionary with 'raw', 'normalized' output, and optionally 'logprobs'
     """
     global _VLLM_CLIENT
-    
+
     if _VLLM_CLIENT is None:
         raise RuntimeError("VLLM client not initialized. Call init_model_vllm() first.")
-    
+
     logprobs_param = 1 if return_logprobs else None
-    
+
     return _VLLM_CLIENT.generate(
         prompt=prompt,
         max_new_tokens=max_new_tokens,
         temperature=temperature,
-        logprobs=logprobs_param
+        logprobs=logprobs_param,
+        response_format=response_format,
     )
 
 

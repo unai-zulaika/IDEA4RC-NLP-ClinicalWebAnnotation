@@ -181,6 +181,7 @@ def _annotation_result_to_dict(result, note_id: str, prompt_type: str) -> dict:
         "icdo3_code": result.icdo3_code.model_dump() if result.icdo3_code else None,
         "chunk_info": result.chunk_info.model_dump() if result.chunk_info else None,
         "derived_field_values": getattr(result, 'derived_field_values', None),
+        "hallucination_flags": [f.model_dump() for f in result.hallucination_flags] if result.hallucination_flags else None,
     }
 
 
@@ -205,7 +206,114 @@ def _is_simple_prompt(template: str) -> bool:
     )
 
 
-def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, csv_date: Optional[str] = None, fast_mode: bool = False) -> str:
+MAX_FEWSHOT_NOTE_CHARS = 500  # Truncate few-shot note text to avoid oversized prompts
+
+# --- Fewshot sanitization (optional) ---
+# Non-English prefixes that should be translated to English equivalents.
+# Centers: INT-SARC/INT-HNC → Italian, VGR → Swedish, MSCI → Polish
+_FEWSHOT_PREFIX_TRANSLATIONS = {
+    # Italian (INT-SARC, INT-HNC)
+    "tipo istologico:": "Histological type:",
+    "tipo histologico:": "Histological type:",
+    "sito del tumore": "Tumor site",
+    "sito tumorale": "Tumor site",
+    "margini dopo chirurgia": "Margins after surgery",
+    "genere del paziente": "Patient's gender",
+    "grading della biopsia": "Biopsy grading",
+    "profondità del tumore": "Tumor depth",
+    "tipo di recidiva": "Type of recurrence",
+    "stato del paziente": "Status of the patient",
+    "età alla diagnosi": "Age at diagnosis",
+    "stadio alla diagnosi": "Stage at diagnosis",
+    "tipo di chirurgia": "Surgery was performed",
+    # Swedish (VGR)
+    "histologisk typ:": "Histological type:",
+    "tumörlokalisation": "Tumor site",
+    "tumörplats": "Tumor site",
+    # Polish (MSCI)
+    "typ histologiczny:": "Histological type:",
+    "lokalizacja guza": "Tumor site",
+    "miejsce guza": "Tumor site",
+}
+
+# Placeholder patterns to remove from fewshot annotations (all languages)
+_FEWSHOT_PLACEHOLDER_PATTERNS = [
+    r'\(\[seleziona il codice ICD-O-3\]\)',     # Italian
+    r'\(\[select ICD-O-3 code\]\)',              # English
+    r'\(\[välj ICD-O-3-kod\]\)',                 # Swedish
+    r'\(\[wybierz kod ICD-O-3\]\)',              # Polish
+    r'\[seleziona il codice ICD-O-3\]',          # Italian (without parens)
+    r'\[select ICD-O-3 code\]',                  # English (without parens)
+    r'\[välj ICD-O-3-kod\]',                     # Swedish (without parens)
+    r'\[wybierz kod ICD-O-3\]',                  # Polish (without parens)
+    r'\(:\s*seleziona il codice ICD-O-3',        # Malformed Italian
+    r'\(:\s*select ICD-O-3 code',                # Malformed English
+    r'\[seleziona[^\]]*\]',                      # Generic Italian placeholder
+    r'\[välj[^\]]*\]',                           # Generic Swedish placeholder
+    r'\[wybierz[^\]]*\]',                        # Generic Polish placeholder
+    r'\[select[^\]]*(?:code|tipo|type)[^\]]*\]', # Generic English code placeholder
+    r'\[please select[^\]]*\]',                  # English "please select"
+]
+_FEWSHOT_PLACEHOLDER_RE = re.compile('|'.join(_FEWSHOT_PLACEHOLDER_PATTERNS), re.IGNORECASE)
+
+
+def _sanitize_fewshot_annotation(annotation: str) -> str:
+    """
+    Sanitize a single fewshot annotation:
+    1. Translate non-English prefixes to English
+    2. Remove placeholder patterns (e.g., [select ICD-O-3 code])
+    3. Clean up residual formatting artifacts
+
+    Returns the cleaned annotation string.
+    """
+    result = annotation
+
+    # Step 1: Translate non-English prefixes to English (case-insensitive)
+    result_lower = result.lower()
+    for foreign, english in _FEWSHOT_PREFIX_TRANSLATIONS.items():
+        idx = result_lower.find(foreign)
+        if idx != -1:
+            result = result[:idx] + english + result[idx + len(foreign):]
+            result_lower = result.lower()
+
+    # Step 2: Remove placeholder patterns
+    result = _FEWSHOT_PLACEHOLDER_RE.sub('', result)
+
+    # Step 3: Clean up formatting artifacts
+    result = re.sub(r'\(\s*\)', '', result)       # Empty parens ()
+    result = re.sub(r'\(\s*:\s*\)', '', result)   # Malformed (: )
+    result = re.sub(r'\s+\.', '.', result)         # Space before period
+    result = re.sub(r'\s{2,}', ' ', result)       # Collapse multiple spaces
+    result = result.strip().rstrip(',').strip()    # Trailing commas
+    # Ensure trailing period
+    if result and not result.endswith('.'):
+        result += '.'
+
+    return result
+
+
+def _sanitize_fewshot_examples(
+    fewshots: List[Tuple[str, str]],
+) -> List[Tuple[str, str]]:
+    """
+    Sanitize a list of fewshot examples by cleaning their annotation text.
+    Removes examples that become empty after sanitization.
+
+    Args:
+        fewshots: List of (note_text, annotation) tuples
+
+    Returns:
+        Sanitized list of (note_text, annotation) tuples
+    """
+    sanitized = []
+    for note, annotation in fewshots:
+        cleaned = _sanitize_fewshot_annotation(annotation)
+        if cleaned and len(cleaned) > 5:  # Skip if annotation is essentially empty
+            sanitized.append((note, cleaned))
+    return sanitized
+
+
+def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, csv_date: Optional[str] = None, fast_mode: bool = False, use_guided_decoding: bool = False) -> str:
     """
     Build prompt from template (standalone version, doesn't require model_runner).
     Now includes JSON format instructions for structured output.
@@ -231,16 +339,21 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
             if fewshots:
                 fewshots_parts = []
                 for note, annotation in fewshots:
+                    truncated = note[:MAX_FEWSHOT_NOTE_CHARS] + "..." if len(note) > MAX_FEWSHOT_NOTE_CHARS else note
                     fewshots_parts.append(
-                        f'Example:\n- Medical Note: {note}\n- Response: {{"final_output": "{annotation}"}}'
+                        f'Example:\n- Medical Note: {truncated}\n- Response: {{"final_output": "{annotation}"}}'
                     )
                 fewshots_text = "\n\n---\n\n".join(fewshots_parts)
             else:
                 fewshots_text = ""
             template = template.replace("{few_shot_examples}", fewshots_text)
             template = template.replace("{fewshots}", fewshots_text)
-            from lib.prompt_wrapper import update_prompt_placeholders
+            from lib.prompt_wrapper import update_prompt_placeholders, wrap_prompt_with_json_format
             prompt = update_prompt_placeholders(template, note_text, csv_date)
+            # When guided decoding is active, add concise JSON format instructions
+            # so the model knows the semantic meaning of each field
+            if use_guided_decoding:
+                prompt = wrap_prompt_with_json_format(prompt, csv_date, use_guided_decoding=True)
             return prompt
         else:
             print(f"[WARN] No fast prompt for '{task_key}', falling back to standard prompt")
@@ -250,13 +363,14 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
 
     template = _PROMPTS[task_key]["template"]
 
-    # Format fewshots
+    # Format fewshots (truncate long notes to avoid oversized prompts)
     fewshots_text = ""
     if fewshots:
         fewshots_parts = []
         for note, annotation in fewshots:
+            truncated = note[:MAX_FEWSHOT_NOTE_CHARS] + "..." if len(note) > MAX_FEWSHOT_NOTE_CHARS else note
             fewshots_parts.append(
-                f'Example:\n- Medical Note: {note}\n- Response: {{"final_output": "{annotation}"}}'
+                f'Example:\n- Medical Note: {truncated}\n- Response: {{"final_output": "{annotation}"}}'
             )
         fewshots_text = "\n\n---\n\n".join(fewshots_parts)
 
@@ -275,7 +389,7 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
 
     if not is_simple:
         # Wrap with JSON format instructions for structured annotation prompts
-        prompt = wrap_prompt_with_json_format(prompt, csv_date)
+        prompt = wrap_prompt_with_json_format(prompt, csv_date, use_guided_decoding=use_guided_decoding)
 
     return prompt
 
@@ -328,47 +442,44 @@ def _get_fewshot_builder():
     global _fewshot_builder
     if FewshotBuilder is None:
         return None  # Return None instead of raising - allows zero-shot mode
-    
+
     if _fewshot_builder is None:
         try:
             backend_dir = Path(__file__).parent.parent
             faiss_dir = backend_dir / "data" / "faiss_store"
-            # Note: JSON file should be provided by user or copied to data directory
-            # For now, we'll skip auto-building and rely on pre-built indexes or CSV uploads
-            json_file = backend_dir / "data" / "annotated_patient_notes_with_spans_full_verified.json"
-            if not json_file.exists():
-                json_file = backend_dir / "data" / "annotated_patient_notes.json"
-            
+
             _fewshot_builder = FewshotBuilder(store_dir=faiss_dir, use_gpu=False)
-            
-            # Build indexes if needed and JSON file exists
-            if json_file.exists():
-                if not (faiss_dir / "gender-int.index").exists():
-                    prompts_dir = backend_dir / "data" / "latest_prompts"
-                    if prompts_dir.is_dir():
-                        _fewshot_builder.build_all_int_prompts(
-                            json_file,
-                            prompts_dir,
-                            patient_indices=[8, 9],
-                            force_rebuild=False
-                        )
-                else:
-                    # Preload indexes
-                    _ensure_prompts_loaded()
-                    prompt_types = list(_PROMPTS.keys())
-                    _fewshot_builder.preload_all_indexes(prompt_types)
-            else:
-                # Try to preload existing indexes even without JSON file
-                _ensure_prompts_loaded()
-                prompt_types = list(_PROMPTS.keys())
-                _fewshot_builder.preload_all_indexes(prompt_types)
+
+            # Try to preload existing indexes from disk
+            _ensure_prompts_loaded()
+            prompt_types = list(_PROMPTS.keys())
+            _fewshot_builder.preload_all_indexes(prompt_types)
+
+            # If no indexes loaded, build from fewshots.json data
+            if not _fewshot_builder.indexes and _simple_fewshots:
+                print("[INFO] No FAISS indexes found, building from fewshots.json...")
+                built = _fewshot_builder.build_index_from_fewshots(_simple_fewshots)
+                print(f"[INFO] Built {built} FAISS indexes from fewshots.json")
         except Exception as e:
             print(f"[ERROR] Failed to initialize FewshotBuilder: {e}")
             _fewshot_builder = None
             print(f"[WARN] Continuing in zero-shot mode (no few-shot examples)")
             return None
-    
+
     return _fewshot_builder
+
+
+_KNOWN_CENTER_SUFFIXES = ("-int-sarc", "-int-hnc", "-msci", "-vgr", "-int")
+
+def _strip_center_suffix(key: str) -> str:
+    """Strip known center suffix from a fewshot/prompt key to get the base name.
+    E.g., 'ageatdiagnosis-int-sarc' → 'ageatdiagnosis',
+          'ageatdiagnosis-int' → 'ageatdiagnosis'
+    """
+    for suffix in _KNOWN_CENTER_SUFFIXES:
+        if key.endswith(suffix):
+            return key[:-len(suffix)]
+    return key
 
 
 def _get_fewshot_examples(prompt_type: str, note_text: str, k: int = 5) -> List[Tuple[str, str]]:
@@ -376,22 +487,35 @@ def _get_fewshot_examples(prompt_type: str, note_text: str, k: int = 5) -> List[
     Get few-shot examples using either FAISS builder or simple storage.
     Returns empty list if none available (zero-shot mode).
     """
-    # Try FAISS builder first (if available)
+    # Try FAISS builder first (if available) — semantic similarity search
     builder = _get_fewshot_builder()
     if builder is not None:
         try:
+            # Try exact key first
             examples = builder.get_fewshot_examples(prompt_type, note_text, k=k)
             if examples:
                 return examples
+            # Legacy fallback: try base name match against FAISS indexes
+            base = _strip_center_suffix(prompt_type)
+            for idx_key in list(builder.indexes.keys()):
+                if _strip_center_suffix(idx_key) == base:
+                    examples = builder.get_fewshot_examples(idx_key, note_text, k=k)
+                    if examples:
+                        return examples
         except Exception as e:
             print(f"[WARN] FAISS few-shot retrieval failed: {e}, falling back to simple storage")
-    
-    # Fallback to simple storage
+
+    # Exact match (new center-specific keys, e.g. "gender-int-sarc")
     if prompt_type in _simple_fewshots:
-        examples = _simple_fewshots[prompt_type]
-        # Simple similarity: return first k examples (could be enhanced with embeddings)
-        return examples[:k]
-    
+        return _simple_fewshots[prompt_type][:k]
+
+    # Legacy fallback: match by base name for old "-int" suffixed keys
+    # e.g., prompt_type="gender-int-sarc" → base="gender" → matches "gender-int"
+    base = _strip_center_suffix(prompt_type)
+    for fk in _simple_fewshots:
+        if _strip_center_suffix(fk) == base:
+            return _simple_fewshots[fk][:k]
+
     # No few-shots available - zero-shot mode
     return []
 
@@ -581,7 +705,7 @@ async def _process_single_prompt(
         with timer.measure("fewshot_retrieval"):
             if fast_mode:
                 if request_use_fewshots:
-                    fewshot_examples = _get_fewshot_examples(prompt_type, note_text, k=1)
+                    fewshot_examples = _get_fewshot_examples(prompt_type, note_text, k=request_fewshot_k)
                 else:
                     fewshot_examples = []
             elif request_use_fewshots:
@@ -590,6 +714,17 @@ async def _process_single_prompt(
                 )
             else:
                 fewshot_examples = []
+
+            # --- Optional fewshot sanitization ---
+            if fewshot_examples and vllm_client.config.get("sanitize_fewshots", False):
+                fewshot_examples = _sanitize_fewshot_examples(fewshot_examples)
+
+        # --- Determine guided decoding mode ---
+        # Guided decoding is beneficial for both standard and fast mode:
+        # - Standard: guarantees valid JSON, eliminates thinking block issues
+        # - Fast: even more critical due to smaller token budget (256-512 tokens)
+        _structured_output_cfg = vllm_client.config.get("structured_output", {})
+        _use_guided_decoding = _structured_output_cfg.get("enabled", False)
 
         # --- Token budget & chunking ---
         fast_max_tokens = 256 if fast_mode else 512
@@ -600,6 +735,7 @@ async def _process_single_prompt(
             note_text="",
             csv_date=csv_date,
             fast_mode=fast_mode,
+            use_guided_decoding=_use_guided_decoding,
         )
         _available_tokens = _chunker.calculate_available_tokens(_probe_prompt, fast_max_tokens)
         _note_chunks = _chunker.chunk_note(note_text, _available_tokens)
@@ -622,6 +758,7 @@ async def _process_single_prompt(
                     note_text=_chunk_text,
                     csv_date=csv_date,
                     fast_mode=fast_mode,
+                    use_guided_decoding=_use_guided_decoding,
                 )
                 raw_prompt = prompt
                 template = _PROMPTS[prompt_type]["template"]
@@ -640,6 +777,25 @@ async def _process_single_prompt(
         # vLLM forwards unknown extra_body keys to the backend; if the model/server
         # doesn't support it the parameter is silently ignored.
         _fast_extra: dict = {"extra_body": {"chat_template_kwargs": {"enable_thinking": False}}} if fast_mode else {}
+
+        # Prepare guided decoding response_format if applicable
+        # Uses per-prompt constrained schema when possible (enum on final_output),
+        # otherwise falls back to generic schema (fast or standard).
+        _guided_response_format = None
+        if _use_guided_decoding and not is_simple:
+            from services.structured_generator import get_prompt_schema
+            _prompt_entity_mapping_for_schema = (
+                _PROMPTS.get(prompt_type, {}).get("entity_mapping")
+                or _FAST_PROMPTS.get(prompt_type, {}).get("entity_mapping")
+                or {}
+            )
+            _guided_response_format = get_prompt_schema(
+                prompt_type=prompt_type,
+                entity_mapping=_prompt_entity_mapping_for_schema,
+                fast_mode=fast_mode,
+            )
+
+        _actual_guided = False  # Track whether guided decoding was actually used
         with timer.measure("vllm_inference"):
             async with _vllm_semaphore:
                 if is_simple:
@@ -649,34 +805,39 @@ async def _process_single_prompt(
                     )
                     raw_output = output.get("raw", output.get("normalized", ""))
                     raw_response = raw_output
-                elif use_structured and not fast_mode:
-                    try:
-                        from services.structured_generator import generate_structured_annotation
-                        structured_ann, raw_response = generate_structured_annotation(
-                            prompt=prompt,
-                            vllm_endpoint=vllm_client.config["vllm_endpoint"],
-                            model_name=vllm_client.config["model_name"],
-                            csv_date=csv_date,
-                            max_new_tokens=vllm_client.config.get("max_new_tokens_standard", 2048),
-                            temperature=0.0
-                        )
-                    except Exception:
-                        # Outlines not available — fall through to fallback below
-                        use_structured = False
+                else:
+                    # Use guided decoding if enabled, with fallback on failure
+                    if _use_guided_decoding and not is_simple:
+                        try:
+                            output = await vllm_client.agenerate(
+                                prompt=prompt, max_new_tokens=fast_max_tokens,
+                                temperature=0.0, return_logprobs=False,
+                                response_format=_guided_response_format,
+                            )
+                            raw_output = output.get("raw", output.get("normalized", ""))
+                            raw_response = raw_output
+                            _actual_guided = True
+                        except Exception as e:
+                            import logging as _log
+                            _log.getLogger(__name__).warning(
+                                "Guided decoding failed (server may not support response_format), "
+                                "falling back to unstructured generation: %s", e
+                            )
+                            _actual_guided = False
 
-                if not is_simple and (fast_mode or not use_structured):
-                    output = await vllm_client.agenerate(
-                        prompt=prompt, max_new_tokens=fast_max_tokens,
-                        temperature=0.0, return_logprobs=False, **_fast_extra
-                    )
-                    raw_output = output.get("raw", output.get("normalized", ""))
-                    raw_response = raw_output
+                    if not _actual_guided:
+                        output = await vllm_client.agenerate(
+                            prompt=prompt, max_new_tokens=fast_max_tokens,
+                            temperature=0.0, return_logprobs=False, **_fast_extra
+                        )
+                        raw_output = output.get("raw", output.get("normalized", ""))
+                        raw_response = raw_output
 
             # --- Post-processing ---
             with timer.measure("post_processing"):
                 from lib.annotation_normalizer import normalize_annotation_output
                 from models.annotation_models import StructuredAnnotation as SA
-                from services.structured_generator import generate_structured_annotation_fallback
+                from services.structured_generator import parse_structured_annotation
 
                 if is_simple:
                     cleaned_output = raw_output.strip()
@@ -692,13 +853,13 @@ async def _process_single_prompt(
                         is_negated=False,
                         date=None
                     )
-                elif use_structured and not fast_mode:
-                    # structured_ann was already set by generate_structured_annotation
-                    pass
                 else:
-                    # Fallback parsing from raw LLM output
-                    structured_ann = generate_structured_annotation_fallback(
-                        prompt=prompt, raw_output=raw_output, csv_date=csv_date
+                    # Parse output using layered strategy (direct JSON → extraction → regex)
+                    structured_ann = parse_structured_annotation(
+                        raw_output=raw_output,
+                        csv_date=csv_date,
+                        used_guided_decoding=_actual_guided,
+                        fast_mode=fast_mode,
                     )
 
                 annotation_text = normalize_annotation_output(
@@ -706,22 +867,33 @@ async def _process_single_prompt(
                     prompt_type=prompt_type,
                     normalize_absence=True
                 )
-                if not is_simple and not use_structured:
+                if not is_simple and not _actual_guided:
                     annotation_text = _RE_ANNOTATION_PREFIX.sub('', annotation_text).strip()
 
+                # Re-wrap bare values (e.g., "deep" → "Tumor depth: deep.")
+                from lib.annotation_normalizer import re_wrap_bare_value
+                _raw_template = ""
+                if fast_mode and prompt_type in _FAST_PROMPTS:
+                    _raw_template = _FAST_PROMPTS[prompt_type].get("template", "")
+                elif prompt_type in _PROMPTS:
+                    _raw_template = _PROMPTS[prompt_type].get("template", "")
+                if _raw_template:
+                    annotation_text = re_wrap_bare_value(annotation_text, _raw_template)
+
                 reasoning = structured_ann.reasoning
-                evidence = structured_ann.evidence
+                evidence = ""  # Evidence field removed from LLM output; derive spans from reasoning
                 is_negated = structured_ann.is_negated
                 date_info = structured_ann.date
 
-                evidence_spans = _extract_evidence_spans(_chunk_text, evidence, prompt_type)
+                # Derive evidence spans from reasoning text (references note phrases)
+                evidence_spans = _extract_evidence_spans(_chunk_text, reasoning, prompt_type)
                 values = _parse_annotation_values(annotation_text, _chunk_text, prompt_type)
 
             # --- ICD-O-3 extraction (async, non-blocking) ---
             icdo3_code_info = None
             with timer.measure("icdo3_extraction"):
                 try:
-                    from lib.icdo3_extractor import extract_icdo3_from_text_async, is_histology_or_site_prompt
+                    from lib.icdo3_extractor import extract_icdo3_from_text_async, is_histology_or_site_prompt, _is_histology_prompt
                     if is_histology_or_site_prompt(prompt_type):
                         icdo3_code_info = await extract_icdo3_from_text_async(
                             annotation_text, prompt_type,
@@ -732,6 +904,45 @@ async def _process_single_prompt(
                             from models.schemas import ICDO3CodeInfo
                             if isinstance(icdo3_code_info, dict):
                                 icdo3_code_info = ICDO3CodeInfo(**icdo3_code_info)
+
+                            # For histology prompts, replace any topography code (Cxx.x)
+                            # in the annotation text with the correct morphology code
+                            if _is_histology_prompt(prompt_type):
+                                morph_code = None
+                                if isinstance(icdo3_code_info, ICDO3CodeInfo):
+                                    morph_code = icdo3_code_info.morphology_code
+                                elif isinstance(icdo3_code_info, dict):
+                                    morph_code = icdo3_code_info.get('morphology_code')
+                                if morph_code:
+                                    import re as _re
+                                    new_text = annotation_text
+                                    # Replace topography codes (Cxx.x) in parentheses
+                                    new_text = _re.sub(
+                                        r'\(C\d{2}\.\d\)',
+                                        f'({morph_code})',
+                                        new_text,
+                                    )
+                                    # Replace placeholder patterns (may survive if validator didn't strip)
+                                    new_text = _re.sub(
+                                        r'\(\[select ICD-O-3 code\]\)',
+                                        f'({morph_code})',
+                                        new_text,
+                                        flags=_re.IGNORECASE,
+                                    )
+                                    # If no code was replaced and annotation doesn't already
+                                    # contain a morphology code, append it before trailing period.
+                                    # This handles the case where the Pydantic validator already
+                                    # stripped the placeholder text.
+                                    if new_text == annotation_text and morph_code not in annotation_text:
+                                        if new_text.endswith('.'):
+                                            new_text = new_text[:-1].rstrip() + f' ({morph_code}).'
+                                        else:
+                                            new_text = new_text.rstrip() + f' ({morph_code})'
+                                    if new_text != annotation_text:
+                                        print(f"[INFO] Replaced/appended code in annotation: {annotation_text} → {new_text}")
+                                        annotation_text = new_text
+                                        # Re-parse values with updated text
+                                        values = _parse_annotation_values(annotation_text, _chunk_text, prompt_type)
                 except Exception as e:
                     print(f"[ERROR] Failed to extract ICD-O-3 code for {prompt_type}: {e}")
 
@@ -817,7 +1028,10 @@ async def _process_single_prompt(
             status = "success"
             if annotation_text.startswith("ERROR:"):
                 status = "error"
-            elif reasoning and (reasoning.endswith("...") or len(reasoning) > 900):
+            elif reasoning and reasoning.endswith("...") and len(reasoning) >= 1997:
+                # Only flag as incomplete when reasoning hit the 2000-char
+                # truncation limit (Pydantic validator), indicating the LLM
+                # may have run out of tokens.  Long reasoning is expected.
                 status = "incomplete"
             elif not annotation_text or annotation_text.strip() == "":
                 if reasoning:
@@ -844,6 +1058,32 @@ async def _process_single_prompt(
             )
             _derived_field_values = _resolve_owm(structured_ann.final_output, _prompt_entity_mapping) or None
 
+            # --- Hallucination detection (repetition/looping) ---
+            # Extract full reasoning from raw JSON before Pydantic truncates it.
+            # The raw output may be truncated (LLM ran out of tokens) so json.loads() can fail;
+            # in that case fall back to regex extraction and also scan the raw output directly.
+            from services.structured_generator import detect_repetition_hallucination
+            _raw_reasoning_full = reasoning or ""
+            _raw_output_for_hal = ""
+            if raw_output:
+                try:
+                    import json as _json_hal
+                    _parsed_raw = _json_hal.loads(raw_output)
+                    if isinstance(_parsed_raw, dict):
+                        _raw_reasoning_full = _parsed_raw.get("reasoning", _raw_reasoning_full)
+                except (ValueError, TypeError):
+                    # Truncated JSON — try regex extraction of reasoning field
+                    import re as _re_hal
+                    _m = _re_hal.search(r'"reasoning"\s*:\s*"(.*?)(?:"\s*,|\Z)', raw_output, _re_hal.DOTALL)
+                    if _m and len(_m.group(1)) > len(_raw_reasoning_full):
+                        _raw_reasoning_full = _m.group(1)
+                    # Also pass raw output for direct scanning
+                    _raw_output_for_hal = raw_output
+            _hallucination_flags = detect_repetition_hallucination(
+                reasoning=_raw_reasoning_full,
+                raw_output=_raw_output_for_hal,
+            )
+
             _last_result = AnnotationResult(
                 prompt_type=prompt_type,
                 annotation_text=annotation_text,
@@ -861,6 +1101,7 @@ async def _process_single_prompt(
                 icdo3_code=icdo3_code_dict,
                 timing_breakdown=timer.to_dict(),
                 derived_field_values=_derived_field_values,
+                hallucination_flags=_hallucination_flags,
             )
 
             # --- Early stop for chunked notes ---

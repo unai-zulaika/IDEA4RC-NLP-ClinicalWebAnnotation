@@ -6,6 +6,7 @@ import { uploadApi, promptsApi, sessionsApi, presetsApi } from '@/lib/api'
 import type { CSVUploadResponse, PromptInfo, CSVRow } from '@/lib/api'
 import PresetSelector from '@/components/PresetSelector'
 import { useDefaultCenter } from '@/lib/useDefaultCenter'
+import { useFewshotK } from '@/lib/useFewshotK'
 
 export default function UploadPage() {
   const router = useRouter()
@@ -22,12 +23,14 @@ export default function UploadPage() {
   const [fewshotUploading, setFewshotUploading] = useState(false)
   const [fewshotStatus, setFewshotStatus] = useState<any>(null)
   const [fewshotDeleting, setFewshotDeleting] = useState(false)
+  const [fewshotCenter, setFewshotCenter] = useState<string>(selectedCenter)
+  const [fewshotLoading, setFewshotLoading] = useState(false)
+  const { standardK, setStandardK, fastK, setFastK } = useFewshotK()
   const [reportTypeMapping, setReportTypeMapping] = useState<Record<string, string[]>>({})
   const [savedMappings, setSavedMappings] = useState<Record<string, string[]>>({})
 
   useEffect(() => {
     promptsApi.listCenters().then(setCenters).catch(console.error)
-    loadFewshotsStatus()
   }, [])
 
   useEffect(() => {
@@ -42,12 +45,24 @@ export default function UploadPage() {
     }
   }, [selectedCenter])
 
-  const loadFewshotsStatus = async () => {
+  // Load fewshot status on mount and whenever fewshot center changes
+  useEffect(() => {
+    if (fewshotCenter) {
+      loadFewshotsStatus(fewshotCenter)
+    }
+  }, [fewshotCenter])
+
+  const loadFewshotsStatus = async (center?: string) => {
+    const c = center || fewshotCenter
+    if (!c) return
+    setFewshotLoading(true)
     try {
-      const status = await uploadApi.getFewshotsStatus()
+      const status = await uploadApi.getFewshotsStatus(c)
       setFewshotStatus(status)
     } catch (err) {
       console.error('Failed to load few-shots status:', err)
+    } finally {
+      setFewshotLoading(false)
     }
   }
 
@@ -79,12 +94,16 @@ export default function UploadPage() {
       setError('Please select a few-shot examples file')
       return
     }
+    if (!fewshotCenter) {
+      setError('Please select a center for the few-shot examples')
+      return
+    }
 
     setFewshotUploading(true)
     setError(null)
 
     try {
-      const result = await uploadApi.uploadFewshots(fewshotFile)
+      const result = await uploadApi.uploadFewshots(fewshotFile, fewshotCenter)
       await loadFewshotsStatus()
       setFewshotFile(null)
       // Reset file input
@@ -117,6 +136,7 @@ export default function UploadPage() {
     try {
       await uploadApi.deleteFewshots()
       await loadFewshotsStatus()
+      setFewshotCenter(centers.length > 0 ? centers[0] : '')
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Failed to delete few-shot examples')
     } finally {
@@ -253,46 +273,86 @@ export default function UploadPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Few-Shot Examples (Optional)</h2>
           <p className="text-sm text-gray-600 mb-4">
             Upload a CSV file with few-shot examples to improve annotation quality.
+            Select the center these examples belong to.
           </p>
           <div className="text-xs text-gray-500 mb-4 bg-gray-50 p-3 rounded">
             <strong>Required columns:</strong> <code className="bg-white px-1 rounded">prompt_type</code>, <code className="bg-white px-1 rounded">note_text</code>, <code className="bg-white px-1 rounded">annotation</code>
             <br />
-            <strong>Example:</strong> <code className="bg-white px-1 rounded">gender-int,"Patient is a 65-year-old male...","Patient's gender male."</code>
+            <strong>Example:</strong> <code className="bg-white px-1 rounded">gender,"Patient is a 65-year-old male...","Patient's gender male."</code>
+            <br />
+            <span className="text-gray-400">Note: prompt_type should be the base name (e.g., &quot;gender&quot;, not &quot;gender-int-sarc&quot;). The center suffix is added automatically.</span>
             <br />
             <a href="/fewshots_example.csv" download className="text-blue-600 hover:underline">Download example CSV</a>
           </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Center for Few-Shots</label>
+            <select
+              value={fewshotCenter}
+              onChange={(e) => setFewshotCenter(e.target.value)}
+              className="block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+            >
+              {centers.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
           
-          {fewshotStatus && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <div className="text-sm">
-                <div className="flex justify-between items-start mb-1">
-                  <div className="font-medium text-blue-900">Few-Shot Status:</div>
+          {fewshotLoading ? (
+            <div className="mb-4 p-3 rounded-md border bg-gray-50 border-gray-200">
+              <div className="text-sm font-medium text-gray-500">Loading fewshot status...</div>
+            </div>
+          ) : fewshotStatus && (
+            <div className={`mb-4 p-3 rounded-md border ${fewshotStatus.simple_fewshots_available ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+              <div className="flex justify-between items-center">
+                <div className="text-sm font-medium">
+                  {fewshotStatus.simple_fewshots_available ? (
+                    <span className="text-green-800">
+                      Fewshots are properly configured ({fewshotStatus.total_examples} examples, {Object.keys(fewshotStatus.counts_by_prompt).length} prompt types)
+                    </span>
+                  ) : (
+                    <span className="text-amber-800">
+                      Fewshots are missing for {fewshotCenter || 'this center'}
+                    </span>
+                  )}
+                </div>
+                {fewshotStatus.simple_fewshots_available && (
                   <button
                     onClick={handleFewshotDelete}
-                    disabled={fewshotDeleting || !fewshotStatus.simple_fewshots_available}
+                    disabled={fewshotDeleting}
                     className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-                    title={fewshotStatus.simple_fewshots_available ? "Delete all few-shot examples" : "No few-shot examples to delete"}
                   >
                     {fewshotDeleting ? 'Deleting...' : 'Delete'}
                   </button>
-                </div>
-                <div className="text-blue-700">
-                  {fewshotStatus.faiss_available && (
-                    <span className="inline-block mr-2">✓ FAISS available</span>
-                  )}
-                  {fewshotStatus.simple_fewshots_available && (
-                    <span className="inline-block mr-2">
-                      ✓ {fewshotStatus.total_examples} examples uploaded
-                      ({Object.keys(fewshotStatus.counts_by_prompt).length} prompt types)
-                    </span>
-                  )}
-                  {!fewshotStatus.faiss_available && !fewshotStatus.simple_fewshots_available && (
-                    <span className="text-gray-600">No few-shot examples available (zero-shot mode)</span>
-                  )}
-                </div>
+                )}
               </div>
             </div>
           )}
+
+          <div className="mb-4 flex gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Standard mode examples (k)</label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={standardK}
+                onChange={(e) => setStandardK(parseInt(e.target.value, 10) || 1)}
+                className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fast mode examples (k)</label>
+              <input
+                type="number"
+                min={1}
+                max={5}
+                value={fastK}
+                onChange={(e) => setFastK(parseInt(e.target.value, 10) || 1)}
+                className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              />
+            </div>
+          </div>
           
           <div className="flex gap-2">
             <input

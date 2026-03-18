@@ -238,12 +238,35 @@ async def get_session(session_id: str):
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
     
     # Convert annotations to proper format
+    from services.structured_generator import detect_repetition_hallucination
+    import re as _re_sess
     annotations = {}
     for note_id, prompt_anns in session.get('annotations', {}).items():
         annotations[note_id] = {}
         for prompt_type, ann_data in prompt_anns.items():
             # Ensure all fields are preserved when loading from JSON
             if isinstance(ann_data, dict):
+                # Retroactive hallucination detection for annotations saved before this feature
+                if ann_data.get('raw_response') and ann_data.get('hallucination_flags') is None:
+                    _rr = ann_data['raw_response']
+                    _reasoning = ann_data.get('reasoning', '')
+                    _raw_for_scan = ""
+                    try:
+                        import json as _json_sess
+                        _parsed = _json_sess.loads(_rr)
+                        if isinstance(_parsed, dict):
+                            _reasoning = _parsed.get('reasoning', _reasoning)
+                    except (ValueError, TypeError):
+                        _m = _re_sess.search(r'"reasoning"\s*:\s*"(.*?)(?:"\s*,|\Z)', _rr, _re_sess.DOTALL)
+                        if _m and len(_m.group(1)) > len(_reasoning):
+                            _reasoning = _m.group(1)
+                        _raw_for_scan = _rr
+                    flags = detect_repetition_hallucination(
+                        reasoning=_reasoning,
+                        raw_output=_raw_for_scan,
+                    )
+                    if flags:
+                        ann_data['hallucination_flags'] = [f.model_dump() for f in flags]
                 annotations[note_id][prompt_type] = ann_data
             else:
                 # If it's already a SessionAnnotation, convert to dict
