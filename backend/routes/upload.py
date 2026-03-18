@@ -3,6 +3,7 @@ CSV upload and processing routes
 """
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from typing import List, Dict, Tuple, Optional
 import pandas as pd
 import csv
@@ -421,6 +422,128 @@ async def save_report_type_mappings(
         raise HTTPException(status_code=500, detail=f"Failed to save mapping: {str(e)}")
 
 
+def _strip_center_suffix(key: str, center_suffix: str, legacy_suffix: str, match_legacy: bool) -> str:
+    """Strip the center suffix from a prompt key to get the base prompt type."""
+    if key.endswith(center_suffix):
+        return key[: -len(center_suffix)]
+    elif match_legacy and key.endswith(legacy_suffix):
+        return key[: -len(legacy_suffix)]
+    return key
+
+
+def _load_faiss_fewshots(center: str) -> Dict[str, List[Tuple[str, str]]]:
+    """Load fewshot examples from FAISS parquet files, filtered by center."""
+    faiss_dir = _get_faiss_store_dir()
+    if not faiss_dir.exists():
+        return {}
+
+    center_lower = center.lower()
+    center_suffix = f"-{center_lower}"
+    legacy_suffix = "-int"
+    match_legacy = center_lower == "int-sarc"
+
+    result: Dict[str, List[Tuple[str, str]]] = {}
+    for parquet_file in sorted(faiss_dir.glob("*.parquet")):
+        prompt_key = parquet_file.stem
+        if not (prompt_key.endswith(center_suffix)
+                or (match_legacy and prompt_key.endswith(legacy_suffix))):
+            continue
+        try:
+            import pandas as _pd
+            df = _pd.read_parquet(parquet_file)
+            examples = [
+                (str(row.get("note_original_text", "")), str(row.get("annotation", "")))
+                for _, row in df.iterrows()
+            ]
+            if examples:
+                result[prompt_key] = examples
+        except Exception:
+            pass
+    return result
+
+
+@router.get("/fewshots/download")
+async def download_fewshots(center: str = Query(..., description="Center to download few-shots for (e.g., INT-SARC, MSCI, VGR)")):
+    """
+    Download few-shot examples for a specific center as a CSV file.
+    Returns the same format used for upload: prompt_type, note_text, annotation.
+    The center suffix is stripped from prompt_type so the file can be re-uploaded directly.
+    Checks simple fewshots first, then falls back to FAISS parquet data.
+    """
+    center_lower = center.lower()
+    center_suffix = f"-{center_lower}"
+    legacy_suffix = "-int"
+    match_legacy = center_lower == "int-sarc"
+
+    # Try simple fewshots first
+    all_fewshots = _load_fewshots_from_disk()
+    filtered: Dict[str, List[Tuple[str, str]]] = {}
+    for k, v in all_fewshots.items():
+        if k.endswith(center_suffix):
+            filtered[k] = v
+        elif match_legacy and k.endswith(legacy_suffix):
+            filtered[k] = v
+
+    # Fall back to FAISS parquet data
+    if not filtered:
+        filtered = _load_faiss_fewshots(center)
+
+    if not filtered:
+        raise HTTPException(status_code=404, detail=f"No few-shot examples found for center '{center}'")
+
+    # Build CSV: strip center suffix from prompt_type to match upload format
+    csv_buffer = io.StringIO()
+    writer = csv.writer(csv_buffer)
+    writer.writerow(["prompt_type", "note_text", "annotation"])
+    for full_key, examples in sorted(filtered.items()):
+        base_type = _strip_center_suffix(full_key, center_suffix, legacy_suffix, match_legacy)
+        for note_text, annotation in examples:
+            writer.writerow([base_type, note_text, annotation])
+
+    csv_buffer.seek(0)
+    filename = f"fewshots_{center_lower}.csv"
+    return StreamingResponse(
+        iter([csv_buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+def _get_faiss_store_dir() -> Path:
+    """Get path to the FAISS store directory."""
+    return Path(__file__).parent.parent / "data" / "faiss_store"
+
+
+def _scan_faiss_counts(center: Optional[str] = None) -> Dict[str, int]:
+    """Scan FAISS store metadata files and return {prompt_key: example_count}.
+
+    Optionally filters by center suffix.
+    """
+    faiss_dir = _get_faiss_store_dir()
+    if not faiss_dir.exists():
+        return {}
+
+    center_lower = center.lower() if center else None
+    center_suffix = f"-{center_lower}" if center_lower else None
+    legacy_suffix = "-int"
+    match_legacy = center_lower == "int-sarc" if center_lower else False
+
+    counts: Dict[str, int] = {}
+    for meta_file in faiss_dir.glob("*.json"):
+        prompt_key = meta_file.stem  # e.g. "gender-int"
+        if center_lower:
+            if not (prompt_key.endswith(center_suffix)
+                    or (match_legacy and prompt_key.endswith(legacy_suffix))):
+                continue
+        try:
+            with open(meta_file, 'r', encoding='utf-8') as f:
+                meta = json.load(f)
+            counts[prompt_key] = meta.get("size", 0)
+        except Exception:
+            pass
+    return counts
+
+
 @router.get("/fewshots/status")
 async def get_fewshots_status(center: Optional[str] = Query(None, description="Filter by center (e.g., INT-SARC, MSCI)")):
     """Get status of uploaded few-shot examples, optionally filtered by center"""
@@ -442,7 +565,7 @@ async def get_fewshots_status(center: Optional[str] = Query(None, description="F
     except:
         faiss_available = False
 
-    # Filter by center if specified
+    # Filter simple fewshots by center if specified
     if center:
         center_lower = center.lower()
         center_suffix = f"-{center_lower}"
@@ -459,12 +582,22 @@ async def get_fewshots_status(center: Optional[str] = Query(None, description="F
     else:
         filtered = _simple_fewshots
 
+    # Merge FAISS counts (FAISS keys not already in simple fewshots)
+    faiss_counts = _scan_faiss_counts(center)
+    merged_counts: Dict[str, int] = {pt: len(examples) for pt, examples in filtered.items()}
+    for pt, count in faiss_counts.items():
+        if pt not in merged_counts:
+            merged_counts[pt] = count
+
+    total_examples = sum(merged_counts.values())
+    has_fewshots = total_examples > 0
+
     return {
         "faiss_available": faiss_available,
-        "simple_fewshots_available": len(filtered) > 0,
-        "prompt_types_with_fewshots": list(filtered.keys()),
-        "counts_by_prompt": {pt: len(examples) for pt, examples in filtered.items()},
-        "total_examples": sum(len(examples) for examples in filtered.values())
+        "simple_fewshots_available": has_fewshots,
+        "prompt_types_with_fewshots": list(merged_counts.keys()),
+        "counts_by_prompt": merged_counts,
+        "total_examples": total_examples,
     }
 
 
