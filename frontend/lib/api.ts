@@ -640,6 +640,14 @@ export const uploadApi = {
     return response.data
   },
 
+  downloadFewshots: async (center: string): Promise<Blob> => {
+    const response = await api.get('/api/upload/fewshots/download', {
+      params: { center },
+      responseType: 'blob',
+    })
+    return response.data
+  },
+
   getReportTypeMappings: async (center?: string): Promise<Record<string, string[]>> => {
     const params = center ? { center } : {}
     const response = await api.get('/api/upload/report-type-mappings', { params })

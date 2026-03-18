@@ -23,6 +23,7 @@ export default function UploadPage() {
   const [fewshotUploading, setFewshotUploading] = useState(false)
   const [fewshotStatus, setFewshotStatus] = useState<any>(null)
   const [fewshotDeleting, setFewshotDeleting] = useState(false)
+  const [fewshotDownloading, setFewshotDownloading] = useState(false)
   const [fewshotCenter, setFewshotCenter] = useState<string>(selectedCenter)
   const [fewshotLoading, setFewshotLoading] = useState(false)
   const { standardK, setStandardK, fastK, setFastK } = useFewshotK()
@@ -141,6 +142,30 @@ export default function UploadPage() {
       setError(err.response?.data?.detail || err.message || 'Failed to delete few-shot examples')
     } finally {
       setFewshotDeleting(false)
+    }
+  }
+
+  const handleFewshotDownload = async () => {
+    if (!fewshotCenter) {
+      setError('Please select a center to download few-shot examples for')
+      return
+    }
+    setFewshotDownloading(true)
+    setError(null)
+    try {
+      const blob = await uploadApi.downloadFewshots(fewshotCenter)
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `fewshots_${fewshotCenter.toLowerCase()}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err: any) {
+      setError(err.response?.data?.detail || err.message || 'Failed to download few-shot examples')
+    } finally {
+      setFewshotDownloading(false)
     }
   }
 
@@ -317,13 +342,22 @@ export default function UploadPage() {
                   )}
                 </div>
                 {fewshotStatus.simple_fewshots_available && (
-                  <button
-                    onClick={handleFewshotDelete}
-                    disabled={fewshotDeleting}
-                    className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-                  >
-                    {fewshotDeleting ? 'Deleting...' : 'Delete'}
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleFewshotDownload}
+                      disabled={fewshotDownloading}
+                      className="text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                    >
+                      {fewshotDownloading ? 'Downloading...' : 'Download CSV'}
+                    </button>
+                    <button
+                      onClick={handleFewshotDelete}
+                      disabled={fewshotDeleting}
+                      className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                    >
+                      {fewshotDeleting ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
