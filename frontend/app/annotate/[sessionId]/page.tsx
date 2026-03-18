@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { sessionsApi, annotateApi, promptsApi, presetsApi } from '@/lib/api'
 import { useDefaultCenter } from '@/lib/useDefaultCenter'
 import { useFastMode } from '@/lib/useFastMode'
+import { useFewshotK } from '@/lib/useFewshotK'
 import type { SessionData, AnnotationResult, EvidenceSpan, PromptInfo, BatchProcessResponse, DiagnosisValidationReport, SequentialProgressEvent, ExportConflict } from '@/lib/api'
 import ManagePromptTypesModal from '@/components/ManagePromptTypesModal'
 import PatientDiagnosisPanel from '@/components/PatientDiagnosisPanel'
@@ -31,6 +32,7 @@ export default function AnnotatePage() {
   const sessionId = params.sessionId as string
   const [center] = useDefaultCenter()
   const [fastMode, setFastMode] = useFastMode()
+  const { standardK, fastK } = useFewshotK()
 
   const [session, setSession] = useState<SessionData | null>(null)
   const [selectedNoteIndex, setSelectedNoteIndex] = useState(0)
@@ -63,6 +65,7 @@ export default function AnnotatePage() {
     report: DiagnosisValidationReport
   } | null>(null)
   const [exportConflicts, setExportConflicts] = useState<ExportConflict[] | null>(null)
+  const [exportConfirmMode, setExportConfirmMode] = useState<'labels' | 'codes' | null>(null)
   const [reprocessConfirm, setReprocessConfirm] = useState(false)
   // AbortController for cancelling in-flight requests
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -231,8 +234,8 @@ export default function AnnotatePage() {
       const batchRequest = {
         note_ids: [note.note_id],
         prompt_types: notePromptTypes,
-        fewshot_k: 5,
-        use_fewshots: !fastMode,
+        fewshot_k: fastMode ? fastK : standardK,
+        use_fewshots: true,
         fast_mode: fastMode,
       }
       let result: BatchProcessResponse
@@ -275,6 +278,7 @@ export default function AnnotatePage() {
             evaluation_result: ann.evaluation_result,
             icdo3_code: ann.icdo3_code,
             derived_field_values: ann.derived_field_values,
+            hallucination_flags: ann.hallucination_flags,
           }
         })
         // Use the batch-level timing_breakdown which includes aggregated per-step sums
@@ -335,8 +339,8 @@ export default function AnnotatePage() {
       const batchRequest = {
         note_ids: [note.note_id],
         prompt_types: [promptType],
-        fewshot_k: 5,
-        use_fewshots: !fastMode,
+        fewshot_k: fastMode ? fastK : standardK,
+        use_fewshots: true,
         fast_mode: fastMode,
       }
 
@@ -369,6 +373,7 @@ export default function AnnotatePage() {
             evaluation_result: ann.evaluation_result,
             icdo3_code: ann.icdo3_code,
             derived_field_values: ann.derived_field_values,
+            hallucination_flags: ann.hallucination_flags,
           }
         })
       }
@@ -500,8 +505,8 @@ export default function AnnotatePage() {
     try {
       // Use sequential endpoint — server saves after each note (crash resilient)
       const sequentialReq = {
-        fewshot_k: 5,
-        use_fewshots: !fastMode,
+        fewshot_k: fastMode ? fastK : standardK,
+        use_fewshots: true,
         fast_mode: fastMode,
         skip_annotated: !forceReprocess, // Resume capability: skip already-annotated notes
       }
@@ -906,14 +911,14 @@ export default function AnnotatePage() {
           </button>
           <div className="w-px h-6 bg-gray-200" />
           <button
-            onClick={() => handleExport('labels')}
+            onClick={() => setExportConfirmMode('labels')}
             disabled={exporting !== null}
             className="px-3 py-1.5 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50"
           >
             {exporting === 'labels' ? 'Exporting...' : 'Export Labels CSV'}
           </button>
           <button
-            onClick={() => handleExport('codes')}
+            onClick={() => setExportConfirmMode('codes')}
             disabled={exporting !== null}
             className="px-3 py-1.5 border border-indigo-300 text-indigo-700 rounded-md text-sm hover:bg-indigo-50 disabled:opacity-50"
           >
@@ -1176,6 +1181,7 @@ export default function AnnotatePage() {
           )}
           <div className="mb-2 text-xs text-gray-500">
             <span>Note ID: {currentNote.note_id}</span>
+            <span className="ml-4">Patient ID: {currentNote.p_id}</span>
             <span className="ml-4">Report Type: {currentNote.report_type}</span>
             <span className="ml-4">Date: {currentNote.date}</span>
           </div>
@@ -1266,6 +1272,7 @@ export default function AnnotatePage() {
                             evaluation_result: annotation.evaluation_result,
                             icdo3_code: annotation.icdo3_code,
                             derived_field_values: annotation.derived_field_values,
+                            hallucination_flags: annotation.hallucination_flags,
                           }
                           : {
                             prompt_type: promptType,
@@ -1382,6 +1389,44 @@ export default function AnnotatePage() {
                 className="px-4 py-2 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700"
               >
                 Re-process All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Export Confirmation Modal — Remind to review diagnoses */}
+      {exportConfirmMode && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="px-6 py-4 border-b border-amber-200 bg-amber-50 rounded-t-lg">
+              <h3 className="text-lg font-semibold text-amber-800">Review Before Exporting</h3>
+            </div>
+            <div className="px-6 py-5">
+              <p className="text-sm text-gray-700">
+                Before exporting, please make sure you have reviewed the <strong>Patient Diagnoses</strong> panel
+                to validate the <strong>topography and morphology</strong> combinations for each patient.
+              </p>
+              <p className="text-sm text-gray-500 mt-3">
+                Incorrect combinations may lead to invalid ICD-O-3 codes in the exported file.
+              </p>
+            </div>
+            <div className="px-6 py-3 border-t border-gray-200 flex justify-end gap-2">
+              <button
+                onClick={() => setExportConfirmMode(null)}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const mode = exportConfirmMode
+                  setExportConfirmMode(null)
+                  handleExport(mode)
+                }}
+                className="px-4 py-2 text-sm bg-amber-600 text-white rounded-md hover:bg-amber-700"
+              >
+                Continue with Export
               </button>
             </div>
           </div>

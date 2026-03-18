@@ -57,12 +57,11 @@ def _adapt_prompts_for_center(center_prompts: Dict, adapted_prompts: Dict[str, D
         
         concise_reasoning_instruction = """# Reasoning Requirements (Traceability)
 For every entity extracted, you MUST follow this internal logic:
-1. **Evidence**: Locate the exact literal phrase or sentence from the note.
+1. **Evidence**: Reference the exact literal phrase or sentence from the note that supports the annotation.
 2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.
-3. **Inference**: Briefly explain the logic used to map the natural language to the standard value.
+3. **Inference**: Explain the logic used to map the natural language to the standard value.
 
-IMPORTANT: Keep the reasoning field CONCISE. Provide only essential points in 2-3 sentences maximum. Avoid verbosity or repetition.
-Generate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values."""
+Generate the response in a structured JSON format. Ensure the `reasoning` field is populated BEFORE the final values."""
         
         for pattern in verbose_reasoning_patterns:
             adapted_template = re.sub(pattern, concise_reasoning_instruction, adapted_template, flags=re.MULTILINE | re.DOTALL)

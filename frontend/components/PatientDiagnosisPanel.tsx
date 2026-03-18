@@ -177,13 +177,15 @@ export default function PatientDiagnosisPanel({
             patient={patient}
             isExpanded={!!expanded[patient.patient_id]}
             onToggle={() => toggleExpand(patient.patient_id)}
-            searchQuery=""
-            onSearchQueryChange={() => {}}
-            onSearch={() => {}}
-            searchResults={[]}
-            isSearching={false}
-            isResolving={false}
-            onSelectCode={() => {}}
+            searchQuery={searchQuery[patient.patient_id] || ''}
+            onSearchQueryChange={(val) =>
+              setSearchQuery(prev => ({ ...prev, [patient.patient_id]: val }))
+            }
+            onSearch={() => handleSearch(patient.patient_id)}
+            searchResults={searchResults[patient.patient_id] || []}
+            isSearching={!!searching[patient.patient_id]}
+            isResolving={!!resolving[patient.patient_id]}
+            onSelectCode={(code) => handleSelectCode(patient.patient_id, code)}
             onNavigateToAnnotation={onNavigateToAnnotation}
           />
         ))}
@@ -325,10 +327,12 @@ function PatientRow({
             </div>
           )}
 
-          {/* Manual resolution UI (only for needs_review) */}
-          {patient.status === 'needs_review' && (
-            <div className="mt-2 p-2 bg-white rounded border border-yellow-200 space-y-2">
-              <div className="font-medium text-gray-700">Manual Resolution</div>
+          {/* Manual resolution / override UI (all non-skipped statuses) */}
+          {patient.status !== 'skipped' && (
+            <div className={`mt-2 p-2 bg-white rounded border ${patient.status === 'needs_review' ? 'border-yellow-200' : 'border-gray-200'} space-y-2`}>
+              <div className="font-medium text-gray-700">
+                {patient.status === 'needs_review' ? 'Manual Resolution' : 'Change Diagnosis'}
+              </div>
               <div className="flex gap-2">
                 <input
                   type="text"

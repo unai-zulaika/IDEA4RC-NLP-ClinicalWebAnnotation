@@ -7,5 +7,10 @@
   "max_tokens": 32768,
   "context_window": 32768,
   "max_new_tokens_standard": 2048,
-  "max_new_tokens_fast": 512
+  "max_new_tokens_fast": 512,
+  "structured_output": {
+    "enabled": true,
+    "backend": "auto"
+  },
+  "sanitize_fewshots": true
 }

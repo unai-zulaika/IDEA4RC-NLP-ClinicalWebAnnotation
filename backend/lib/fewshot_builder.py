@@ -322,6 +322,73 @@ class FewshotBuilder:
                 loaded += 1
         print(f"[INFO] Preloaded {loaded}/{len(prompt_keys)} indexes")
     
+    def build_index_from_fewshots(
+        self,
+        fewshots: Dict[str, List[Tuple[str, str]]],
+        force_rebuild: bool = False
+    ) -> int:
+        """
+        Build FAISS indexes directly from simple fewshot storage (fewshots.json data).
+        This allows similarity search without requiring the external annotated_patient_notes.json.
+
+        Args:
+            fewshots: Dict of {prompt_key: [(note_text, annotation), ...]}
+            force_rebuild: Rebuild even if index exists on disk
+
+        Returns:
+            Number of indexes built
+        """
+        built = 0
+        for prompt_key, examples in fewshots.items():
+            if not examples:
+                continue
+
+            index_path = self.store_dir / f"{prompt_key}.index"
+            if index_path.exists() and not force_rebuild:
+                # Load existing index instead of rebuilding
+                if self.load_index(prompt_key):
+                    built += 1
+                continue
+
+            # Create DataFrame from tuples
+            df = pd.DataFrame(examples, columns=['note_original_text', 'annotation'])
+            df = df.drop_duplicates(subset=['note_original_text', 'annotation'], keep='first')
+
+            if len(df) < 1:
+                continue
+
+            # Build embeddings
+            texts = df['note_original_text'].tolist()
+            embeddings = self.embedder.encode(
+                texts,
+                convert_to_numpy=True,
+                normalize_embeddings=True,
+                batch_size=32,
+                show_progress_bar=False
+            )
+
+            # Create FAISS index (cosine similarity with normalized embeddings)
+            dimension = embeddings.shape[1]
+            index = faiss.IndexFlatIP(dimension)
+            index.add(embeddings.astype(np.float32))
+
+            # Save to disk
+            faiss.write_index(index, str(index_path))
+            parquet_path = self.store_dir / f"{prompt_key}.parquet"
+            df.to_parquet(parquet_path, index=False)
+
+            meta_path = self.store_dir / f"{prompt_key}.json"
+            with open(meta_path, 'w', encoding='utf-8') as f:
+                json.dump({"task": prompt_key, "dim": int(dimension), "size": int(len(df))}, f, indent=2)
+
+            # Store in memory
+            self.indexes[prompt_key] = index
+            self.metadata[prompt_key] = df
+            built += 1
+            print(f"[INFO] Built FAISS index for '{prompt_key}': {len(df)} examples")
+
+        return built
+
     def build_all_int_prompts(
         self,
         json_file_path: str | Path,

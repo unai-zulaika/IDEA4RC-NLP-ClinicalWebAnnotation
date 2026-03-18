@@ -574,6 +574,40 @@ export default function AnnotationDetailView({
             </div>
           )}
 
+          {/* Hallucination Warning */}
+          {annotation.hallucination_flags && annotation.hallucination_flags.length > 0 && (
+            <div className={`rounded-lg p-4 flex items-start gap-3 ${
+              annotation.hallucination_flags.some(f => f.severity === 'high')
+                ? 'bg-red-50 border-2 border-red-400 ring-2 ring-red-200'
+                : 'bg-orange-50 border-2 border-orange-400 ring-2 ring-orange-200'
+            }`}>
+              <span className="text-3xl flex-shrink-0">{'\u26A0\uFE0F'}</span>
+              <div>
+                <h3 className={`text-base font-bold mb-1 ${
+                  annotation.hallucination_flags.some(f => f.severity === 'high')
+                    ? 'text-red-800'
+                    : 'text-orange-800'
+                }`}>
+                  Possible hallucination detected
+                </h3>
+                {annotation.hallucination_flags.map((flag, idx) => (
+                  <p key={idx} className={`text-sm ${
+                    flag.severity === 'high' ? 'text-red-700' : 'text-orange-700'
+                  }`}>
+                    {flag.message} — field: <span className="font-semibold">{flag.field}</span> ({Math.round(flag.duplicate_ratio * 100)}% duplicated)
+                  </p>
+                ))}
+                <p className={`text-xs mt-2 italic ${
+                  annotation.hallucination_flags.some(f => f.severity === 'high')
+                    ? 'text-red-600'
+                    : 'text-orange-600'
+                }`}>
+                  This annotation may be unreliable. Please review carefully before accepting.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Negation Status - only show when something is actually negated */}
           {annotation.is_negated === true && (
             <div>
