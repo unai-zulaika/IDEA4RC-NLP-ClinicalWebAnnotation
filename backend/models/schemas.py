@@ -199,6 +199,7 @@ class ProcessNoteResponse(BaseModel):
     annotations: List[AnnotationResult]
     processing_time_seconds: float
     timing_breakdown: Optional[Dict[str, float]] = None  # Aggregate timing breakdown
+    history_detection: Optional[Dict[str, Any]] = None  # Present when note is a history note
 
 
 class BatchProcessRequest(BaseModel):

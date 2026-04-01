@@ -364,12 +364,30 @@ export interface MultiValueInfo {
   split_method: string  // 'llm' | 'none'
 }
 
+export interface SplitEvent {
+  event_text: string
+  event_type: string
+  event_date: string | null
+}
+
+export interface HistoryDetection {
+  is_history: boolean
+  was_split: boolean
+  events_count: number
+  detection_methods: string[]
+  date_count: number
+  event_marker_count: number
+  treatment_types_found: string[]
+  events: SplitEvent[]
+}
+
 export interface ProcessNoteResponse {
   note_id: string
   note_text: string
   annotations: AnnotationResult[]
   processing_time_seconds: number
   timing_breakdown?: Record<string, number>  // Aggregate timing breakdown
+  history_detection?: HistoryDetection  // Present when note is a history note
 }
 
 export interface BatchProcessRequest {
@@ -429,6 +447,7 @@ export interface SequentialProgressEvent {
   total: number
   percentage: number
   processing_time_seconds?: number
+  history_detection?: HistoryDetection
 }
 
 export interface SessionInfo {
@@ -727,6 +746,7 @@ export const annotateApi = {
       note_id: string
       prompt_type: string
       percentage: number
+      history_detection?: HistoryDetection
     }) => void,
     signal?: AbortSignal
   ): Promise<BatchProcessResponse> => {

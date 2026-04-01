@@ -227,6 +227,7 @@ def _annotation_result_to_dict(result, note_id: str, prompt_type: str) -> dict:
         "chunk_info": result.chunk_info.model_dump() if result.chunk_info else None,
         "derived_field_values": getattr(result, 'derived_field_values', None),
         "hallucination_flags": [f.model_dump() for f in result.hallucination_flags] if result.hallucination_flags else None,
+        "multi_value_info": result.multi_value_info if hasattr(result, 'multi_value_info') and result.multi_value_info else None,
     }
 
 
@@ -1424,12 +1425,29 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
     agg_timing["wall_clock_total"] = processing_time
     agg_timing["prompt_count"] = float(len(prompt_types_to_process))
 
+    _history_detection_payload = None
+    if _detection["is_history"]:
+        _history_detection_payload = {
+            "is_history": True,
+            "was_split": note_split_result is not None and note_split_result.was_split,
+            "events_count": len(note_split_result.events) if note_split_result and note_split_result.was_split else 0,
+            "detection_methods": _detection.get("detection_methods", []),
+            "date_count": _detection.get("date_count", 0),
+            "event_marker_count": _detection.get("event_marker_count", 0),
+            "treatment_types_found": _detection.get("treatment_types_found", []),
+            "events": [
+                {"event_text": e.event_text, "event_type": e.event_type, "event_date": e.event_date}
+                for e in note_split_result.events
+            ] if note_split_result and note_split_result.was_split else [],
+        }
+
     return ProcessNoteResponse(
         note_id=request.note_id,
         note_text=note_text,
         annotations=note_annotations,
         processing_time_seconds=processing_time,
         timing_breakdown=agg_timing,
+        history_detection=_history_detection_payload,
     )
 
 
@@ -1748,6 +1766,24 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
                 if not _stream_split.was_split:
                     _stream_split = None
 
+            # Build history_detection payload for this note (only when detected)
+            _stream_history_detection = None
+            if _stream_det["is_history"]:
+                _stream_history_detection = {
+                    "is_history": True,
+                    "was_split": _stream_split is not None,
+                    "events_count": len(_stream_split.events) if _stream_split else 0,
+                    "detection_methods": _stream_det.get("detection_methods", []),
+                    "date_count": _stream_det.get("date_count", 0),
+                    "event_marker_count": _stream_det.get("event_marker_count", 0),
+                    "treatment_types_found": _stream_det.get("treatment_types_found", []),
+                    "events": [
+                        {"event_text": e.event_text, "event_type": e.event_type, "event_date": e.event_date}
+                        for e in _stream_split.events
+                    ] if _stream_split else [],
+                }
+
+            _first_prompt_for_note = True
             for pt in prompt_types_to_process:
                 result = await _process_prompt_with_splitting(
                     prompt_type=pt,
@@ -1767,15 +1803,20 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
                 completed += 1
                 results_by_note.setdefault(nid, []).append(result)
 
+                progress_data = {
+                    "completed": completed,
+                    "total": total_prompts,
+                    "note_id": nid,
+                    "prompt_type": pt,
+                    "percentage": round(completed / total_prompts * 100) if total_prompts else 100,
+                }
+                if _first_prompt_for_note and _stream_history_detection:
+                    progress_data["history_detection"] = _stream_history_detection
+                    _first_prompt_for_note = False
+
                 yield {
                     "event": "progress",
-                    "data": _json.dumps({
-                        "completed": completed,
-                        "total": total_prompts,
-                        "note_id": nid,
-                        "prompt_type": pt,
-                        "percentage": round(completed / total_prompts * 100) if total_prompts else 100,
-                    }),
+                    "data": _json.dumps(progress_data),
                 }
 
         # Assemble final response (same structure as BatchProcessResponse)
@@ -2412,7 +2453,7 @@ async def _sequential_process_core(
             )
             results.append(note_result)
 
-            yield ("progress", {
+            _seq_progress_data = {
                 "note_id": note_id,
                 "status": "success",
                 "annotations_count": len(note_annotations),
@@ -2420,7 +2461,22 @@ async def _sequential_process_core(
                 "total": total_to_process,
                 "percentage": round((idx + 1) / total_to_process * 100, 1) if total_to_process else 100,
                 "processing_time_seconds": round(note_time, 2),
-            })
+            }
+            if _seq_detection["is_history"]:
+                _seq_progress_data["history_detection"] = {
+                    "is_history": True,
+                    "was_split": _seq_split is not None,
+                    "events_count": len(_seq_split.events) if _seq_split else 0,
+                    "detection_methods": _seq_detection.get("detection_methods", []),
+                    "date_count": _seq_detection.get("date_count", 0),
+                    "event_marker_count": _seq_detection.get("event_marker_count", 0),
+                    "treatment_types_found": _seq_detection.get("treatment_types_found", []),
+                    "events": [
+                        {"event_text": e.event_text, "event_type": e.event_type, "event_date": e.event_date}
+                        for e in _seq_split.events
+                    ] if _seq_split else [],
+                }
+            yield ("progress", _seq_progress_data)
 
         except Exception as e:
             note_time = time.time() - note_start
