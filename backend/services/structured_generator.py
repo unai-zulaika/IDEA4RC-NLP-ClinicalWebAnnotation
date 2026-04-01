@@ -387,6 +387,38 @@ def parse_structured_annotation(
         except Exception as e:
             logger.debug("JSON extraction found string but Pydantic validation failed: %s", e)
 
+    # --- Layer 3.5: Truncated JSON salvage ---
+    # When token budget is exhausted, the JSON is cut mid-field (typically
+    # mid-reasoning after the field-order change that puts final_output first).
+    # Try to extract final_output from the incomplete JSON via regex.
+    if cleaned.lstrip().startswith('{') and '"final_output"' in cleaned:
+        import re as _re
+        _fo_match = _re.search(
+            r'"final_output"\s*:\s*"((?:[^"\\]|\\.)*)"', cleaned
+        )
+        if _fo_match:
+            salvaged_fo = _fo_match.group(1)
+            # Also try to grab reasoning if present
+            _reason_match = _re.search(
+                r'"reasoning"\s*:\s*"((?:[^"\\]|\\.)*)"', cleaned
+            )
+            salvaged_reasoning = (
+                _reason_match.group(1) if _reason_match
+                else "Truncated JSON — reasoning lost to token budget"
+            )
+            logger.info(
+                "Salvaged final_output from truncated JSON (Layer 3.5): %s",
+                salvaged_fo[:80],
+            )
+            annotation = StructuredAnnotation(
+                final_output=salvaged_fo,
+                reasoning=salvaged_reasoning,
+                is_negated=False,
+                date=None,
+            )
+            _apply_csv_date(annotation, csv_date)
+            return annotation
+
     # --- Layer 4: Regex fallback (legacy path) ---
     logger.debug("Falling back to regex extraction (Layer 4)")
     return _regex_fallback_parse(cleaned, csv_date)
