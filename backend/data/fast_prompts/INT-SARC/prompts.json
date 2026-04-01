@@ -30,7 +30,9 @@
             "high": "1635587",
             "h": "1635587",
             "low": "1634085",
-            "l": "1634085"
+            "l": "1634085",
+            "Other classification system high": "1635587",
+            "Other classification system low": "1634085"
           }
         }
       ]
@@ -176,7 +178,8 @@
           "field_name": "sex",
           "value_code_mappings": {
             "male": "8507",
-            "female": "8532"
+            "female": "8532",
+            "unknown": ""
           }
         }
       ]
@@ -251,15 +254,22 @@
           "value_code_mappings": {
             "Alive, No Evidence of Disease (NED)": "2000100071",
             "Alive With Disease (AWD) - metastases ([please select sites])": "2000100075",
-            "Alive With Disease (AWD) - localised tumor": "2000100075",
+            "Alive With Disease (AWD) - localised tumor.": "2000100075",
             "Alive With Disease (AWD) - metastases (lung).": "2000100075",
             "Alive With Disease (AWD) - metastases (lung. other).": "2000100075",
             "Alive With Disease (AWD) - metastases (lung. soft tissue. other).": "2000100075",
+            "Alive With Disease (AWD) - metastases (lung. soft tissue).": "2000100075",
+            "Alive With Disease (AWD) - metastases (lung. bone. soft tissue. other).": "2000100075",
+            "Alive With Disease (AWD) - metastases (bone).": "2000100075",
+            "Alive With Disease (AWD) - metastases (bone. soft tissue).": "2000100075",
+            "Alive With Disease (AWD) - metastases (liver. bone. soft tissue).": "2000100075",
+            "Alive With Disease (AWD) - metastases (soft tissue).": "2000100075",
+            "Alive With Disease (AWD) - metastases (soft tissue. liver).": "2000100075",
+            "Alive With Disease (AWD) - metastases (soft tissue. other).": "2000100075",
             "Dead of Disease (DOD)": "2000100072",
             "Dead of Other Cause (DOC)": "2000100073",
             "Dead of Unknown Cause (DUC)": "2000100074",
-            "Alive": "4230556",
-            "Alive With Disease (AWD) - localised tumor.": "2000100075"
+            "Alive": "4230556"
           }
         }
       ]
@@ -296,7 +306,11 @@
             ],
             "Previous cancer treatment: surgery.": [
               "4121697"
-            ]
+            ],
+            "No previous cancer treatments.": "",
+            "No previous or concurrent cancers.": "",
+            "Previous cancer treatment: chemotherapy.": "",
+            "Previous cancer treatment: surgery, chemotherapy.": ""
           }
         }
       ]
@@ -591,7 +605,7 @@
     }
   },
   "stage_at_diagnosis": {
-    "template": "You are a medical annotator. Read the note and identify the stage at diagnosis.\n\nAllowed values:\nStage at diagnosis: localized.\nStage at diagnosis: loco-regional (In transit metastasis).\nStage at diagnosis: metastatic (regional nodal metastases).\nUnknown stage at diagnosis.\nIf not mentioned, output: \"Unknown stage at diagnosis.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
+    "template": "You are a medical annotator. Read the note and identify the stage at diagnosis.\n\nAllowed values:\nStage at diagnosis: localized.\nStage at diagnosis: loco-regional (In transit metastasis).\nStage at diagnosis: metastatic (regional nodal metastases).\nStage at diagnosis: distant metastases (lung).\nStage at diagnosis: distant metastases (bone).\nStage at diagnosis: distant metastases (liver).\nStage at diagnosis: distant metastases (soft tissue).\nStage at diagnosis: distant metastases (other).\nUnknown stage at diagnosis.\nIf not mentioned, output: \"Unknown stage at diagnosis.\"\n\nRespond with JSON only: {\"final_output\": \"<annotation>\"}\n\n### Fewshot Example:\n{few_shot_examples}\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):",
     "entity_mapping": {
       "entity_type": "ClinicalStage",
       "fact_trigger": null,
@@ -601,8 +615,15 @@
           "entity_type": "ClinicalStage",
           "field_name": "localised",
           "value_code_mappings": {
+            "Stage at diagnosis: localized.": true,
             "Stage at diagnosis: loco-regional (In transit metastasis).": false,
-            "Stage at diagnosis: metastatic (regional nodal metastases).": false
+            "Stage at diagnosis: metastatic (regional nodal metastases).": false,
+            "Stage at diagnosis: distant metastases (lung).": false,
+            "Stage at diagnosis: distant metastases (bone).": false,
+            "Stage at diagnosis: distant metastases (liver).": false,
+            "Stage at diagnosis: distant metastases (soft tissue).": false,
+            "Stage at diagnosis: distant metastases (other).": false,
+            "Unknown stage at diagnosis.": false
           }
         },
         {
@@ -610,7 +631,15 @@
           "entity_type": "ClinicalStage",
           "field_name": "locoRegional",
           "value_code_mappings": {
-            "Stage at diagnosis: loco-regional (In transit metastasis).": true
+            "Stage at diagnosis: localized.": false,
+            "Stage at diagnosis: loco-regional (In transit metastasis).": true,
+            "Stage at diagnosis: metastatic (regional nodal metastases).": false,
+            "Stage at diagnosis: distant metastases (lung).": false,
+            "Stage at diagnosis: distant metastases (bone).": false,
+            "Stage at diagnosis: distant metastases (liver).": false,
+            "Stage at diagnosis: distant metastases (soft tissue).": false,
+            "Stage at diagnosis: distant metastases (other).": false,
+            "Unknown stage at diagnosis.": false
           }
         },
         {
@@ -618,8 +647,15 @@
           "entity_type": "ClinicalStage",
           "field_name": "isTransitMetastasisWithClinicalConfirmation",
           "value_code_mappings": {
+            "Stage at diagnosis: localized.": false,
             "Stage at diagnosis: loco-regional (In transit metastasis).": true,
-            "Stage at diagnosis: metastatic (regional nodal metastases).": true
+            "Stage at diagnosis: metastatic (regional nodal metastases).": true,
+            "Stage at diagnosis: distant metastases (lung).": false,
+            "Stage at diagnosis: distant metastases (bone).": false,
+            "Stage at diagnosis: distant metastases (liver).": false,
+            "Stage at diagnosis: distant metastases (soft tissue).": false,
+            "Stage at diagnosis: distant metastases (other).": false,
+            "Unknown stage at diagnosis.": false
           }
         }
       ]
