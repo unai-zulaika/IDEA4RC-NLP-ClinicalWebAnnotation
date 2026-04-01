@@ -595,6 +595,25 @@ def _build_prompt_to_core_variable_mapping() -> Dict[str, str]:
         "previous_cancer_treatment": "CancerEpisode.previousCancerTreatment",
         "occurrence_cancer-int": "CancerEpisode.occurrenceOfOtherCancer",
         "occurrence_cancer": "CancerEpisode.occurrenceOfOtherCancer",
+
+        # INT-HNC specific (Head & Neck Cancer)
+        "smoking-status": "Patient.smoking",
+        "alcohol-habits": "Patient.alcohol",
+        "hpv-status": "Diagnosis.hpvStatus",
+        "plasmatic-ebv-dna-status": "Diagnosis.plasmaticEbvDnaAtBaseline",
+        "clinical-tnmstaging": "ClinicalStage.ct",
+        "pathological-tnmstaging": "PathologicalStage.pt",
+        "staging-classification": "ClinicalStage.clinicalStaging",
+        "disease-status": "EpisodeEvent.diseaseStatus",
+        "beam-quality": "Radiotherapy.beamQuality",
+        "radiotherapy_location": "Radiotherapy.treatmentSitePrimaryOnly",
+        "neck-surgery-laterality": "Surgery.lateralityOfTheDissection",
+        "surgery-reconstruction": "Surgery.typeOfSurgicalApproachOnTumour",
+        "site-of-metastatic": "DiseaseExtent.brain",
+        "before-treatment-patient-diagnosed": "Patient.comorbidity",
+        "last-followup-date": "PatientFollowUp.patientFollowUpDate",
+        "systemic-treatment-started": "SystemicTreatment.intent",
+        "systemic-treatment-ended": "SystemicTreatment.reasonForEndOfTreatment",
     }
 
     # Merge: prompts.json mappings take precedence over predefined
