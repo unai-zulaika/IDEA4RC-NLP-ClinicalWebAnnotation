@@ -208,13 +208,59 @@ When a multi-value annotation (`multi_value_info.was_split = true` and `values.l
 
 Single-value annotations export unchanged.
 
-## Frontend
+## Frontend UI Feedback
+
+### During Processing — Progress Banner
+
+**File:** `frontend/app/annotate/[sessionId]/page.tsx`
+
+When a history note is detected during single-note processing, a **purple banner** appears above the progress bar showing:
+
+- **Detection summary:** "History note detected — splitting into N events"
+- **Criteria breakdown:** e.g., "5 dates · 4 event markers · surgery, chemotherapy, radiotherapy"
+- **Collapsible event list:** "Show events" toggle reveals each split event with:
+  - Event number, type badge (surgery/chemotherapy/radiotherapy/recurrence/...), date
+  - Truncated event text (first 200 chars)
+
+For **batch processing**, a purple summary line shows:
+- "N history notes detected — M total events extracted via splitting"
+- Post-completion report includes: "History notes: N/total split into M events"
+
+### After Processing — Annotation Display
 
 **File:** `frontend/components/AnnotationViewer.tsx`
 
 - Multi-value annotations display a purple badge: **"N events extracted"**
-- The existing `values[]` UI (with add/remove via `useFieldArray`) displays all extracted values
-- `MultiValueInfo` interface added to `frontend/lib/api.ts`
+- Each extracted value is shown as a separate purple-bordered row labeled "Event 1", "Event 2", etc.
+- Non-split annotations display normally in a single gray box
+- `MultiValueInfo` and `HistoryDetection` interfaces in `frontend/lib/api.ts`
+
+### SSE Payload
+
+The `history_detection` object is sent in SSE progress events (first progress event per note) and includes:
+
+```typescript
+interface HistoryDetection {
+  is_history: boolean
+  was_split: boolean
+  events_count: number
+  detection_methods: string[]    // 'report_type' | 'date_count' | 'event_markers' | 'diverse_treatments'
+  date_count: number
+  event_marker_count: number
+  treatment_types_found: string[]
+  events: SplitEvent[]           // Individual split events with text, type, date
+}
+```
+
+### E2E Tests
+
+**File:** `frontend/e2e/history-splitting-feedback.spec.ts`
+
+4 Playwright tests using mocked SSE endpoints (no real vLLM needed):
+1. Multi-value badge visible after processing a history note
+2. No badge when note is not a history note
+3. History summary in batch completion report
+4. Badge renders correct event count from pre-existing annotations
 
 ## Configuration
 
@@ -294,6 +340,7 @@ Added as `multi_value_info?: MultiValueInfo` to both `AnnotationResult` and `Ses
 |------|-------|----------|
 | `backend/test_history_detection.py` | 20 | Detection heuristics, thresholds, edge cases, report types, multilingual (Polish, Italian, Swedish) |
 | `backend/test_note_splitter.py` | 37 | JSON parsing, fallbacks, caching, sub-note construction, deduplication, aggregation, chronological ordering |
+| `frontend/e2e/history-splitting-feedback.spec.ts` | 4 | UI feedback: progress banner, multi-value badges, batch reports (mocked SSE, no vLLM needed) |
 
 ### Running Tests
 
