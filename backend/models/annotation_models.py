@@ -39,6 +39,13 @@ class StructuredAnnotation(BaseModel):
 
     Used for vLLM guided decoding (response_format with json_schema)
     and for validation of raw LLM output via fallback parsing.
+
+    IMPORTANT: field order matters for guided decoding — vLLM generates
+    fields in schema property order. reasoning is first so the model
+    performs chain-of-thought before committing to an answer (improves
+    quality on discriminating prompts like gender, patient-status).
+    Layer 3.5 truncated-JSON salvage in structured_generator.py
+    handles cases where reasoning exhausts the token budget.
     """
     reasoning: str = Field(
         "",
@@ -168,4 +175,52 @@ class FastStructuredAnnotation(BaseModel):
             is_negated=self.is_negated,
             date=self.date,
         )
+
+
+# ---------------------------------------------------------------------------
+# Models for history note splitting (multi-event extraction)
+# ---------------------------------------------------------------------------
+
+class ClinicalEvent(BaseModel):
+    """A single clinical event extracted from a history/anamnesis note."""
+    event_text: str = Field(
+        ...,
+        description="The sub-note text describing this clinical event. Should be self-contained with enough context to process independently."
+    )
+    event_type: str = Field(
+        ...,
+        description="Type of clinical event: surgery, chemotherapy, radiotherapy, diagnosis, recurrence, biopsy, other_treatment, follow_up, other"
+    )
+    event_date: Optional[str] = Field(
+        None,
+        description="Primary date of this event if identifiable (DD/MM/YYYY, MM/YYYY, or YYYY format)"
+    )
+
+
+class NoteSplitResult(BaseModel):
+    """Result of splitting a history note into individual clinical events."""
+    shared_context: str = Field(
+        "",
+        description="Patient-level context (demographics, primary diagnosis, identifiers) that applies to all events"
+    )
+    events: List[ClinicalEvent] = Field(
+        default_factory=list,
+        description="List of individual clinical events extracted from the note"
+    )
+    original_text: str = Field(
+        "",
+        description="The original unsplit note text for reference"
+    )
+    was_split: bool = Field(
+        False,
+        description="Whether the note was successfully split into multiple events"
+    )
+
+
+class MultiValueInfo(BaseModel):
+    """Metadata about multi-value extraction from a history note."""
+    was_split: bool = Field(False, description="Whether the note was split into sub-events")
+    total_events_detected: int = Field(0, description="Number of events detected in the note")
+    unique_values_extracted: int = Field(0, description="Number of unique values after deduplication")
+    split_method: str = Field("none", description="Method used: 'llm', 'none'")
 

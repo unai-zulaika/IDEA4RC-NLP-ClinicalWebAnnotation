@@ -15,7 +15,11 @@ import re
 from services.vllm_client import get_vllm_client
 from lib.timing import TimingBreakdown
 from lib.note_chunker import NoteChunker
+from lib.history_detector import get_history_detector
+from lib.note_splitter import split_history_note, build_sub_note, get_cached_split
+from lib.result_aggregator import aggregate_results as aggregate_multi_value_results
 from models.schemas import ChunkInfo
+from models.annotation_models import NoteSplitResult
 from typing import Tuple
 
 # Configurable concurrency for parallel vLLM calls
@@ -74,6 +78,47 @@ _PROMPTS_DIR_MTIMES: Dict[str, float] = {}  # Track per-center file modification
 _FAST_PROMPTS: Dict[str, Any] = {}
 _FAST_PROMPTS_LOADED = False
 _FAST_PROMPTS_DIR_MTIMES: Dict[str, float] = {}
+
+# Entity cardinality cache (0 = repeatable, 1 = non-repeatable)
+_ENTITY_CARDINALITY: Optional[Dict[str, int]] = None
+
+
+def _load_entity_cardinality() -> Dict[str, int]:
+    """Load entity cardinality config (lazy, cached)."""
+    global _ENTITY_CARDINALITY
+    if _ENTITY_CARDINALITY is None:
+        import json as _json
+        path = Path(__file__).resolve().parent.parent / "data" / "entities_cardinality.json"
+        with open(path) as f:
+            _ENTITY_CARDINALITY = _json.load(f)
+    return _ENTITY_CARDINALITY
+
+
+def _is_repeatable_entity(prompt_type: str) -> bool:
+    """Check if a prompt type's entity is repeatable (cardinality 0).
+
+    Uses the entity_mapping from prompt config to find the entity type,
+    then checks against entities_cardinality.json.
+    """
+    cardinality = _load_entity_cardinality()
+
+    # Look up entity_mapping from either standard or fast prompts
+    prompt_info = _PROMPTS.get(prompt_type, {})
+    if not prompt_info:
+        prompt_info = _FAST_PROMPTS.get(prompt_type, {})
+
+    entity_mapping = prompt_info.get("entity_mapping", {})
+    if not entity_mapping:
+        return False
+
+    entity_type = entity_mapping.get("entity_type", "")
+    # entity_type can be "SystemicTreatment" or "Diagnosis.ageAtDiagnosis"
+    base_entity = entity_type.split(".")[0] if entity_type else ""
+
+    if not base_entity:
+        return False
+
+    return cardinality.get(base_entity, 1) == 0
 
 def _ensure_prompts_loaded(force_reload: bool = False):
     """Load prompts from directory-based structure without importing model_runner."""
@@ -749,6 +794,8 @@ async def _process_single_prompt(
             )
 
         _last_result: Optional[AnnotationResult] = None
+        _is_repeatable = _is_repeatable_entity(prompt_type)
+        _all_chunk_results: List[AnnotationResult] = []  # For repeatable entities: collect all confident chunks
         for _chunk_idx, _chunk_text in enumerate(_note_chunks):
             # --- Prompt building ---
             with timer.measure("prompt_building"):
@@ -1121,14 +1168,44 @@ async def _process_single_prompt(
                     pass
             _is_confident = NoteChunker.is_confident_result(_value_for_confidence)
             _is_last_chunk = (_chunk_idx == len(_note_chunks) - 1)
-            if _is_confident or _is_last_chunk:
-                _last_result.chunk_info = ChunkInfo(
-                    was_chunked=True,
-                    total_chunks=len(_note_chunks),
-                    answer_chunk_index=_chunk_idx + 1,
-                    chunks_exhausted=not _is_confident,
-                )
-                return _last_result
+
+            if _is_repeatable and _needs_chunking:
+                # For repeatable entities: collect ALL confident chunk results, don't early-exit
+                if _is_confident:
+                    _last_result.chunk_info = ChunkInfo(
+                        was_chunked=True,
+                        total_chunks=len(_note_chunks),
+                        answer_chunk_index=_chunk_idx + 1,
+                        chunks_exhausted=False,
+                    )
+                    _all_chunk_results.append(_last_result)
+                if _is_last_chunk:
+                    if _all_chunk_results:
+                        # Aggregate all chunk results into one with multiple values
+                        return aggregate_multi_value_results(
+                            results=_all_chunk_results,
+                            prompt_type=prompt_type,
+                            total_events=len(_note_chunks),
+                        )
+                    else:
+                        # No confident results from any chunk
+                        _last_result.chunk_info = ChunkInfo(
+                            was_chunked=True,
+                            total_chunks=len(_note_chunks),
+                            answer_chunk_index=_chunk_idx + 1,
+                            chunks_exhausted=True,
+                        )
+                        return _last_result
+            else:
+                # Non-repeatable entity: existing early-exit behavior
+                if _is_confident or _is_last_chunk:
+                    _last_result.chunk_info = ChunkInfo(
+                        was_chunked=True,
+                        total_chunks=len(_note_chunks),
+                        answer_chunk_index=_chunk_idx + 1,
+                        chunks_exhausted=not _is_confident,
+                    )
+                    return _last_result
 
         # Fallback (should not be reached for non-empty chunk lists)
         return _last_result
@@ -1151,6 +1228,75 @@ async def _process_single_prompt(
             status="error",
             timing_breakdown=timer.to_dict(),
         )
+
+
+async def _process_prompt_with_splitting(
+    prompt_type: str,
+    note_text: str,
+    note_split_result: Optional[NoteSplitResult],
+    csv_date: Optional[str],
+    vllm_client: Any,
+    use_structured: bool,
+    request_use_fewshots: bool,
+    request_fewshot_k: int,
+    evaluation_mode: str = "validation",
+    session_data: Optional[Dict] = None,
+    note_id: Optional[str] = None,
+    fast_mode: bool = False,
+    icdo3_llm_cache: Optional[Dict[str, Any]] = None,
+) -> AnnotationResult:
+    """Process a prompt type, using split sub-notes for repeatable entities on history notes.
+
+    For repeatable entity types (cardinality 0) on history notes, processes each
+    sub-note independently and aggregates results. For non-repeatable types or
+    non-history notes, delegates directly to _process_single_prompt.
+    """
+    # If note was split AND this prompt is for a repeatable entity, process each sub-note
+    if (
+        note_split_result is not None
+        and note_split_result.was_split
+        and _is_repeatable_entity(prompt_type)
+    ):
+        sub_results: List[AnnotationResult] = []
+        for event in note_split_result.events:
+            sub_note = build_sub_note(note_split_result.shared_context, event)
+            result = await _process_single_prompt(
+                prompt_type=prompt_type,
+                note_text=sub_note,
+                csv_date=csv_date,
+                vllm_client=vllm_client,
+                use_structured=use_structured,
+                request_use_fewshots=request_use_fewshots,
+                request_fewshot_k=request_fewshot_k,
+                evaluation_mode=evaluation_mode,
+                session_data=session_data,
+                note_id=note_id,
+                fast_mode=fast_mode,
+                icdo3_llm_cache=icdo3_llm_cache,
+            )
+            sub_results.append(result)
+
+        return aggregate_multi_value_results(
+            results=sub_results,
+            prompt_type=prompt_type,
+            total_events=len(note_split_result.events),
+        )
+
+    # Non-repeatable entity or non-history note: use existing single-prompt processing
+    return await _process_single_prompt(
+        prompt_type=prompt_type,
+        note_text=note_text,
+        csv_date=csv_date,
+        vllm_client=vllm_client,
+        use_structured=use_structured,
+        request_use_fewshots=request_use_fewshots,
+        request_fewshot_k=request_fewshot_k,
+        evaluation_mode=evaluation_mode,
+        session_data=session_data,
+        note_id=note_id,
+        fast_mode=fast_mode,
+        icdo3_llm_cache=icdo3_llm_cache,
+    )
 
 
 @router.post("/process", response_model=ProcessNoteResponse)
@@ -1208,14 +1354,52 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
     except ImportError:
         use_structured = False
 
+    # --- History note detection & splitting ---
+    note_split_result: Optional[NoteSplitResult] = None
+    _splitting_config = vllm_client.config.get("history_splitting", {})
+    _splitting_enabled = _splitting_config.get("enabled", True)
+    if _splitting_enabled:
+        _det_thresholds = _splitting_config.get("detection_thresholds", {})
+        history_detector = get_history_detector(
+            min_date_count=_det_thresholds.get("min_date_count", 3),
+            min_event_markers=_det_thresholds.get("min_event_markers", 3),
+            min_distinct_treatment_types=_det_thresholds.get("min_distinct_treatment_types", 2),
+        )
+        _detection = history_detector.get_detection_details(note_text, report_type or "")
+    else:
+        _detection = {"is_history": False}
+    if _detection["is_history"]:
+        print(
+            f"[INFO] History note detected for {request.note_id} "
+            f"(confidence={_detection['confidence']:.2f}, "
+            f"events_est={_detection['detected_events_estimate']}, "
+            f"methods={_detection['detection_methods']})"
+        )
+        # Check if we have any repeatable entity prompts that would benefit from splitting
+        _has_repeatable = any(_is_repeatable_entity(pt) for pt in prompt_types_to_process)
+        if _has_repeatable:
+            note_split_result = await split_history_note(
+                note_text=note_text,
+                vllm_client=vllm_client,
+                session_id=session_id,
+                note_id=request.note_id,
+            )
+            if note_split_result.was_split:
+                print(
+                    f"[INFO] Split note {request.note_id} into "
+                    f"{len(note_split_result.events)} events: "
+                    f"{[e.event_type for e in note_split_result.events]}"
+                )
+
     # Process all prompt types in parallel (semaphore limits concurrent GPU access)
     mode_label = "FAST" if request.fast_mode else "standard"
     print(f"[INFO] Processing {len(prompt_types_to_process)} prompts in parallel, mode={mode_label}")
     icdo3_llm_cache: Dict[str, Any] = {}
     note_annotations = list(await asyncio.gather(*[
-        _process_single_prompt(
+        _process_prompt_with_splitting(
             prompt_type=pt,
             note_text=note_text,
+            note_split_result=note_split_result,
             csv_date=csv_date,
             vllm_client=vllm_client,
             use_structured=use_structured,
@@ -1333,7 +1517,7 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
             note_prompt_exclusions=note_prompt_exclusions,
         )
 
-        note_order.append((note_id, note_text, prompt_types_to_process))
+        note_order.append((note_id, note_text, prompt_types_to_process, report_type))
         for pt in prompt_types_to_process:
             all_tasks.append((note_id, note_text, pt, csv_date))
 
@@ -1341,15 +1525,42 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
     mode_label = "FAST" if request.fast_mode else "standard"
     print(f"[INFO] Batch: {len(note_order)} notes, {total_prompts} total prompts, parallel mode={mode_label}")
 
+    # --- Pre-split history notes (one LLM call per history note, shared across prompts) ---
+    _history_detector = get_history_detector()
+    _note_splits: Dict[str, Optional[NoteSplitResult]] = {}
+    _split_tasks = []
+    for nid, ntxt, pts, rtype in note_order:
+        detection = _history_detector.get_detection_details(ntxt, rtype or "")
+        if detection["is_history"] and any(_is_repeatable_entity(pt) for pt in pts):
+            _split_tasks.append((nid, ntxt))
+        else:
+            _note_splits[nid] = None
+
+    if _split_tasks:
+        print(f"[INFO] Splitting {len(_split_tasks)} history notes before batch processing")
+        split_results = await asyncio.gather(*[
+            split_history_note(
+                note_text=ntxt,
+                vllm_client=vllm_client,
+                session_id=session_id,
+                note_id=nid,
+            )
+            for nid, ntxt in _split_tasks
+        ])
+        for (nid, _), result in zip(_split_tasks, split_results):
+            _note_splits[nid] = result if result.was_split else None
+
     # Process all notes in parallel. The _vllm_semaphore inside _process_single_prompt
     # limits concurrent GPU access (default VLLM_CONCURRENCY=2), so launching all tasks
     # is safe — they queue on the semaphore while overlapping CPU-bound work.
-    async def _process_note(note_id: str, note_text: str, prompt_types_to_process: List[str]) -> ProcessNoteResponse:
+    async def _process_note(note_id: str, note_text: str, prompt_types_to_process: List[str], _report_type: Optional[str] = None) -> ProcessNoteResponse:
         icdo3_llm_cache: Dict[str, Any] = {}
+        _split = _note_splits.get(note_id)
         note_annotations = await asyncio.gather(*[
-            _process_single_prompt(
+            _process_prompt_with_splitting(
                 prompt_type=pt,
                 note_text=note_text,
+                note_split_result=_split,
                 csv_date=note_dates.get(note_id),
                 vllm_client=vllm_client,
                 use_structured=use_structured,
@@ -1384,8 +1595,8 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
         )
 
     results = list(await asyncio.gather(*[
-        _process_note(nid, ntxt, pts)
-        for nid, ntxt, pts in note_order
+        _process_note(nid, ntxt, pts, rtype)
+        for nid, ntxt, pts, rtype in note_order
     ]))
 
     batch_time = batch_timer.get_total()
@@ -1500,7 +1711,7 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
             note_prompt_exclusions=note_prompt_exclusions,
         )
 
-        note_order.append((note_id, note_text, prompt_types_to_process))
+        note_order.append((note_id, note_text, prompt_types_to_process, report_type))
         for pt in prompt_types_to_process:
             all_tasks.append((note_id, note_text, pt, csv_date))
 
@@ -1522,13 +1733,26 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
         results_by_note: Dict[str, List[AnnotationResult]] = {}
         completed = 0
 
-        for nid, nt, prompt_types_to_process in note_order:
+        for nid, nt, prompt_types_to_process, _rtype in note_order:
             csv_date = note_dates.get(nid)
             icdo3_llm_cache: Dict[str, Any] = {}  # shared across prompt types for this note
+
+            # History detection & splitting for streaming mode
+            _stream_split: Optional[NoteSplitResult] = None
+            _stream_det = get_history_detector().get_detection_details(nt, _rtype or "")
+            if _stream_det["is_history"] and any(_is_repeatable_entity(pt) for pt in prompt_types_to_process):
+                _stream_split = await split_history_note(
+                    note_text=nt, vllm_client=vllm_client,
+                    session_id=session_id, note_id=nid,
+                )
+                if not _stream_split.was_split:
+                    _stream_split = None
+
             for pt in prompt_types_to_process:
-                result = await _process_single_prompt(
+                result = await _process_prompt_with_splitting(
                     prompt_type=pt,
                     note_text=nt,
+                    note_split_result=_stream_split,
                     csv_date=csv_date,
                     vllm_client=vllm_client,
                     use_structured=use_structured,
@@ -1556,7 +1780,7 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
 
         # Assemble final response (same structure as BatchProcessResponse)
         results = []
-        for nid, nt, prompt_types_to_process in note_order:
+        for nid, nt, prompt_types_to_process, _rtype in note_order:
             note_annotations = results_by_note.get(nid, [])
 
             note_timing: Dict[str, float] = {}
@@ -2139,10 +2363,26 @@ async def _sequential_process_core(
         try:
             note_annotations = {}
             icdo3_llm_cache: Dict[str, Any] = {}  # shared across prompt types for this note
+
+            # --- History note detection & splitting for sequential mode ---
+            _seq_split: Optional[NoteSplitResult] = None
+            _seq_report_type = note_data.get('report_type', '')
+            _seq_detection = get_history_detector().get_detection_details(note_text, _seq_report_type)
+            if _seq_detection["is_history"] and any(_is_repeatable_entity(pt) for pt in applicable_prompts):
+                _seq_split = await split_history_note(
+                    note_text=note_text,
+                    vllm_client=vllm_client,
+                    session_id=session_id,
+                    note_id=note_id,
+                )
+                if not _seq_split.was_split:
+                    _seq_split = None
+
             for pt in applicable_prompts:
-                result = await _process_single_prompt(
+                result = await _process_prompt_with_splitting(
                     prompt_type=pt,
                     note_text=note_text,
+                    note_split_result=_seq_split,
                     csv_date=csv_date,
                     vllm_client=vllm_client,
                     use_structured=use_structured,

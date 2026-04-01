@@ -12,5 +12,15 @@
     "enabled": true,
     "backend": "auto"
   },
-  "sanitize_fewshots": true
+  "sanitize_fewshots": true,
+  "history_splitting": {
+    "enabled": true,
+    "detection_thresholds": {
+      "min_date_count": 3,
+      "min_event_markers": 3,
+      "min_distinct_treatment_types": 2
+    },
+    "max_events": 20,
+    "max_new_tokens": 4096
+  }
 }

@@ -354,6 +354,14 @@ export interface AnnotationResult {
   timing_breakdown?: Record<string, number>  // Per-step timing breakdown
   derived_field_values?: Record<string, string>  // Values resolved via output_word_mappings at annotation time
   hallucination_flags?: HallucinationFlag[]  // Detected hallucination patterns (e.g., repetition loops)
+  multi_value_info?: MultiValueInfo  // Metadata about multi-event extraction from history notes
+}
+
+export interface MultiValueInfo {
+  was_split: boolean
+  total_events_detected: number
+  unique_values_extracted: number
+  split_method: string  // 'llm' | 'none'
 }
 
 export interface ProcessNoteResponse {
@@ -455,6 +463,7 @@ export interface SessionAnnotation {
   icdo3_code?: ICDO3CodeInfo  // ICD-O-3 code information (for histology/site prompts)
   derived_field_values?: Record<string, string>  // Values resolved via output_word_mappings at annotation time
   hallucination_flags?: HallucinationFlag[]  // Detected hallucination patterns
+  multi_value_info?: MultiValueInfo  // Metadata about multi-event extraction from history notes
 }
 
 export interface SessionData {
