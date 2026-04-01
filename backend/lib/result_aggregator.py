@@ -71,8 +71,11 @@ def _extract_date_from_annotation(annotation_text: str) -> Optional[str]:
 
 
 def _is_null_result(annotation_text: str) -> bool:
-    """Check if an annotation result is effectively null/empty."""
+    """Check if an annotation result is effectively null/empty or an error."""
     if not annotation_text:
+        return True
+    # Filter out error messages from failed LLM calls
+    if annotation_text.startswith("ERROR:"):
         return True
     normalized = _normalize_for_dedup(annotation_text)
     null_patterns = {
