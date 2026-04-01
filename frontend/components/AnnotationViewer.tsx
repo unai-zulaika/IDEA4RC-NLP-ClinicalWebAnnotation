@@ -260,10 +260,28 @@ export default function AnnotationViewer({
         </form>
       ) : isProcessed ? (
         <div className="space-y-2">
-          {/* Always show the actual annotation_text from the model (the LLM's output) */}
-          <div className="px-3 py-2 bg-gray-50 rounded-md text-sm text-gray-900">
-            {annotation.annotation_text || 'No annotation generated'}
-          </div>
+          {/* For multi-value (split) annotations, show each value separately */}
+          {annotation.multi_value_info?.was_split && annotation.values && annotation.values.length > 1 ? (
+            <div className="space-y-1">
+              {annotation.values.map((v, idx) => {
+                const isError = v.value?.startsWith('ERROR:')
+                return (
+                  <div key={idx} className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-2 ${
+                    isError
+                      ? 'bg-red-50 border border-red-200 text-red-700'
+                      : 'bg-purple-50 border border-purple-100 text-gray-900'
+                  }`}>
+                    <span className={`text-xs font-medium shrink-0 ${isError ? 'text-red-500' : 'text-purple-600'}`}>Event {idx + 1}</span>
+                    <span>{isError ? 'LLM error (transient)' : v.value}</span>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="px-3 py-2 bg-gray-50 rounded-md text-sm text-gray-900">
+              {annotation.annotation_text || 'No annotation generated'}
+            </div>
+          )}
         </div>
       ) : null}
 
