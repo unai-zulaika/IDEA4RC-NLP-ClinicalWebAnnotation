@@ -6,7 +6,7 @@ import { sessionsApi, annotateApi, promptsApi, presetsApi } from '@/lib/api'
 import { useDefaultCenter } from '@/lib/useDefaultCenter'
 import { useFastMode } from '@/lib/useFastMode'
 import { useFewshotK } from '@/lib/useFewshotK'
-import type { SessionData, AnnotationResult, EvidenceSpan, PromptInfo, BatchProcessResponse, DiagnosisValidationReport, SequentialProgressEvent, ExportConflict } from '@/lib/api'
+import type { SessionData, AnnotationResult, EvidenceSpan, PromptInfo, BatchProcessResponse, DiagnosisValidationReport, SequentialProgressEvent, ExportConflict, HistoryDetection } from '@/lib/api'
 import ManagePromptTypesModal from '@/components/ManagePromptTypesModal'
 import PatientDiagnosisPanel from '@/components/PatientDiagnosisPanel'
 import TextHighlighter from '@/components/TextHighlighter'
@@ -44,6 +44,7 @@ export default function AnnotatePage() {
     total: 0,
     currentPrompt: '',
     percentage: 0,
+    historyDetection: null as HistoryDetection | null,
   })
   const [progress, setProgress] = useState({
     current: 0,
@@ -85,6 +86,9 @@ export default function AnnotatePage() {
     minPerNote: number
     maxPerNote: number
   } | null>(null)
+  // History notes detected during batch processing
+  const [historyNotes, setHistoryNotes] = useState<Map<string, HistoryDetection>>(new Map())
+  const [showSplitEvents, setShowSplitEvents] = useState(false)
 
   // Elapsed time counter — uses requestAnimationFrame for resilience to main-thread blocking
   const elapsedStartRef = useRef<number>(0)
@@ -221,7 +225,9 @@ export default function AnnotatePage() {
       total: totalPrompts,
       currentPrompt: `Processing ${totalPrompts} prompts...`,
       percentage: 10,
+      historyDetection: null,
     })
+    setShowSplitEvents(false)
 
     try {
       const updatedAnnotations = { ...session.annotations }
@@ -244,12 +250,13 @@ export default function AnnotatePage() {
           sessionId,
           batchRequest,
           (prog) => {
-            setNoteProgress({
+            setNoteProgress(prev => ({
               current: prog.completed,
               total: prog.total,
               currentPrompt: `Processing ${prog.prompt_type} (${prog.completed}/${prog.total})`,
               percentage: prog.percentage,
-            })
+              historyDetection: prog.history_detection || prev.historyDetection,
+            }))
           },
           controller.signal,
         )
@@ -279,6 +286,7 @@ export default function AnnotatePage() {
             icdo3_code: ann.icdo3_code,
             derived_field_values: ann.derived_field_values,
             hallucination_flags: ann.hallucination_flags,
+            multi_value_info: ann.multi_value_info,
           }
         })
         // Use the batch-level timing_breakdown which includes aggregated per-step sums
@@ -293,18 +301,19 @@ export default function AnnotatePage() {
       }
 
       // Final update
-      setNoteProgress({
+      setNoteProgress(prev => ({
         current: totalPrompts,
         total: totalPrompts,
         currentPrompt: `Complete! (${result.total_time_seconds.toFixed(1)}s)`,
         percentage: 100,
-      })
+        historyDetection: prev.historyDetection,
+      }))
 
       const updatedSession = await sessionsApi.update(sessionId, updatedAnnotations)
       setSession(updatedSession)
 
       setTimeout(() => {
-        setNoteProgress({ current: 0, total: 0, currentPrompt: '', percentage: 0 })
+        setNoteProgress({ current: 0, total: 0, currentPrompt: '', percentage: 0, historyDetection: null })
       }, 3000)
     } catch (err: any) {
       if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
@@ -374,6 +383,7 @@ export default function AnnotatePage() {
             icdo3_code: ann.icdo3_code,
             derived_field_values: ann.derived_field_values,
             hallucination_flags: ann.hallucination_flags,
+            multi_value_info: ann.multi_value_info,
           }
         })
       }
@@ -488,6 +498,7 @@ export default function AnnotatePage() {
     setError(null)
     setLastTimingBreakdown(null)
     setBatchTimingReport(null)
+    setHistoryNotes(new Map())
     const controller = new AbortController()
     abortControllerRef.current = controller
 
@@ -518,6 +529,11 @@ export default function AnnotatePage() {
           // Track processing times for time estimation
           if (prog.processing_time_seconds && prog.status === 'success') {
             processingTimes.push(prog.processing_time_seconds)
+          }
+
+          // Track history note detections
+          if (prog.history_detection) {
+            setHistoryNotes(prev => new Map(prev).set(prog.note_id, prog.history_detection!))
           }
 
           const avgTime = processingTimes.length > 0
@@ -1026,6 +1042,16 @@ export default function AnnotatePage() {
                   <span>Estimated remaining: {formatTimeRemaining(progress.timeRemaining)}</span>
                 )}
               </div>
+              {/* History notes summary during batch processing */}
+              {historyNotes.size > 0 && (
+                <div data-testid="batch-history-summary" className="mt-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-md text-xs text-purple-800">
+                  <span className="font-medium">{historyNotes.size} history note{historyNotes.size !== 1 ? 's' : ''} detected</span>
+                  {' \u2014 '}
+                  {Array.from(historyNotes.values()).filter(h => h.was_split).length > 0
+                    ? `${Array.from(historyNotes.values()).reduce((sum, h) => sum + h.events_count, 0)} total events extracted via splitting`
+                    : 'no splits needed'}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1049,13 +1075,19 @@ export default function AnnotatePage() {
               </div>
             </div>
             <button
-              onClick={() => setBatchTimingReport(null)}
+              onClick={() => { setBatchTimingReport(null); setHistoryNotes(new Map()) }}
               className="text-green-400 hover:text-green-600 text-sm ml-2"
               title="Dismiss"
             >
               &times;
             </button>
           </div>
+          {/* History note splitting summary in completion report */}
+          {historyNotes.size > 0 && (
+            <div data-testid="batch-history-report" className="mt-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-md text-xs text-purple-800">
+              <span className="font-medium">History notes: {historyNotes.size}/{batchTimingReport.processed + batchTimingReport.skipped} split into {Array.from(historyNotes.values()).reduce((sum, h) => sum + h.events_count, 0)} events</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -1104,6 +1136,53 @@ export default function AnnotatePage() {
           {/* Progress feedback for single note processing */}
           {processing && noteProgress.total > 0 && (
             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              {/* History note splitting banner */}
+              {noteProgress.historyDetection && (
+                <div data-testid="history-splitting-banner" className="mb-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-md text-xs text-purple-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-medium">
+                        History note detected
+                        {noteProgress.historyDetection.was_split
+                          ? ` \u2014 splitting into ${noteProgress.historyDetection.events_count} events`
+                          : ' (no split needed)'}
+                      </span>
+                      <span className="text-purple-600 ml-2">
+                        {noteProgress.historyDetection.detection_methods.map(m =>
+                          m === 'date_count' ? `${noteProgress.historyDetection!.date_count} dates` :
+                          m === 'event_markers' ? `${noteProgress.historyDetection!.event_marker_count} event markers` :
+                          m === 'treatment_types' || m === 'diverse_treatments' ? noteProgress.historyDetection!.treatment_types_found.join(', ') : m
+                        ).join(' \u00b7 ')}
+                      </span>
+                    </div>
+                    {noteProgress.historyDetection.events && noteProgress.historyDetection.events.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowSplitEvents(!showSplitEvents)}
+                        className="text-purple-600 hover:text-purple-800 font-medium ml-2 whitespace-nowrap"
+                      >
+                        {showSplitEvents ? '\u25BC Hide events' : '\u25B6 Show events'}
+                      </button>
+                    )}
+                  </div>
+                  {showSplitEvents && noteProgress.historyDetection.events && noteProgress.historyDetection.events.length > 0 && (
+                    <div className="mt-2 space-y-1.5 border-t border-purple-200 pt-2">
+                      {noteProgress.historyDetection.events.map((event, idx) => (
+                        <div key={idx} className="px-2 py-1.5 bg-white border border-purple-100 rounded text-xs">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="font-semibold text-purple-700">Event {idx + 1}</span>
+                            <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">{event.event_type}</span>
+                            {event.event_date && (
+                              <span className="text-purple-500">{event.event_date}</span>
+                            )}
+                          </div>
+                          <p className="text-gray-700 leading-snug">{event.event_text.length > 200 ? event.event_text.substring(0, 200) + '...' : event.event_text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="flex justify-between text-xs text-gray-700 mb-1">
                 <span>
                   {noteProgress.currentPrompt || 'Starting...'}
@@ -1273,6 +1352,7 @@ export default function AnnotatePage() {
                             icdo3_code: annotation.icdo3_code,
                             derived_field_values: annotation.derived_field_values,
                             hallucination_flags: annotation.hallucination_flags,
+                            multi_value_info: annotation.multi_value_info,
                           }
                           : {
                             prompt_type: promptType,
