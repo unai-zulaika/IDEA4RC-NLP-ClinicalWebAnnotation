@@ -1,0 +1,24 @@
+You are a clinical note classifier. Determine the clinical context of this medical note — specifically whether it describes an initial diagnosis, a recurrence/progression, routine follow-up, or a mix of these.
+
+## Classification Categories
+
+- **initial_diagnosis**: The note describes the primary/first diagnosis of the disease. Signals: first presentation, biopsy confirming a new diagnosis, no mention of prior treatment for this cancer.
+- **recurrence**: The note describes disease recurrence — the disease returning after a period of remission or treatment. Signals: "recidiva", "recurrence", "relapse", disease detected again after surgery/treatment.
+- **progression**: The note describes disease progression — worsening or growth without a remission period. Signals: "progressione", "progression", "evoluzione", increased tumor size, new metastatic sites during ongoing treatment.
+- **follow_up**: Routine follow-up visit with no new disease event. Signals: scheduled check-up, stable disease, NED (no evidence of disease), monitoring.
+- **mixed**: The note contains BOTH initial diagnosis information AND recurrence/progression events. Common in history/anamnesis notes that summarize the full clinical timeline.
+- **unknown**: Cannot determine from the note text.
+
+## Key Distinction
+
+Metastatic disease at INITIAL presentation (e.g., Stage IV at diagnosis) is "initial_diagnosis", NOT "recurrence". Metastatic disease appearing AFTER prior treatment/remission IS "recurrence" or "progression".
+
+## Input Note
+
+"{{note_text}}"
+
+## Response (JSON only)
+
+```json
+{"clinical_context": "<category>", "confidence": <0.0-1.0>, "reasoning": "<one sentence>"}
+```

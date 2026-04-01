@@ -177,15 +177,22 @@ IMPORTANT:
     return wrapped
 
 
-def update_prompt_placeholders(prompt: str, note_text: str, csv_date: str | None = None) -> str:
+def update_prompt_placeholders(
+    prompt: str,
+    note_text: str,
+    csv_date: str | None = None,
+    clinical_context: str | None = None,
+) -> str:
     """
     Update prompt placeholders with actual values.
-    
+
     Args:
         prompt: Prompt template with placeholders
         note_text: Note text to insert
         csv_date: Optional CSV date
-    
+        clinical_context: Optional clinical context classification
+                          (initial_diagnosis, recurrence, progression, follow_up, mixed, unknown)
+
     Returns:
         Prompt with placeholders replaced
     """
@@ -193,12 +200,15 @@ def update_prompt_placeholders(prompt: str, note_text: str, csv_date: str | None
     prompt = prompt.replace("{{note_original_text}}", note_text)
     prompt = prompt.replace("{note}", note_text)
     prompt = prompt.replace("{{note}}", note_text)
-    
+
     # Replace CSV date placeholder
     if csv_date:
         prompt = prompt.replace("{{csv_date}}", csv_date)
     else:
         prompt = prompt.replace("{{csv_date}}", "Not provided")
-    
+
+    # Replace clinical context placeholder
+    prompt = prompt.replace("{{clinical_context}}", clinical_context or "unknown")
+
     return prompt
 

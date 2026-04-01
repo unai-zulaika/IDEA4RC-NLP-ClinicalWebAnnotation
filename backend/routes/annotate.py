@@ -17,6 +17,9 @@ from lib.timing import TimingBreakdown
 from lib.note_chunker import NoteChunker
 from lib.history_detector import get_history_detector
 from lib.note_splitter import split_history_note, build_sub_note, get_cached_split
+from lib.note_context_classifier import (
+    classify_note_context, derive_context_from_split, NoteContextResult,
+)
 from lib.result_aggregator import aggregate_results as aggregate_multi_value_results
 from models.schemas import ChunkInfo
 from models.annotation_models import NoteSplitResult
@@ -359,7 +362,7 @@ def _sanitize_fewshot_examples(
     return sanitized
 
 
-def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, csv_date: Optional[str] = None, fast_mode: bool = False, use_guided_decoding: bool = False) -> str:
+def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, csv_date: Optional[str] = None, fast_mode: bool = False, use_guided_decoding: bool = False, clinical_context: Optional[str] = None) -> str:
     """
     Build prompt from template (standalone version, doesn't require model_runner).
     Now includes JSON format instructions for structured output.
@@ -395,7 +398,7 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
             template = template.replace("{few_shot_examples}", fewshots_text)
             template = template.replace("{fewshots}", fewshots_text)
             from lib.prompt_wrapper import update_prompt_placeholders, wrap_prompt_with_json_format
-            prompt = update_prompt_placeholders(template, note_text, csv_date)
+            prompt = update_prompt_placeholders(template, note_text, csv_date, clinical_context=clinical_context)
             # When guided decoding is active, add concise JSON format instructions
             # so the model knows the semantic meaning of each field
             if use_guided_decoding:
@@ -427,7 +430,7 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
 
     # Replace note and date placeholders first
     from lib.prompt_wrapper import wrap_prompt_with_json_format, update_prompt_placeholders
-    prompt = update_prompt_placeholders(prompt, note_text, csv_date)
+    prompt = update_prompt_placeholders(prompt, note_text, csv_date, clinical_context=clinical_context)
 
     # Only wrap with JSON format instructions if the prompt doesn't already have them
     # and if it's not a simple test prompt (check if it contains structured output instructions)
@@ -738,6 +741,7 @@ async def _process_single_prompt(
     note_id: Optional[str] = None,
     fast_mode: bool = False,
     icdo3_llm_cache: Optional[Dict[str, Any]] = None,
+    clinical_context: Optional[str] = None,
 ) -> AnnotationResult:
     """
     Process a single prompt type for a note, with timing instrumentation.
@@ -782,6 +786,7 @@ async def _process_single_prompt(
             csv_date=csv_date,
             fast_mode=fast_mode,
             use_guided_decoding=_use_guided_decoding,
+            clinical_context=clinical_context,
         )
         _available_tokens = _chunker.calculate_available_tokens(_probe_prompt, fast_max_tokens)
         _note_chunks = _chunker.chunk_note(note_text, _available_tokens)
@@ -807,6 +812,7 @@ async def _process_single_prompt(
                     csv_date=csv_date,
                     fast_mode=fast_mode,
                     use_guided_decoding=_use_guided_decoding,
+                    clinical_context=clinical_context,
                 )
                 raw_prompt = prompt
                 template = _PROMPTS[prompt_type]["template"]
@@ -1245,6 +1251,7 @@ async def _process_prompt_with_splitting(
     note_id: Optional[str] = None,
     fast_mode: bool = False,
     icdo3_llm_cache: Optional[Dict[str, Any]] = None,
+    clinical_context: Optional[str] = None,
 ) -> AnnotationResult:
     """Process a prompt type, using split sub-notes for repeatable entities on history notes.
 
@@ -1274,6 +1281,7 @@ async def _process_prompt_with_splitting(
                 note_id=note_id,
                 fast_mode=fast_mode,
                 icdo3_llm_cache=icdo3_llm_cache,
+                clinical_context=clinical_context,
             )
             sub_results.append(result)
 
@@ -1297,6 +1305,7 @@ async def _process_prompt_with_splitting(
         note_id=note_id,
         fast_mode=fast_mode,
         icdo3_llm_cache=icdo3_llm_cache,
+        clinical_context=clinical_context,
     )
 
 
@@ -1392,6 +1401,30 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
                     f"{[e.event_type for e in note_split_result.events]}"
                 )
 
+    # --- Clinical context classification ---
+    note_context: Optional[NoteContextResult] = None
+    if note_split_result is not None and note_split_result.was_split:
+        note_context = derive_context_from_split(note_split_result)
+    else:
+        try:
+            _structured_cfg = vllm_client.config.get("structured_output", {})
+            _ctx_guided = _structured_cfg.get("enabled", False)
+            note_context = await classify_note_context(
+                note_text=note_text,
+                vllm_client=vllm_client,
+                session_id=session_id,
+                note_id=request.note_id,
+                use_guided_decoding=_ctx_guided,
+            )
+        except Exception as e:
+            print(f"[WARN] Clinical context classification failed: {e}")
+            note_context = NoteContextResult(
+                clinical_context="unknown", confidence=0.0,
+                reasoning=f"Classification failed: {e}", source="llm",
+            )
+    _clinical_context_str = note_context.clinical_context if note_context else "unknown"
+    print(f"[INFO] Clinical context for {request.note_id}: {_clinical_context_str}")
+
     # Process all prompt types in parallel (semaphore limits concurrent GPU access)
     mode_label = "FAST" if request.fast_mode else "standard"
     print(f"[INFO] Processing {len(prompt_types_to_process)} prompts in parallel, mode={mode_label}")
@@ -1411,6 +1444,7 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
             note_id=request.note_id,
             fast_mode=request.fast_mode,
             icdo3_llm_cache=icdo3_llm_cache,
+            clinical_context=_clinical_context_str,
         )
         for pt in prompt_types_to_process
     ]))
@@ -1441,6 +1475,8 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
             ] if note_split_result and note_split_result.was_split else [],
         }
 
+    _clinical_context_payload = note_context.to_dict() if note_context else None
+
     return ProcessNoteResponse(
         note_id=request.note_id,
         note_text=note_text,
@@ -1448,6 +1484,7 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
         processing_time_seconds=processing_time,
         timing_breakdown=agg_timing,
         history_detection=_history_detection_payload,
+        clinical_context=_clinical_context_payload,
     )
 
 
@@ -1574,6 +1611,27 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
     async def _process_note(note_id: str, note_text: str, prompt_types_to_process: List[str], _report_type: Optional[str] = None) -> ProcessNoteResponse:
         icdo3_llm_cache: Dict[str, Any] = {}
         _split = _note_splits.get(note_id)
+
+        # --- Clinical context classification (batch) ---
+        _batch_context: Optional[NoteContextResult] = None
+        if _split is not None:
+            _batch_context = derive_context_from_split(_split)
+        else:
+            try:
+                _ctx_guided = vllm_client.config.get("structured_output", {}).get("enabled", False)
+                _batch_context = await classify_note_context(
+                    note_text=note_text, vllm_client=vllm_client,
+                    session_id=session_id, note_id=note_id,
+                    use_guided_decoding=_ctx_guided,
+                )
+            except Exception as _ctx_err:
+                print(f"[WARN] Batch context classification failed for {note_id}: {_ctx_err}")
+                _batch_context = NoteContextResult(
+                    clinical_context="unknown", confidence=0.0,
+                    reasoning=f"Classification failed: {_ctx_err}", source="llm",
+                )
+        _batch_clinical_ctx = _batch_context.clinical_context if _batch_context else "unknown"
+
         note_annotations = await asyncio.gather(*[
             _process_prompt_with_splitting(
                 prompt_type=pt,
@@ -1589,6 +1647,7 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
                 note_id=note_id,
                 fast_mode=request.fast_mode,
                 icdo3_llm_cache=icdo3_llm_cache,
+                clinical_context=_batch_clinical_ctx,
             )
             for pt in prompt_types_to_process
         ])
@@ -1610,6 +1669,7 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
             annotations=list(note_annotations),
             processing_time_seconds=note_time,
             timing_breakdown=note_timing,
+            clinical_context=_batch_context.to_dict() if _batch_context else None,
         )
 
     results = list(await asyncio.gather(*[
@@ -1783,6 +1843,26 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
                     ] if _stream_split else [],
                 }
 
+            # --- Clinical context classification (streaming) ---
+            _stream_context: Optional[NoteContextResult] = None
+            if _stream_split is not None:
+                _stream_context = derive_context_from_split(_stream_split)
+            else:
+                try:
+                    _ctx_guided = vllm_client.config.get("structured_output", {}).get("enabled", False)
+                    _stream_context = await classify_note_context(
+                        note_text=nt, vllm_client=vllm_client,
+                        session_id=session_id, note_id=nid,
+                        use_guided_decoding=_ctx_guided,
+                    )
+                except Exception as _ctx_err:
+                    print(f"[WARN] Stream context classification failed for {nid}: {_ctx_err}")
+                    _stream_context = NoteContextResult(
+                        clinical_context="unknown", confidence=0.0,
+                        reasoning=f"Classification failed: {_ctx_err}", source="llm",
+                    )
+            _stream_clinical_context = _stream_context.clinical_context if _stream_context else "unknown"
+
             _first_prompt_for_note = True
             for pt in prompt_types_to_process:
                 result = await _process_prompt_with_splitting(
@@ -1799,6 +1879,7 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
                     note_id=nid,
                     fast_mode=request.fast_mode,
                     icdo3_llm_cache=icdo3_llm_cache,
+                    clinical_context=_stream_clinical_context,
                 )
                 completed += 1
                 results_by_note.setdefault(nid, []).append(result)
@@ -1810,8 +1891,11 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
                     "prompt_type": pt,
                     "percentage": round(completed / total_prompts * 100) if total_prompts else 100,
                 }
-                if _first_prompt_for_note and _stream_history_detection:
-                    progress_data["history_detection"] = _stream_history_detection
+                if _first_prompt_for_note:
+                    if _stream_history_detection:
+                        progress_data["history_detection"] = _stream_history_detection
+                    if _stream_context:
+                        progress_data["clinical_context"] = _stream_context.to_dict()
                     _first_prompt_for_note = False
 
                 yield {
@@ -2419,6 +2503,26 @@ async def _sequential_process_core(
                 if not _seq_split.was_split:
                     _seq_split = None
 
+            # --- Clinical context classification (sequential) ---
+            _seq_context: Optional[NoteContextResult] = None
+            if _seq_split is not None:
+                _seq_context = derive_context_from_split(_seq_split)
+            else:
+                try:
+                    _ctx_guided = vllm_client.config.get("structured_output", {}).get("enabled", False)
+                    _seq_context = await classify_note_context(
+                        note_text=note_text, vllm_client=vllm_client,
+                        session_id=session_id, note_id=note_id,
+                        use_guided_decoding=_ctx_guided,
+                    )
+                except Exception as _ctx_err:
+                    print(f"[WARN] Sequential context classification failed for {note_id}: {_ctx_err}")
+                    _seq_context = NoteContextResult(
+                        clinical_context="unknown", confidence=0.0,
+                        reasoning=f"Classification failed: {_ctx_err}", source="llm",
+                    )
+            _seq_clinical_context = _seq_context.clinical_context if _seq_context else "unknown"
+
             for pt in applicable_prompts:
                 result = await _process_prompt_with_splitting(
                     prompt_type=pt,
@@ -2434,6 +2538,7 @@ async def _sequential_process_core(
                     note_id=note_id,
                     fast_mode=request.fast_mode,
                     icdo3_llm_cache=icdo3_llm_cache,
+                    clinical_context=_seq_clinical_context,
                 )
                 note_annotations[pt] = _annotation_result_to_dict(result, note_id, pt)
 
@@ -2476,6 +2581,8 @@ async def _sequential_process_core(
                         for e in _seq_split.events
                     ] if _seq_split else [],
                 }
+            if _seq_context:
+                _seq_progress_data["clinical_context"] = _seq_context.to_dict()
             yield ("progress", _seq_progress_data)
 
         except Exception as e:
