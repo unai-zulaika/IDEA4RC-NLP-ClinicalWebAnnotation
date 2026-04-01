@@ -182,6 +182,7 @@ class AnnotationResult(BaseModel):
     chunk_info: Optional[ChunkInfo] = None  # Set when note was split into chunks due to context limit
     derived_field_values: Optional[Dict[str, str]] = None  # Values resolved via output_word_mappings at annotation time
     hallucination_flags: Optional[List[HallucinationFlag]] = None  # Detected hallucination patterns (e.g., repetition loops)
+    multi_value_info: Optional[Dict[str, Any]] = None  # Metadata about multi-event extraction from history notes
 
 
 class ProcessNoteRequest(BaseModel):
@@ -288,6 +289,7 @@ class SessionAnnotation(BaseModel):
     chunk_info: Optional[ChunkInfo] = None  # Set when note was split into chunks due to context limit
     derived_field_values: Optional[Dict[str, str]] = None  # Values resolved via output_word_mappings
     hallucination_flags: Optional[List[Dict[str, Any]]] = None  # Detected hallucination patterns (e.g., repetition loops)
+    multi_value_info: Optional[Dict[str, Any]] = None  # Metadata about multi-event extraction from history notes
 
 
 class SessionData(BaseModel):

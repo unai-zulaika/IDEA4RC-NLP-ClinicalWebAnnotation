@@ -136,6 +136,12 @@ export default function AnnotationViewer({
                     {annotation.status === 'error' ? '❌ Parse Error' : annotation.status === 'incomplete' ? '⚠️ Incomplete' : '✓ Parsed'}
                   </span>
                 )}
+                {/* Multi-value extraction badge */}
+                {annotation.multi_value_info && annotation.multi_value_info.was_split && annotation.multi_value_info.unique_values_extracted > 1 && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-medium">
+                    {annotation.multi_value_info.unique_values_extracted} events extracted
+                  </span>
+                )}
                 {/* Only show negation badge when something is actually negated */}
                 {annotation.is_negated === true && (
                   <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-800">

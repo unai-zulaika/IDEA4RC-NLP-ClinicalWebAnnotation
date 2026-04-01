@@ -802,66 +802,144 @@ def _build_export_rows(session: Dict) -> Tuple[List[Dict], List[Dict]]:
                     elif isinstance(date_info, str):
                         extracted_date = date_info
                 derived_field_values = ann.get('derived_field_values') or {}
+                ann_values = ann.get('values', [])
+                multi_value_info = ann.get('multi_value_info')
             else:
                 annotation_text = ''
                 icdo3_code = ''
                 extracted_date = ''
                 derived_field_values = {}
+                ann_values = []
+                multi_value_info = None
 
             if not annotation_text or not annotation_text.strip():
                 continue
 
             core_variable = prompt_mapping.get(prompt_type, prompt_type)
-            # Use derived_field_values if available for this field (set by output_word_mappings at annotation time)
-            _field_name = core_variable.split('.')[-1] if '.' in core_variable else ''
-            if _field_name and _field_name in derived_field_values:
-                extracted_value = derived_field_values[_field_name]
-            else:
-                extracted_value = _extract_value_from_annotation(annotation_text, prompt_type)
-            entity = _extract_entity_from_core_variable(core_variable)
 
-            if extracted_date:
-                date_ref = _normalize_date(extracted_date)
-            else:
-                date_ref = note_date
+            # Multi-value annotations: emit one row per extracted value
+            # This applies when the annotation was split from a history note
+            # and has multiple distinct values in the values[] array
+            _has_multi_values = (
+                multi_value_info
+                and isinstance(multi_value_info, dict)
+                and multi_value_info.get('was_split', False)
+                and len(ann_values) > 1
+            )
 
-            # Filter out absence/not-applicable values
-            absence_reason = _classify_absence(extracted_value)
-            if absence_reason:
-                excluded_rows.append({
+            if _has_multi_values:
+                # Process each value as a separate export row
+                for _val_idx, _val in enumerate(ann_values):
+                    if not isinstance(_val, dict):
+                        continue
+                    _val_text = _val.get('value', '').strip()
+                    if not _val_text:
+                        continue
+
+                    entity = _extract_entity_from_core_variable(core_variable)
+                    _val_extracted = _extract_value_from_annotation(_val_text, prompt_type)
+
+                    # Try to extract date from this specific value
+                    _val_date = extracted_date
+                    # Check for date patterns in the value text itself
+                    import re as _re
+                    _date_match = _re.search(r'\d{1,2}[./]\d{1,2}[./]\d{4}|\d{4}-\d{1,2}-\d{1,2}', _val_text)
+                    if _date_match:
+                        _val_date = _date_match.group(0)
+
+                    if _val_date:
+                        date_ref = _normalize_date(_val_date)
+                    else:
+                        date_ref = note_date
+
+                    absence_reason = _classify_absence(_val_extracted)
+                    if absence_reason:
+                        excluded_rows.append({
+                            'patient_id': patient_id,
+                            'core_variable': core_variable,
+                            'prompt_type': prompt_type,
+                            'note_id': note_id,
+                            'original_value': _val_extracted or _val_text,
+                            'reason': absence_reason,
+                        })
+                        continue
+
+                    data_type = _get_data_type_for_variable(core_variable)
+
+                    record_key = (patient_id, entity, date_ref)
+                    if record_key not in record_id_tracker:
+                        current_record_id += 1
+                        record_id_tracker[record_key] = current_record_id
+                    record_id = record_id_tracker[record_key]
+
+                    rows.append({
+                        '_note_id': note_id,
+                        '_prompt_type': prompt_type,
+                        'patient_id': patient_id,
+                        'original_source': 'NLP_LLM',
+                        'core_variable': core_variable,
+                        'date_ref': date_ref,
+                        'value': _val_extracted,
+                        'record_id': record_id,
+                        'linked_to': '',
+                        'quality': '',
+                        'types': data_type,
+                        'icdo3_code': icdo3_code,
+                        'entity': entity,
+                        'event_index': _val_idx,
+                    })
+            else:
+                # Standard single-value export (unchanged)
+                # Use derived_field_values if available for this field (set by output_word_mappings at annotation time)
+                _field_name = core_variable.split('.')[-1] if '.' in core_variable else ''
+                if _field_name and _field_name in derived_field_values:
+                    extracted_value = derived_field_values[_field_name]
+                else:
+                    extracted_value = _extract_value_from_annotation(annotation_text, prompt_type)
+                entity = _extract_entity_from_core_variable(core_variable)
+
+                if extracted_date:
+                    date_ref = _normalize_date(extracted_date)
+                else:
+                    date_ref = note_date
+
+                # Filter out absence/not-applicable values
+                absence_reason = _classify_absence(extracted_value)
+                if absence_reason:
+                    excluded_rows.append({
+                        'patient_id': patient_id,
+                        'core_variable': core_variable,
+                        'prompt_type': prompt_type,
+                        'note_id': note_id,
+                        'original_value': extracted_value or annotation_text,
+                        'reason': absence_reason,
+                    })
+                    continue
+
+                data_type = _get_data_type_for_variable(core_variable)
+
+                record_key = (patient_id, entity, date_ref)
+                if record_key not in record_id_tracker:
+                    current_record_id += 1
+                    record_id_tracker[record_key] = current_record_id
+
+                record_id = record_id_tracker[record_key]
+
+                rows.append({
+                    '_note_id': note_id,
+                    '_prompt_type': prompt_type,
                     'patient_id': patient_id,
+                    'original_source': 'NLP_LLM',
                     'core_variable': core_variable,
-                    'prompt_type': prompt_type,
-                    'note_id': note_id,
-                    'original_value': extracted_value or annotation_text,
-                    'reason': absence_reason,
+                    'date_ref': date_ref,
+                    'value': extracted_value,
+                    'record_id': record_id,
+                    'linked_to': '',
+                    'quality': '',
+                    'types': data_type,
+                    'icdo3_code': icdo3_code,
+                    'entity': entity
                 })
-                continue
-
-            data_type = _get_data_type_for_variable(core_variable)
-
-            record_key = (patient_id, entity, date_ref)
-            if record_key not in record_id_tracker:
-                current_record_id += 1
-                record_id_tracker[record_key] = current_record_id
-
-            record_id = record_id_tracker[record_key]
-
-            rows.append({
-                '_note_id': note_id,
-                '_prompt_type': prompt_type,
-                'patient_id': patient_id,
-                'original_source': 'NLP_LLM',
-                'core_variable': core_variable,
-                'date_ref': date_ref,
-                'value': extracted_value,
-                'record_id': record_id,
-                'linked_to': '',
-                'quality': '',
-                'types': data_type,
-                'icdo3_code': icdo3_code,
-                'entity': entity
-            })
 
     return rows, excluded_rows
 
