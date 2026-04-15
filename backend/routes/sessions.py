@@ -18,7 +18,7 @@ from models.schemas import (
     SessionMetadataUpdate, SessionPromptTypesUpdate, CSVRow,
     PatientDiagnosisResolveRequest, PatientDiagnosisResolveResponse,
     DiagnosisValidationReport, PatientDiagnosisInfo,
-    ExportConflict, ExportValidationResponse,
+    ExportConflict, ConflictSource, ExportValidationResponse,
 )
 
 router = APIRouter()
@@ -1007,43 +1007,61 @@ def _validate_and_deduplicate_rows(
     from collections import defaultdict
     conflicts: List[ExportConflict] = []
 
-    # Group values by the appropriate key based on cardinality
+    # Group source rows by the appropriate key based on cardinality.
     # Non-repeatable (1): group by (patient_id, core_variable) — date irrelevant
     # Repeatable (0):     group by (patient_id, core_variable, date_ref)
-    non_rep_values: Dict[tuple, set] = defaultdict(set)
-    rep_values: Dict[tuple, set] = defaultdict(set)
+    non_rep_sources: Dict[tuple, List[ConflictSource]] = defaultdict(list)
+    rep_sources: Dict[tuple, List[ConflictSource]] = defaultdict(list)
 
     for row in deduped:
         entity = row['entity']
         card = cardinality.get(entity)  # None if entity unknown → treat as repeatable
-
+        src = ConflictSource(
+            value=row['value'],
+            note_id=row.get('_note_id', ''),
+            prompt_type=row.get('_prompt_type', ''),
+        )
         if card == 1:
-            group_key = (row['patient_id'], row['core_variable'])
-            non_rep_values[group_key].add(row['value'])
+            non_rep_sources[(row['patient_id'], row['core_variable'])].append(src)
         else:
-            group_key = (row['patient_id'], row['core_variable'], row['date_ref'])
-            rep_values[group_key].add(row['value'])
+            rep_sources[(row['patient_id'], row['core_variable'], row['date_ref'])].append(src)
+
+    def _dedup_sources(srcs: List[ConflictSource]) -> List[ConflictSource]:
+        seen_triples = set()
+        out: List[ConflictSource] = []
+        for s in srcs:
+            key = (s.value, s.note_id, s.prompt_type)
+            if key in seen_triples:
+                continue
+            seen_triples.add(key)
+            out.append(s)
+        out.sort(key=lambda s: (s.note_id, s.prompt_type, s.value))
+        return out
 
     # Non-repeatable conflicts
-    for (pid, cv), values in non_rep_values.items():
-        if len(values) > 1:
+    for (pid, cv), srcs in non_rep_sources.items():
+        unique_values = {s.value for s in srcs}
+        if len(unique_values) > 1:
             conflicts.append(ExportConflict(
                 patient_id=pid,
                 core_variable=cv,
                 date_ref=None,
-                conflicting_values=sorted(values),
+                conflicting_values=sorted(unique_values),
                 conflict_type="non_repeatable",
+                sources=_dedup_sources(srcs),
             ))
 
     # Repeatable same-date conflicts
-    for (pid, cv, date_ref), values in rep_values.items():
-        if len(values) > 1:
+    for (pid, cv, date_ref), srcs in rep_sources.items():
+        unique_values = {s.value for s in srcs}
+        if len(unique_values) > 1:
             conflicts.append(ExportConflict(
                 patient_id=pid,
                 core_variable=cv,
                 date_ref=date_ref,
-                conflicting_values=sorted(values),
+                conflicting_values=sorted(unique_values),
                 conflict_type="repeatable_same_date",
+                sources=_dedup_sources(srcs),
             ))
 
     # --- 3. Reassign record_id based on cardinality ---
@@ -1384,13 +1402,25 @@ async def export_session_json(session_id: str):
     }
 
     json_bytes = json.dumps(export_data, indent=2, ensure_ascii=False, default=_json_serial).encode("utf-8")
-    safe_name = re.sub(r"[^\w\-]", "_", session.get("name", session_id))
-    filename = f"{safe_name}_{session_id}.json"
+
+    raw_name = session.get("name", session_id)
+    ascii_name = re.sub(r"[^\w\-]", "_", raw_name, flags=re.ASCII)
+    ascii_name = re.sub(r"_+", "_", ascii_name).strip("_") or session_id
+    ascii_filename = f"{ascii_name}_{session_id}.json"
+
+    from urllib.parse import quote as _url_quote
+    utf8_filename = f"{raw_name}_{session_id}.json"
+    encoded_utf8 = _url_quote(utf8_filename, safe="")
 
     return StreamingResponse(
         io.BytesIO(json_bytes),
         media_type="application/json",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="{ascii_filename}"; '
+                f"filename*=UTF-8''{encoded_utf8}"
+            )
+        },
     )
 
 

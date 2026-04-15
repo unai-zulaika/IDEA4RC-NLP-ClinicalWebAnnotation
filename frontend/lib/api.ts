@@ -107,12 +107,19 @@ export interface ExcludedRow {
   reason: string
 }
 
+export interface ConflictSource {
+  value: string
+  note_id: string
+  prompt_type: string
+}
+
 export interface ExportConflict {
   patient_id: string
   core_variable: string
   date_ref: string | null
   conflicting_values: string[]
   conflict_type: 'non_repeatable' | 'repeatable_same_date'
+  sources: ConflictSource[]
 }
 
 export interface ExportValidationResponse {

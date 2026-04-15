@@ -24,10 +24,11 @@ client = TestClient(app)
 # ---------------------------------------------------------------------------
 # Helper to build a row dict matching _build_export_rows output format
 # ---------------------------------------------------------------------------
-def _row(patient_id, entity, core_variable, date_ref, value, record_id=1):
+def _row(patient_id, entity, core_variable, date_ref, value, record_id=1,
+         note_id='N001', prompt_type='test-prompt'):
     return {
-        '_note_id': 'N001',
-        '_prompt_type': 'test-prompt',
+        '_note_id': note_id,
+        '_prompt_type': prompt_type,
         'patient_id': patient_id,
         'original_source': 'NLP_LLM',
         'core_variable': core_variable,
@@ -214,6 +215,68 @@ class TestMixedScenarios:
         assert len(clean) == 0
         assert len(conflicts) == 0
         assert dedup_count == 0
+
+
+class TestConflictSources:
+    """Conflicts must carry the source notes that produced each value."""
+
+    def test_non_repeatable_sources_populated(self):
+        rows = [
+            _row('P1', 'Patient', 'Patient.gender', '01/01/2024', 'Male',
+                 note_id='NOTE_A', prompt_type='gender-int'),
+            _row('P1', 'Patient', 'Patient.gender', '05/03/2024', 'Female',
+                 note_id='NOTE_B', prompt_type='gender-int'),
+        ]
+        _, conflicts, _ = _validate_and_deduplicate_rows(rows)
+        assert len(conflicts) == 1
+        sources = conflicts[0].sources
+        assert len(sources) == 2
+        triples = {(s.value, s.note_id, s.prompt_type) for s in sources}
+        assert triples == {
+            ('Male', 'NOTE_A', 'gender-int'),
+            ('Female', 'NOTE_B', 'gender-int'),
+        }
+
+    def test_repeatable_same_date_sources_populated(self):
+        rows = [
+            _row('P1', 'Surgery', 'Surgery.type', '01/01/2024', 'Wide excision',
+                 note_id='NOTE_A', prompt_type='surgery-type'),
+            _row('P1', 'Surgery', 'Surgery.type', '01/01/2024', 'Amputation',
+                 note_id='NOTE_B', prompt_type='surgery-type'),
+        ]
+        _, conflicts, _ = _validate_and_deduplicate_rows(rows)
+        assert len(conflicts) == 1
+        assert conflicts[0].conflict_type == 'repeatable_same_date'
+        triples = {(s.value, s.note_id, s.prompt_type) for s in conflicts[0].sources}
+        assert triples == {
+            ('Wide excision', 'NOTE_A', 'surgery-type'),
+            ('Amputation', 'NOTE_B', 'surgery-type'),
+        }
+
+    def test_sources_deduplicated(self):
+        rows = [
+            _row('P1', 'Patient', 'Patient.gender', '01/01/2024', 'Male',
+                 note_id='NOTE_A', prompt_type='gender-int'),
+            _row('P1', 'Patient', 'Patient.gender', '02/01/2024', 'Male',
+                 note_id='NOTE_A', prompt_type='gender-int'),
+            _row('P1', 'Patient', 'Patient.gender', '05/03/2024', 'Female',
+                 note_id='NOTE_B', prompt_type='gender-int'),
+        ]
+        _, conflicts, _ = _validate_and_deduplicate_rows(rows)
+        assert len(conflicts) == 1
+        triples = {(s.value, s.note_id, s.prompt_type) for s in conflicts[0].sources}
+        assert triples == {
+            ('Male', 'NOTE_A', 'gender-int'),
+            ('Female', 'NOTE_B', 'gender-int'),
+        }
+
+    def test_no_conflict_no_sources_needed(self):
+        rows = [
+            _row('P1', 'Patient', 'Patient.gender', '01/01/2024', 'Male',
+                 note_id='NOTE_A', prompt_type='gender-int'),
+        ]
+        _, conflicts, _ = _validate_and_deduplicate_rows(rows)
+        assert len(conflicts) == 0
 
 
 # ---------------------------------------------------------------------------
