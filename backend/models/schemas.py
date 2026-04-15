@@ -450,12 +450,19 @@ class AnnotationPreset(BaseModel):
 # Export validation (cardinality-based conflict detection)
 # ---------------------------------------------------------------------------
 
+class ConflictSource(BaseModel):
+    value: str
+    note_id: str
+    prompt_type: str
+
+
 class ExportConflict(BaseModel):
     patient_id: str
     core_variable: str
     date_ref: Optional[str] = None  # None for non-repeatable entities
     conflicting_values: List[str]
     conflict_type: str  # "non_repeatable" | "repeatable_same_date"
+    sources: List[ConflictSource] = []
 
 
 class ExportValidationResponse(BaseModel):

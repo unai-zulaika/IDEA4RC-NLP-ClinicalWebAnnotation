@@ -1556,12 +1556,47 @@ export default function AnnotatePage() {
                         )}
                       </td>
                       <td className="py-2">
-                        <div className="flex flex-wrap gap-1">
-                          {c.conflicting_values.map((v, j) => (
-                            <span key={j} className="inline-block px-1.5 py-0.5 text-xs rounded bg-gray-100 text-gray-700 font-mono">
-                              {v}
-                            </span>
-                          ))}
+                        <div className="flex flex-col gap-1">
+                          {c.sources && c.sources.length > 0 ? (
+                            c.sources.map((s, j) => {
+                              const noteExists = session.notes.some(n => n.note_id === s.note_id)
+                              const shortLabel = s.note_id.length > 10
+                                ? `…${s.note_id.slice(-8)}`
+                                : s.note_id
+                              return (
+                                <div key={j} className="flex items-center gap-2">
+                                  <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-gray-100 text-gray-700 font-mono">
+                                    {s.value}
+                                  </span>
+                                  {noteExists ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => navigateToAnnotation(s.note_id, s.prompt_type)}
+                                      className="text-xs text-primary-600 hover:text-primary-800 underline"
+                                      title={`Jump to note ${s.note_id}`}
+                                    >
+                                      → Note {shortLabel}
+                                    </button>
+                                  ) : (
+                                    <span
+                                      className="text-xs text-gray-400 italic"
+                                      title="Source note not found in this session"
+                                    >
+                                      (note not found)
+                                    </span>
+                                  )}
+                                </div>
+                              )
+                            })
+                          ) : (
+                            <div className="flex flex-wrap gap-1">
+                              {c.conflicting_values.map((v, j) => (
+                                <span key={j} className="inline-block px-1.5 py-0.5 text-xs rounded bg-gray-100 text-gray-700 font-mono">
+                                  {v}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>

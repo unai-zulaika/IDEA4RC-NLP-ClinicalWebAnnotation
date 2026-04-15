@@ -124,6 +124,51 @@ class TestExportSessionJson:
         assert "not found" in r.json()["detail"].lower()
 
 
+class TestExportUnicodeSessionName:
+    """Regression tests for UnicodeEncodeError when session name contains non-ASCII."""
+
+    @pytest.fixture
+    def polish_session_dir(self, tmp_path):
+        polish_session = {
+            **SAMPLE_SESSION,
+            "session_id": "polish-id-456",
+            "name": "Próba ęść",
+        }
+        (tmp_path / "polish-id-456.json").write_text(
+            json.dumps(polish_session, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        with patch("routes.sessions._get_sessions_dir", return_value=tmp_path):
+            yield tmp_path
+
+    def test_non_ascii_name_does_not_crash(self, polish_session_dir):
+        r = client.get("/api/sessions/polish-id-456/export/session")
+        assert r.status_code == 200
+
+    def test_content_disposition_is_latin1_safe(self, polish_session_dir):
+        r = client.get("/api/sessions/polish-id-456/export/session")
+        cd = r.headers.get("content-disposition", "")
+        cd.encode("latin-1")
+
+    def test_ascii_filename_has_no_unicode(self, polish_session_dir):
+        r = client.get("/api/sessions/polish-id-456/export/session")
+        cd = r.headers.get("content-disposition", "")
+        import re as _re
+        m = _re.search(r'filename="([^"]+)"', cd)
+        assert m is not None
+        assert m.group(1).isascii()
+
+    def test_rfc5987_filename_preserves_original_name(self, polish_session_dir):
+        r = client.get("/api/sessions/polish-id-456/export/session")
+        cd = r.headers.get("content-disposition", "")
+        from urllib.parse import unquote
+        import re as _re
+        m = _re.search(r"filename\*=UTF-8''([^;]+)", cd)
+        assert m is not None
+        decoded = unquote(m.group(1))
+        assert "Próba" in decoded
+
+
 # ===========================================================================
 # Import tests
 # ===========================================================================
