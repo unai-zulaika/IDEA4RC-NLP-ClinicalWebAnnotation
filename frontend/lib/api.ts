@@ -129,6 +129,19 @@ export interface ExportValidationResponse {
   deduplicated_count: number
 }
 
+export interface ConflictResolveEntry {
+  note_id: string
+  prompt_type: string
+}
+
+export interface ConflictResolveResponse {
+  deleted_count: number
+  not_found_count: number
+  remaining_conflicts: ExportConflict[]
+  valid: boolean
+  row_count: number
+}
+
 export interface CSVUploadResponse {
   success: boolean
   message: string
@@ -1097,6 +1110,17 @@ export const sessionsApi = {
 
   validateExport: async (session_id: string): Promise<ExportValidationResponse> => {
     const response = await api.get(`/api/sessions/${session_id}/export/validate`)
+    return response.data
+  },
+
+  resolveConflicts: async (
+    session_id: string,
+    entries: ConflictResolveEntry[],
+  ): Promise<ConflictResolveResponse> => {
+    const response = await api.post(
+      `/api/sessions/${session_id}/conflicts/resolve`,
+      { entries },
+    )
     return response.data
   },
 

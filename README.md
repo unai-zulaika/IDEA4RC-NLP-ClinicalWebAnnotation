@@ -838,6 +838,9 @@ VLLM_MAX_NUM_SEQS=32
 VLLM_GPU_MEM_UTIL=0.95
 VLLM_HOST_PORT=8080
 VLLM_EXTRA_ARGS=--dtype auto --enable-chunked-prefill
+# Set empty to disable --enforce-eager (recommended for GPTQ / W4A16 Marlin models).
+# Leave unset when serving BitsAndBytes (bnb-4bit) quants — vLLM requires eager mode there.
+# VLLM_ENFORCE_EAGER=
 # HF_TOKEN=
 ```
 
@@ -852,6 +855,7 @@ VLLM_EXTRA_ARGS=--dtype auto --enable-chunked-prefill
 | `VLLM_GPU_MEM_UTIL` | `0.95` | Fraction of GPU memory to use (0.0-1.0) |
 | `VLLM_HOST_PORT` | `8080` | Host port to expose the vLLM API on |
 | `VLLM_EXTRA_ARGS` | *(empty)* | Additional vLLM CLI arguments |
+| `VLLM_ENFORCE_EAGER` | `--enforce-eager` | Pass-through flag for eager mode. Set empty (`VLLM_ENFORCE_EAGER=`) to disable — recommended for GPTQ / W4A16 (Marlin) models for ~2× throughput. Required for BnB 4-bit quants. |
 | `HF_TOKEN` | *(empty)* | HuggingFace token for gated models (Llama, Gemma, etc.) |
 
 #### Switching Models

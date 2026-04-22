@@ -471,3 +471,22 @@ class ExportValidationResponse(BaseModel):
     row_count: int = 0
     deduplicated_count: int = 0
 
+
+class ConflictResolveEntry(BaseModel):
+    """Identifies a single annotation entry to remove when resolving conflicts."""
+    note_id: str
+    prompt_type: str
+
+
+class ConflictResolveRequest(BaseModel):
+    """Batch-delete annotation entries that are blocking export."""
+    entries: List[ConflictResolveEntry]
+
+
+class ConflictResolveResponse(BaseModel):
+    deleted_count: int
+    not_found_count: int
+    remaining_conflicts: List[ExportConflict] = []
+    valid: bool = False
+    row_count: int = 0
+
