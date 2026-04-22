@@ -2,7 +2,11 @@
 
 import pytest
 from fastapi import HTTPException
-from routes.upload import _parse_csv_flexible, _parse_csv_with_reconstruction
+from routes.upload import (
+    _parse_csv_flexible,
+    _parse_csv_with_reconstruction,
+    _decode_csv_bytes,
+)
 
 
 REQUIRED_COLS = ['text', 'date', 'p_id', 'note_id', 'report_type']
@@ -167,3 +171,71 @@ def test_reconstruction_with_no_extra_semicolons():
     assert len(df) == 1
     assert 'No semicolons here' in df.iloc[0]['text']
     assert df.iloc[0]['p_id'] == '5'
+
+
+# ---------------------------------------------------------------------------
+# BOM / encoding regression tests — hardening against Excel-produced files
+# ---------------------------------------------------------------------------
+
+def test_fewshot_csv_with_utf8_bom():
+    """Excel on Windows saves UTF-8 files with a BOM (\ufeff) — first column
+    name ends up as '\ufeffprompt_type' and the parser must tolerate it."""
+    data = "\ufeffprompt_type,note_text,annotation\ntype1,some note,some ann\n"
+    df = _parse_csv_flexible(data, FEWSHOT_COLS)
+    assert list(df.columns) == FEWSHOT_COLS
+    assert df.iloc[0]['prompt_type'] == 'type1'
+
+
+def test_patients_csv_with_utf8_bom_semicolon():
+    """Patient-notes CSV with UTF-8 BOM and semicolon delimiter."""
+    data = "\ufefftext;date;p_id;note_id;report_type\nhello;2024-01-01;1;100;CCE\n"
+    df = _parse_csv_flexible(data, REQUIRED_COLS)
+    assert 'text' in df.columns
+    assert df.iloc[0]['text'] == 'hello'
+
+
+def test_bom_in_reconstruction_path():
+    """BOM survives when the reconstruction path handles the broken-quoting format."""
+    data = (
+        '\ufeff"text;""date"";""p_id"";""note_id"";""report_type"""\n'
+        '"some text;""2024-01-01"";""1"";""100"";""CCE"""\n'
+    )
+    df = _parse_csv_flexible(data, REQUIRED_COLS)
+    assert 'text' in df.columns
+    assert df.iloc[0]['p_id'] == '1'
+
+
+def test_decode_strips_utf8_bom():
+    """_decode_csv_bytes transparently handles UTF-8 with BOM."""
+    raw = ("prompt_type,note_text,annotation\ntype1,a,b\n").encode("utf-8-sig")
+    text = _decode_csv_bytes(raw)
+    assert not text.startswith("\ufeff")
+    assert text.startswith("prompt_type")
+
+
+def test_decode_handles_utf16():
+    """_decode_csv_bytes falls back to UTF-16 when UTF-8 decoding fails."""
+    raw = "prompt_type,note_text,annotation\ntype1,a,b\n".encode("utf-16")
+    text = _decode_csv_bytes(raw)
+    assert "prompt_type" in text
+
+
+def test_decode_handles_latin1_fallback():
+    """_decode_csv_bytes falls back to latin-1 for non-UTF bytes (e.g. legacy Excel)."""
+    # 0xE9 is 'é' in latin-1 but invalid in utf-8
+    raw = b"prompt_type,note_text,annotation\ntype1,caf\xe9,ann\n"
+    text = _decode_csv_bytes(raw)
+    assert "prompt_type" in text
+    assert "caf" in text
+
+
+def test_error_message_includes_found_columns():
+    """When parsing fails, the error lists the columns that were actually found
+    so the user can see what went wrong at a glance."""
+    data = "type;text;label\ntype1;some note;some ann\n"
+    with pytest.raises(HTTPException) as exc_info:
+        _parse_csv_flexible(data, FEWSHOT_COLS)
+    detail = exc_info.value.detail
+    assert "prompt_type" in detail  # required columns listed
+    # Found columns should be surfaced so the user can spot the naming mismatch
+    assert "type" in detail and "text" in detail and "label" in detail

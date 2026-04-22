@@ -61,6 +61,42 @@ def _save_fewshots_to_disk(fewshots: Dict[str, List[Tuple[str, str]]]):
         raise
 
 
+def _normalize_column_name(name: str) -> str:
+    """Normalize a column header: strip whitespace, wrapping quotes, and UTF-8 BOM.
+
+    Excel on Windows saves UTF-8 files with a BOM (\ufeff) which shows up as the
+    first character of the first column name. Without stripping it, a header like
+    "\ufeffprompt_type" fails the `col in header` check and every parse strategy
+    rejects the file.
+    """
+    return name.strip().lstrip('\ufeff').strip('"').strip()
+
+
+def _decode_csv_bytes(raw: bytes) -> str:
+    """Decode uploaded CSV bytes, trying common encodings.
+
+    Order:
+      1. UTF-8 with BOM (utf-8-sig) — transparently strips a BOM if present.
+      2. UTF-8 strict.
+      3. UTF-16 — only when a UTF-16 BOM is detected, because any even-length
+         byte sequence is a valid UTF-16 decode and would silently produce
+         garbled output for Latin-1 files otherwise.
+      4. Latin-1 — never raises on valid bytes; serves as the safe final
+         fallback for legacy Excel exports on Windows.
+    """
+    if raw[:2] in (b"\xff\xfe", b"\xfe\xff"):
+        try:
+            return raw.decode("utf-16")
+        except (UnicodeDecodeError, UnicodeError):
+            pass
+    for encoding in ("utf-8-sig", "utf-8"):
+        try:
+            return raw.decode(encoding)
+        except (UnicodeDecodeError, UnicodeError):
+            continue
+    return raw.decode("latin-1", errors="replace")
+
+
 def _parse_csv_with_reconstruction(contents_str: str, required_columns: List[str]) -> Optional[pd.DataFrame]:
     """
     Parse CSV by splitting on ; and reconstructing fields when text contains the delimiter.
@@ -71,7 +107,7 @@ def _parse_csv_with_reconstruction(contents_str: str, required_columns: List[str
         return None
 
     # Parse header
-    header = [h.strip().strip('"').strip() for h in lines[0].split(';')]
+    header = [_normalize_column_name(h) for h in lines[0].split(';')]
 
     # Check required columns
     if not all(col in header for col in required_columns):
@@ -115,8 +151,13 @@ def _parse_csv_flexible(contents_str: str, required_columns: List[str]) -> pd.Da
     """
     Try multiple CSV parsing strategies to handle different delimiter/quoting formats.
     Returns the first successfully parsed DataFrame that contains all required columns.
-    Raises HTTPException(400) if no strategy works.
+    Raises HTTPException(400) with the columns actually found if no strategy works.
     """
+    # Strip leading BOM if present (normally _decode_csv_bytes has already handled
+    # this via utf-8-sig, but callers that build a string directly can still hit it).
+    if contents_str.startswith("\ufeff"):
+        contents_str = contents_str.lstrip("\ufeff")
+
     common_kwargs = dict(dtype=str, keep_default_na=False)
 
     strategies = [
@@ -134,10 +175,20 @@ def _parse_csv_flexible(contents_str: str, required_columns: List[str]) -> pd.Da
         dict(sep=',', quoting=csv.QUOTE_NONE, **common_kwargs),
     ]
 
+    # Track the longest column list we saw across all strategies — the best proxy for
+    # "what columns did the user actually have?" when every strategy fails.
+    best_found_columns: List[str] = []
+
+    def _maybe_update_best(columns: List[str]) -> None:
+        nonlocal best_found_columns
+        if len(columns) > len(best_found_columns):
+            best_found_columns = columns
+
     for strategy in strategies[:4]:
         try:
             df = pd.read_csv(io.StringIO(contents_str), **strategy)
-            df.columns = [col.strip().strip('"').strip() for col in df.columns]
+            df.columns = [_normalize_column_name(col) for col in df.columns]
+            _maybe_update_best(list(df.columns))
             missing = [c for c in required_columns if c not in df.columns]
             if missing:
                 continue
@@ -157,7 +208,8 @@ def _parse_csv_flexible(contents_str: str, required_columns: List[str]) -> pd.Da
     for strategy in strategies[4:]:
         try:
             df = pd.read_csv(io.StringIO(contents_str), **strategy)
-            df.columns = [col.strip().strip('"').strip() for col in df.columns]
+            df.columns = [_normalize_column_name(col) for col in df.columns]
+            _maybe_update_best(list(df.columns))
             missing = [c for c in required_columns if c not in df.columns]
             if missing:
                 continue
@@ -168,9 +220,18 @@ def _parse_csv_flexible(contents_str: str, required_columns: List[str]) -> pd.Da
         except Exception:
             continue
 
+    found_msg = (
+        f"Columns found in file: {best_found_columns}."
+        if best_found_columns
+        else "No columns could be parsed from the file."
+    )
     raise HTTPException(
         status_code=400,
-        detail=f"Failed to parse CSV. No delimiter/quoting strategy produced the required columns: {required_columns}"
+        detail=(
+            f"Failed to parse CSV. Required columns: {required_columns}. "
+            f"{found_msg} "
+            "Tip: save as UTF-8 CSV from Excel and ensure the header row uses the exact names above."
+        ),
     )
 
 
@@ -182,8 +243,8 @@ async def upload_csv(file: UploadFile = File(...)):
     
     # Read CSV content
     contents = await file.read()
-    
-    contents_str = contents.decode('utf-8')
+
+    contents_str = _decode_csv_bytes(contents)
     required_columns = ['text', 'date', 'p_id', 'note_id', 'report_type']
     df = _parse_csv_flexible(contents_str, required_columns)
     
@@ -310,7 +371,7 @@ async def upload_fewshots(file: UploadFile = File(...), center: str = Query(...,
 
     contents = await file.read()
 
-    contents_str = contents.decode('utf-8')
+    contents_str = _decode_csv_bytes(contents)
     required_columns = ['prompt_type', 'note_text', 'annotation']
     df = _parse_csv_flexible(contents_str, required_columns)
 

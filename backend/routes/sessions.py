@@ -19,6 +19,7 @@ from models.schemas import (
     PatientDiagnosisResolveRequest, PatientDiagnosisResolveResponse,
     DiagnosisValidationReport, PatientDiagnosisInfo,
     ExportConflict, ConflictSource, ExportValidationResponse,
+    ConflictResolveRequest, ConflictResolveResponse,
 )
 
 router = APIRouter()
@@ -1201,6 +1202,53 @@ async def validate_export(session_id: str):
         conflicts=conflicts,
         row_count=len(clean_rows),
         deduplicated_count=dedup_count,
+    )
+
+
+@router.post("/{session_id}/conflicts/resolve", response_model=ConflictResolveResponse)
+async def resolve_conflicts(session_id: str, request: ConflictResolveRequest):
+    """Bulk-delete annotation entries that are blocking export.
+
+    Each entry is a (note_id, prompt_type) pair; the corresponding annotation
+    is removed from the session. Entries that don't exist (e.g. already deleted
+    in a previous call) are silently skipped and counted as not_found.
+
+    Returns the remaining conflicts after deletion so the frontend can refresh
+    the modal in one round-trip.
+    """
+    try:
+        session = _load_session(session_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+    annotations = session.get('annotations', {})
+    deleted = 0
+    not_found = 0
+    for entry in request.entries:
+        note_annotations = annotations.get(entry.note_id)
+        if not isinstance(note_annotations, dict) or entry.prompt_type not in note_annotations:
+            not_found += 1
+            continue
+        del note_annotations[entry.prompt_type]
+        deleted += 1
+
+    if deleted:
+        session['annotations'] = annotations
+        session['updated_at'] = datetime.now().isoformat()
+        _save_session(session_id, session)
+
+    # Re-validate so the client can refresh the modal without a second call.
+    rows, _excluded = _build_export_rows(session)
+    patient_diagnoses = session.get('patient_diagnoses', {})
+    rows = _merge_diagnosis_rows(rows, patient_diagnoses, value_field='query_code')
+    clean_rows, remaining_conflicts, _ = _validate_and_deduplicate_rows(rows)
+
+    return ConflictResolveResponse(
+        deleted_count=deleted,
+        not_found_count=not_found,
+        remaining_conflicts=remaining_conflicts,
+        valid=len(remaining_conflicts) == 0,
+        row_count=len(clean_rows),
     )
 
 

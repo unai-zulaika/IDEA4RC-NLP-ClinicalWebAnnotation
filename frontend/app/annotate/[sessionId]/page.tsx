@@ -66,6 +66,7 @@ export default function AnnotatePage() {
     report: DiagnosisValidationReport
   } | null>(null)
   const [exportConflicts, setExportConflicts] = useState<ExportConflict[] | null>(null)
+  const [resolvingConflicts, setResolvingConflicts] = useState(false)
   const [exportConfirmMode, setExportConfirmMode] = useState<'labels' | 'codes' | null>(null)
   const [reprocessConfirm, setReprocessConfirm] = useState(false)
   // AbortController for cancelling in-flight requests
@@ -751,6 +752,52 @@ export default function AnnotatePage() {
       setError(typeof detail === 'string' ? detail : detail?.message || err.message || 'Export failed')
     } finally {
       setExporting(null)
+    }
+  }
+
+  const handleResolveAllConflicts = async () => {
+    if (!exportConflicts || exportConflicts.length === 0) return
+
+    // Collect all (note_id, prompt_type) pairs across every conflict's sources, deduplicated.
+    const seen = new Set<string>()
+    const entries: { note_id: string; prompt_type: string }[] = []
+    for (const c of exportConflicts) {
+      for (const s of c.sources || []) {
+        if (!s.note_id || !s.prompt_type) continue
+        const key = `${s.note_id}::${s.prompt_type}`
+        if (seen.has(key)) continue
+        seen.add(key)
+        entries.push({ note_id: s.note_id, prompt_type: s.prompt_type })
+      }
+    }
+
+    if (entries.length === 0) {
+      alert('Nothing to resolve: this modal has no source annotations attached. Try re-validating the export.')
+      return
+    }
+
+    const confirmed = window.confirm(
+      `This will delete ${entries.length} annotation entr${entries.length === 1 ? 'y' : 'ies'} ` +
+      `across ${exportConflicts.length} conflict${exportConflicts.length === 1 ? '' : 's'}.\n\n` +
+      `The deleted annotations cannot be recovered, but you can re-run extraction on the affected notes.\n\n` +
+      `Continue?`
+    )
+    if (!confirmed) return
+
+    setResolvingConflicts(true)
+    try {
+      const result = await sessionsApi.resolveConflicts(sessionId, entries)
+      await loadSession()
+      if (result.valid || result.remaining_conflicts.length === 0) {
+        setExportConflicts(null)
+      } else {
+        setExportConflicts(result.remaining_conflicts)
+      }
+    } catch (err: any) {
+      const detail = err.response?.data?.detail
+      setError(typeof detail === 'string' ? detail : detail?.message || err.message || 'Failed to resolve conflicts')
+    } finally {
+      setResolvingConflicts(false)
     }
   }
 
@@ -1611,10 +1658,19 @@ export default function AnnotatePage() {
                 For unique entities (Patient, Diagnosis, etc.), only one value is allowed across all notes.
                 For repeatable entities (Surgery, Radiotherapy, etc.), different values require different dates.
               </p>
-              <div className="flex justify-end">
+              <div className="flex justify-between items-center gap-2">
+                <button
+                  onClick={handleResolveAllConflicts}
+                  disabled={resolvingConflicts}
+                  className="px-4 py-2 text-sm bg-amber-600 text-white rounded-md hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Delete every annotation listed in this modal so the export is unblocked"
+                >
+                  {resolvingConflicts ? 'Resolving…' : 'Resolve All (delete entries)'}
+                </button>
                 <button
                   onClick={() => setExportConflicts(null)}
-                  className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                  disabled={resolvingConflicts}
+                  className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
                 >
                   Close
                 </button>
