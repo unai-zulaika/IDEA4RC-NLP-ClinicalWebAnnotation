@@ -229,6 +229,79 @@ def test_decode_handles_latin1_fallback():
     assert "caf" in text
 
 
+def test_headerless_fewshot_csv_is_accepted():
+    """Real user-provided CSV: no header row at all, just data. Regression for
+    the few_shot_trg1.csv sample. The parser injects the required column
+    names when the row width matches AND a field is long enough to clearly
+    be note text rather than a column name."""
+    long_note = 'NOTATKA LEKARSKA TELERADIOTERAPII - PRZYJECIE Data 2023-06-27 Pacjent przyjety celem rozpoczecia radioterapii'
+    data = (
+        f'radiotherapy_start, "{long_note}" ,'
+        '"pre-operative radiotherapy started on 2023-06-27."\n'
+        f'radiotherapy_start, "{long_note}",'
+        '"pre-operative radiotherapy started 2023-06-21."\n'
+    )
+    df = _parse_csv_flexible(data, FEWSHOT_COLS)
+    assert list(df.columns) == FEWSHOT_COLS
+    assert len(df) == 2
+    assert df.iloc[0]['prompt_type'] == 'radiotherapy_start'
+    assert 'NOTATKA' in df.iloc[0]['note_text']
+    assert 'pre-operative' in df.iloc[0]['annotation']
+
+
+def test_headerless_with_trailing_blank_line():
+    """Trailing blank line (like the user's file) must not break headerless mode."""
+    long_note = 'Some clinical note long enough to clearly be data rather than a column header'
+    data = (
+        f'radiotherapy_start,"{long_note}","some annotation"\n'
+        '\n'
+    )
+    df = _parse_csv_flexible(data, FEWSHOT_COLS)
+    assert list(df.columns) == FEWSHOT_COLS
+    assert len(df) == 1
+
+
+def test_wrong_named_header_still_fails_clearly():
+    """A file with a real (short) header whose names don't match the required
+    ones must NOT be silently treated as headerless — we'd load garbage.
+    The error should instead surface the column names found."""
+    data = "type;text;label\ntype1;some note;some ann\n"
+    with pytest.raises(HTTPException) as exc_info:
+        _parse_csv_flexible(data, FEWSHOT_COLS)
+    detail = exc_info.value.detail
+    assert "type" in detail and "text" in detail and "label" in detail
+
+
+def test_headerless_fallback_rejects_wrong_column_count():
+    """Files with the wrong number of columns (no header AND width mismatch)
+    should still fail loudly — we don't silently accept malformed files."""
+    data = 'only_two,columns\nhere,too\n'
+    with pytest.raises(HTTPException) as exc_info:
+        _parse_csv_flexible(data, FEWSHOT_COLS)
+    assert exc_info.value.status_code == 400
+
+
+def test_actual_user_sample_few_shot_trg1():
+    """Integration test with the real file the user reported as failing."""
+    import os
+    sample_path = os.path.join(
+        os.path.dirname(__file__), '..', 'few_shot_trg1.csv'
+    )
+    if not os.path.exists(sample_path):
+        pytest.skip("Sample file not found")
+    with open(sample_path, 'rb') as f:
+        raw = f.read()
+    from routes.upload import _decode_csv_bytes as _decode
+    df = _parse_csv_flexible(_decode(raw), FEWSHOT_COLS)
+    assert list(df.columns) == FEWSHOT_COLS
+    assert len(df) >= 3
+    # Every row must have the Polish note text and a sensible annotation
+    for i in range(len(df)):
+        assert df.iloc[i]['prompt_type'] == 'radiotherapy_start'
+        assert 'NOTATKA' in df.iloc[i]['note_text']
+        assert 'radiotherapy' in df.iloc[i]['annotation']
+
+
 def test_error_message_includes_found_columns():
     """When parsing fails, the error lists the columns that were actually found
     so the user can see what went wrong at a glance."""

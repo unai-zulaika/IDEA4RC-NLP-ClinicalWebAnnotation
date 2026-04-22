@@ -220,6 +220,41 @@ def _parse_csv_flexible(contents_str: str, required_columns: List[str]) -> pd.Da
         except Exception:
             continue
 
+    # Last-resort fallback: headerless CSV.
+    # If no strategy produced the required columns AND the file parses into the
+    # exact expected column count AND the first row contains at least one field
+    # clearly too long to be a column name (>= 50 chars), assume the user forgot
+    # the header row and inject the required names in the order given.
+    # The length gate prevents mis-classifying a file with wrongly-named headers
+    # (e.g. "type;text;label") as headerless — we'd rather surface a clear error
+    # there than silently load garbage into a column.
+    _HEADERLESS_DATA_FIELD_MIN_LEN = 50
+    for sep in (',', ';', '\t'):
+        try:
+            df = pd.read_csv(
+                io.StringIO(contents_str),
+                sep=sep,
+                header=None,
+                dtype=str,
+                keep_default_na=False,
+                skip_blank_lines=True,
+            )
+            if len(df.columns) != len(required_columns) or len(df) == 0:
+                continue
+            first_row = df.iloc[0]
+            looks_like_data = any(
+                len(str(v).strip()) >= _HEADERLESS_DATA_FIELD_MIN_LEN
+                for v in first_row
+            )
+            if not looks_like_data:
+                continue
+            df.columns = list(required_columns)
+            for col in df.columns:
+                df[col] = df[col].astype(str).str.strip().str.strip('"').str.strip()
+            return df
+        except Exception:
+            continue
+
     found_msg = (
         f"Columns found in file: {best_found_columns}."
         if best_found_columns
