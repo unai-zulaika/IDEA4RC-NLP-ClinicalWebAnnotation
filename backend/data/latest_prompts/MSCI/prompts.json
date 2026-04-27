@@ -398,7 +398,7 @@
     }
   },
   "radiotherapy_start": {
-    "template": "Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.\n\nFormats:\npre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. \npost-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. \n\nNotes:\nIf the date is missing, output [put date].\nIf the place is missing, output [please select where].\nIf the intention is missing, output [select intention].\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "Task: You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract radiotherapy details from the provided medical note and output it in a precise, templated format.\n\nFormats:\npre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. \npost-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]. \n\nNotes:\nIf the date is missing, output [put date].\nIf the place is missing, output [please select where].\nIf the intention is missing, output [select intention].\n\nAllowed values for [select intention] (output EXACTLY one of these, lowercase English):\n- \"curative\" - radiotherapy given with intent to cure. This includes Polish \"radykalna / radykalnej / radykalny / radykalne\" (radical-intent radiotherapy is curative-intent).\n- \"palliative\" - radiotherapy given for symptom relief. This includes Polish \"paliatywna / paliatywnej / paliatywny / paliatywne\".\n\nIMPORTANT: Do NOT output \"radical\", \"radykalnej\", \"radykalna\", or any other Polish or literal term. Output ONLY \"curative\" or \"palliative\".\n\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "Radiotherapy",
       "fact_trigger": null,
@@ -410,7 +410,19 @@
           "value_code_mappings": {
             "curative": "4162591",
             "palliative": "4179711"
-          }
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "paliatywn\\w*|palliative",
+              "value": "palliative",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "radykaln\\w*|radical|curative",
+              "value": "curative",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[please select where]",
