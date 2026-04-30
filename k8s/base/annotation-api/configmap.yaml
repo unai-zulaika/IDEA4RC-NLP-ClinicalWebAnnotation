@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: annotation-api-config
+data:
+  # Override these per environment - they're the only LLM-related knobs
+  VLLM_ENDPOINT: "http://vllm.llm-namespace.svc.cluster.local:8000/v1"
+  VLLM_MODEL_NAME: "google/gemma-2-it"
+  # Static config
+  PYTHONUNBUFFERED: "1"
+  HF_HOME: "/app/hf_cache"

@@ -11,6 +11,11 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Allow setting the API URL at build time for Kubernetes deployments
+# Default preserves Docker Compose behavior (NEXT_PUBLIC_API_URL=http://localhost:8001)
+ARG NEXT_PUBLIC_API_URL=http://localhost:8001
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 # Build the application
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build

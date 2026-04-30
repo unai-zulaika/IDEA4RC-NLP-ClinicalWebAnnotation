@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: clinical-annotation
+
+commonLabels:
+  app.kubernetes.io/part-of: clinical-annotation
+
+resources:
+  - namespace.yaml
+  - annotation-api/configmap.yaml
+  - annotation-api/pvc.yaml
+  - annotation-api/deployment.yaml
+  - annotation-api/service.yaml
+  - annotation-web/deployment.yaml
+  - annotation-web/service.yaml
+  - pipeline-api/pvc.yaml
+  - pipeline-api/deployment.yaml
+  - pipeline-api/service.yaml
+  - pipeline-dashboard/deployment.yaml
+  - pipeline-dashboard/service.yaml
