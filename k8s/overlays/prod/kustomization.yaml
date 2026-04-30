@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - ingress.yaml
+
+patches:
+  - path: patches/annotation-api-resources.yaml
+  - path: patches/annotation-api-llm-config.yaml
+  - path: patches/annotation-api-cors.yaml
+
+images:
+  - name: clinical-annotation-api
+    newName: your-registry.example.com/clinical/annotation-api
+    newTag: "v1.0.0"
+  - name: clinical-annotation-web
+    newName: your-registry.example.com/clinical/annotation-web
+    newTag: "v1.0.0"
+  - name: clinical-pipeline-api
+    newName: your-registry.example.com/clinical/pipeline-api
+    newTag: "v1.0.0"
+  - name: clinical-pipeline-dashboard
+    newName: your-registry.example.com/clinical/pipeline-dashboard
+    newTag: "v1.0.0"

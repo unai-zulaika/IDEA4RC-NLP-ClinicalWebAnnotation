@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: clinical-annotation-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: clinical.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: annotation-api
+                port:
+                  number: 8001
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: annotation-api
+                port:
+                  number: 8001
+          - path: /pipeline
+            pathType: Prefix
+            backend:
+              service:
+                name: pipeline-dashboard
+                port:
+                  number: 8501
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: annotation-web
+                port:
+                  number: 3000

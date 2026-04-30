@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: annotation-api
+  labels:
+    app.kubernetes.io/name: annotation-api
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: annotation-api
+  ports:
+    - port: 8001
+      targetPort: 8001
+      protocol: TCP
+      name: http
