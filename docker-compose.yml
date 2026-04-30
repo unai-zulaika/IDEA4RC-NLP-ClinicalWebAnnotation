@@ -29,17 +29,25 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      # FAISS few-shot load takes ~60-90s on first boot. Without start_period
+      # the healthcheck fires before uvicorn starts listening and `up` aborts
+      # with "annotation-api is unhealthy" even though the API is fine.
+      start_period: 120s
 
   # Annotation Web UI (Next.js)
   annotation-web:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      # NEXT_PUBLIC_API_URL is baked into the bundle at build time, so it must
+      # be passed as a build arg, not a runtime environment variable. Setting
+      # it only under `environment:` has no effect on the browser-side URL.
+      # Rebuild without cache after changing it: `docker compose build --no-cache annotation-web`
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8001}
     container_name: annotation-web
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8001
     depends_on:
       annotation-api:
         condition: service_healthy
