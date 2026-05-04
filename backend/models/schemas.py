@@ -490,3 +490,28 @@ class ConflictResolveResponse(BaseModel):
     valid: bool = False
     row_count: int = 0
 
+
+class ExcludedRowSummary(BaseModel):
+    patient_id: str = ""
+    variable: str = ""
+    value: str = ""
+    reason: str = ""
+
+
+class DiagnosisWarning(BaseModel):
+    patient_id: str
+    reasons: List[str] = []
+
+
+class ExportMetadataResponse(BaseModel):
+    """Side-channel metadata for a CSV export.
+
+    Previously these lists were sent as the `X-Excluded-Rows` and
+    `X-Diagnosis-Warnings` response headers on `/export` and
+    `/export/codes`. For sessions with many conflicts those headers grew
+    past reverse-proxy header buffer limits, so the data now lives in a
+    dedicated endpoint and the CSV responses carry only `Content-Disposition`.
+    """
+    excluded_rows: List[ExcludedRowSummary] = []
+    diagnosis_warnings: List[DiagnosisWarning] = []
+

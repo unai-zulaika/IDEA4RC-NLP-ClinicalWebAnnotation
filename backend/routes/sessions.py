@@ -20,6 +20,7 @@ from models.schemas import (
     DiagnosisValidationReport, PatientDiagnosisInfo,
     ExportConflict, ConflictSource, ExportValidationResponse,
     ConflictResolveRequest, ConflictResolveResponse,
+    ExportMetadataResponse, ExcludedRowSummary, DiagnosisWarning,
 )
 
 router = APIRouter()
@@ -1090,19 +1091,6 @@ _SARC_COLUMNS = [
 ]
 
 
-def _build_excluded_summary(excluded_rows: List[Dict]) -> str:
-    """Build a JSON summary of excluded rows for the response header."""
-    return json.dumps([
-        {
-            "patient_id": e.get("patient_id", ""),
-            "variable": e.get("core_variable", ""),
-            "value": e.get("original_value", ""),
-            "reason": e.get("reason", ""),
-        }
-        for e in excluded_rows
-    ], ensure_ascii=False)
-
-
 _DIAGNOSIS_MERGE_VARS = {'Diagnosis.histologySubgroup', 'Diagnosis.subsite'}
 
 
@@ -1164,20 +1152,50 @@ def _merge_diagnosis_rows(
     return merged
 
 
-def _build_diagnosis_warnings(patient_diagnoses: Dict[str, Dict]) -> str:
-    """Build JSON warning list for patients that still need review."""
-    warnings = []
-    for pid, diag in patient_diagnoses.items():
-        if not isinstance(diag, dict):
-            continue
-        if diag.get('status') == 'needs_review':
-            warnings.append({
-                'patient_id': pid,
-                'reasons': diag.get('review_reasons', []),
-            })
-    if not warnings:
-        return ''
-    return json.dumps(warnings, ensure_ascii=False)
+@router.get("/{session_id}/export/metadata", response_model=ExportMetadataResponse)
+async def get_export_metadata(session_id: str):
+    """Return excluded rows and diagnosis warnings for the next export.
+
+    These were previously sent as the `X-Excluded-Rows` and
+    `X-Diagnosis-Warnings` response headers on `/export` and
+    `/export/codes`. For sessions with many conflicts they grew past
+    reverse-proxy header buffer limits ("upstream sent too big header"),
+    so they now live in this dedicated JSON endpoint.
+
+    Both label and code exports use the same exclusion logic, so a single
+    endpoint serves both. Call it in parallel with the CSV download.
+    """
+    try:
+        session = _load_session(session_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+    _, excluded = _build_export_rows(session)
+    patient_diagnoses = session.get('patient_diagnoses', {}) or {}
+
+    excluded_rows = [
+        ExcludedRowSummary(
+            patient_id=e.get("patient_id", "") or "",
+            variable=e.get("core_variable", "") or "",
+            value=e.get("original_value", "") or "",
+            reason=e.get("reason", "") or "",
+        )
+        for e in excluded
+    ]
+
+    diagnosis_warnings = [
+        DiagnosisWarning(
+            patient_id=pid,
+            reasons=list(diag.get("review_reasons", []) or []),
+        )
+        for pid, diag in patient_diagnoses.items()
+        if isinstance(diag, dict) and diag.get('status') == 'needs_review'
+    ]
+
+    return ExportMetadataResponse(
+        excluded_rows=excluded_rows,
+        diagnosis_warnings=diagnosis_warnings,
+    )
 
 
 @router.get("/{session_id}/export/validate", response_model=ExportValidationResponse)
@@ -1295,21 +1313,15 @@ async def export_session_for_pipeline(session_id: str):
     csv_buffer = io.StringIO()
     df.to_csv(csv_buffer, index=False, sep=';')
 
-    headers = {
-        "Content-Disposition": f"attachment; filename={session_id}_validated.csv",
-        "Access-Control-Expose-Headers": "X-Excluded-Rows, X-Diagnosis-Warnings",
-    }
-    if excluded:
-        headers["X-Excluded-Rows"] = _build_excluded_summary(excluded)
-
-    diag_warnings = _build_diagnosis_warnings(patient_diagnoses)
-    if diag_warnings:
-        headers["X-Diagnosis-Warnings"] = diag_warnings
-
+    # Excluded rows and diagnosis warnings are exposed via the dedicated
+    # `/export/metadata` endpoint so they don't bloat response headers
+    # past reverse-proxy buffer limits on large sessions.
     return StreamingResponse(
         iter([csv_buffer.getvalue()]),
         media_type="text/csv",
-        headers=headers,
+        headers={
+            "Content-Disposition": f"attachment; filename={session_id}_validated.csv",
+        },
     )
 
 
@@ -1417,21 +1429,15 @@ async def export_session_coded(session_id: str):
     csv_buffer = io.StringIO()
     df.to_csv(csv_buffer, index=False, sep=';')
 
-    headers = {
-        "Content-Disposition": f"attachment; filename={session_id}_coded.csv",
-        "Access-Control-Expose-Headers": "X-Excluded-Rows, X-Diagnosis-Warnings",
-    }
-    if excluded:
-        headers["X-Excluded-Rows"] = _build_excluded_summary(excluded)
-
-    diag_warnings = _build_diagnosis_warnings(patient_diagnoses)
-    if diag_warnings:
-        headers["X-Diagnosis-Warnings"] = diag_warnings
-
+    # Excluded rows and diagnosis warnings are exposed via the dedicated
+    # `/export/metadata` endpoint so they don't bloat response headers
+    # past reverse-proxy buffer limits on large sessions.
     return StreamingResponse(
         iter([csv_buffer.getvalue()]),
         media_type="text/csv",
-        headers=headers,
+        headers={
+            "Content-Disposition": f"attachment; filename={session_id}_coded.csv",
+        },
     )
 
 
