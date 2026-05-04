@@ -38,6 +38,32 @@ function parseExcludedRowsHeader(header: string | undefined): ExcludedRow[] {
   }
 }
 
+// Older backend versions returned excluded rows in the X-Excluded-Rows
+// response header; current versions move that data to the dedicated
+// /export/metadata endpoint to avoid blowing past reverse-proxy header
+// buffer limits on large sessions. Some deployments may still be on the
+// older code path, so we read both and merge.
+async function loadExportMetadata(
+  session_id: string,
+  responseHeaderRows: ExcludedRow[],
+): Promise<{ excludedRows: ExcludedRow[]; diagnosisWarnings: DiagnosisWarning[] }> {
+  if (responseHeaderRows.length > 0) {
+    return { excludedRows: responseHeaderRows, diagnosisWarnings: [] }
+  }
+  try {
+    const meta = await api.get(`/api/sessions/${session_id}/export/metadata`)
+    const data = meta.data as ExportMetadata
+    return {
+      excludedRows: data?.excluded_rows ?? [],
+      diagnosisWarnings: data?.diagnosis_warnings ?? [],
+    }
+  } catch {
+    // Older backend without the metadata endpoint, or transient failure.
+    // Fall back to whatever we got from the response header.
+    return { excludedRows: responseHeaderRows, diagnosisWarnings: [] }
+  }
+}
+
 // Types
 export interface ServerStatus {
   status: string
@@ -105,6 +131,16 @@ export interface ExcludedRow {
   variable: string
   value: string
   reason: string
+}
+
+export interface DiagnosisWarning {
+  patient_id: string
+  reasons: string[]
+}
+
+export interface ExportMetadata {
+  excluded_rows: ExcludedRow[]
+  diagnosis_warnings: DiagnosisWarning[]
 }
 
 export interface ConflictSource {
@@ -1124,20 +1160,31 @@ export const sessionsApi = {
     return response.data
   },
 
-  exportLabels: async (session_id: string): Promise<{ blob: Blob; excludedRows: ExcludedRow[] }> => {
+  exportLabels: async (
+    session_id: string,
+  ): Promise<{ blob: Blob; excludedRows: ExcludedRow[]; diagnosisWarnings: DiagnosisWarning[] }> => {
     const response = await api.get(`/api/sessions/${session_id}/export`, {
       responseType: 'blob',
     })
-    const excludedRows = parseExcludedRowsHeader(response.headers['x-excluded-rows'])
-    return { blob: response.data, excludedRows }
+    const headerRows = parseExcludedRowsHeader(response.headers['x-excluded-rows'])
+    const meta = await loadExportMetadata(session_id, headerRows)
+    return { blob: response.data, ...meta }
   },
 
-  exportCodes: async (session_id: string): Promise<{ blob: Blob; excludedRows: ExcludedRow[] }> => {
+  exportCodes: async (
+    session_id: string,
+  ): Promise<{ blob: Blob; excludedRows: ExcludedRow[]; diagnosisWarnings: DiagnosisWarning[] }> => {
     const response = await api.get(`/api/sessions/${session_id}/export/codes`, {
       responseType: 'blob',
     })
-    const excludedRows = parseExcludedRowsHeader(response.headers['x-excluded-rows'])
-    return { blob: response.data, excludedRows }
+    const headerRows = parseExcludedRowsHeader(response.headers['x-excluded-rows'])
+    const meta = await loadExportMetadata(session_id, headerRows)
+    return { blob: response.data, ...meta }
+  },
+
+  getExportMetadata: async (session_id: string): Promise<ExportMetadata> => {
+    const response = await api.get(`/api/sessions/${session_id}/export/metadata`)
+    return response.data
   },
 
   exportSession: async (session_id: string): Promise<Blob> => {
