@@ -5,6 +5,7 @@ import Editor from '@monaco-editor/react'
 import { promptsApi } from '@/lib/api'
 import type { PromptInfo, EntityMapping, PromptMode } from '@/lib/api'
 import EntityMappingEditor from './EntityMappingEditor'
+import { useTheme } from '@/lib/useTheme'
 
 interface PromptEditorProps {
   promptType: string
@@ -15,6 +16,7 @@ interface PromptEditorProps {
 }
 
 export default function PromptEditor({ promptType, center = 'INT-SARC', mode = 'standard', onSave, onDelete }: PromptEditorProps) {
+  const [theme] = useTheme()
   const [prompt, setPrompt] = useState<PromptInfo | null>(null)
   const [template, setTemplate] = useState('')
   const [promptName, setPromptName] = useState('')
@@ -115,7 +117,7 @@ export default function PromptEditor({ promptType, center = 'INT-SARC', mode = '
   }
 
   if (!prompt) {
-    return <div className="text-gray-500">Loading prompt...</div>
+    return <div className="text-gray-500 dark:text-gray-400">Loading prompt...</div>
   }
 
   return (
@@ -128,7 +130,7 @@ export default function PromptEditor({ promptType, center = 'INT-SARC', mode = '
                 type="text"
                 value={promptName}
                 onChange={(e) => setPromptName(e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded-md text-lg font-semibold flex-1"
+                className="px-3 py-1 border border-gray-300 rounded-md text-lg font-semibold flex-1 dark:border-gray-600"
                 placeholder="Enter new prompt name"
                 autoFocus
               />
@@ -142,19 +144,19 @@ export default function PromptEditor({ promptType, center = 'INT-SARC', mode = '
               <button
                 onClick={handleCancelRename}
                 disabled={renaming}
-                className="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 disabled:opacity-50 text-sm"
+                className="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 disabled:opacity-50 text-sm dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
               >
                 Cancel
               </button>
             </div>
           ) : (
             <div className="flex items-center gap-2 flex-1">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {promptType}
               </h3>
               <button
                 onClick={() => setIsRenaming(true)}
-                className="text-sm text-gray-500 hover:text-gray-700 px-2 py-1"
+                className="text-sm text-gray-500 hover:text-gray-700 px-2 py-1 dark:text-gray-400 dark:hover:text-gray-200"
                 title="Rename prompt"
               >
                 ✏️
@@ -177,7 +179,7 @@ export default function PromptEditor({ promptType, center = 'INT-SARC', mode = '
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(false)}
-                    className="px-3 py-2 text-gray-600 hover:text-gray-800 text-sm"
+                    className="px-3 py-2 text-gray-600 hover:text-gray-800 text-sm dark:text-gray-300 dark:hover:text-gray-200"
                   >
                     Cancel
                   </button>
@@ -188,7 +190,7 @@ export default function PromptEditor({ promptType, center = 'INT-SARC', mode = '
                   className={`px-4 py-2 rounded-md text-sm font-medium ${
                     confirmDelete
                       ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                   title={confirmDelete ? 'Click again to confirm delete' : 'Delete this prompt'}
                 >
@@ -201,30 +203,30 @@ export default function PromptEditor({ promptType, center = 'INT-SARC', mode = '
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded dark:bg-red-900/20 dark:border-red-800 dark:text-red-300">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded dark:bg-green-900/20 dark:border-green-800 dark:text-green-300">
           Prompt saved successfully!
         </div>
       )}
 
       {/* Entity Mapping Section */}
-      <div className="border border-gray-300 rounded-lg p-4">
+      <div className="border border-gray-300 rounded-lg p-4 dark:border-gray-600">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-md font-semibold text-gray-900">Entity Mapping</h3>
+          <h3 className="text-md font-semibold text-gray-900 dark:text-gray-100">Entity Mapping</h3>
           <button
             onClick={() => setShowMappingEditor(!showMappingEditor)}
-            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
+            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
           >
             {showMappingEditor ? 'Hide' : 'Show'} Mapping Editor
           </button>
         </div>
         {entityMapping && !showMappingEditor && (
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-300">
             <p><strong>Entity Type:</strong> {entityMapping.entity_type}</p>
             {entityMapping.fact_trigger && (
               <p><strong>Fact Trigger:</strong> {entityMapping.fact_trigger}</p>
@@ -253,10 +255,11 @@ export default function PromptEditor({ promptType, center = 'INT-SARC', mode = '
         )}
       </div>
 
-      <div className="border border-gray-300 rounded-lg overflow-hidden">
+      <div className="border border-gray-300 rounded-lg overflow-hidden dark:border-gray-600">
         <Editor
           height="600px"
           defaultLanguage="plaintext"
+          theme={theme === 'dark' ? 'vs-dark' : 'vs'}
           value={template}
           onChange={(value) => setTemplate(value || '')}
           options={{

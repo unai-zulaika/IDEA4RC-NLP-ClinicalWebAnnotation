@@ -32,18 +32,18 @@ export default function ServerStatus() {
   }
 
   if (loading) {
-    return <div className="text-sm text-gray-500">Loading...</div>
+    return <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available':
-        return 'text-green-600'
+        return 'text-green-600 dark:text-green-300'
       case 'unavailable':
       case 'error':
-        return 'text-red-600'
+        return 'text-red-600 dark:text-red-300'
       default:
-        return 'text-yellow-600'
+        return 'text-yellow-600 dark:text-yellow-300'
     }
   }
 
@@ -51,20 +51,20 @@ export default function ServerStatus() {
     switch (status) {
       case 'available':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200">
             Online
           </span>
         )
       case 'unavailable':
       case 'error':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200">
             Offline
           </span>
         )
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200">
             Unknown
           </span>
         )
@@ -74,13 +74,13 @@ export default function ServerStatus() {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">Status:</span>
+        <span className="text-sm text-gray-600 dark:text-gray-300">Status:</span>
         {getStatusBadge(status?.status || 'unknown')}
       </div>
       {status?.model_name && (
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Model:</span>
-          <span className="text-sm font-medium text-gray-900">
+          <span className="text-sm text-gray-600 dark:text-gray-300">Model:</span>
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {status.model_name}
           </span>
         </div>
@@ -88,8 +88,8 @@ export default function ServerStatus() {
       {metrics?.gpu_memory_used_gb !== undefined && metrics?.gpu_memory_used_gb !== null && (
         <div className="mt-4">
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-600">GPU Memory</span>
-            <span className="text-gray-900">
+            <span className="text-gray-600 dark:text-gray-300">GPU Memory</span>
+            <span className="text-gray-900 dark:text-gray-100">
               {metrics.gpu_memory_used_gb.toFixed(2)} /{' '}
               {metrics.gpu_memory_total_gb !== undefined && metrics.gpu_memory_total_gb !== null
                 ? metrics.gpu_memory_total_gb.toFixed(2)
@@ -97,7 +97,7 @@ export default function ServerStatus() {
             </span>
           </div>
           {metrics.gpu_memory_total_gb !== undefined && metrics.gpu_memory_total_gb !== null && (
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
               <div
                 className="bg-primary-600 h-2 rounded-full"
                 style={{

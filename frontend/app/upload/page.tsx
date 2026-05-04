@@ -275,14 +275,14 @@ export default function UploadPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Upload CSV</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Upload CSV</h1>
         {centers.length > 0 && (
           <div className="flex items-center">
-            <label className="text-sm font-medium text-gray-700 mr-2">Center / group:</label>
+            <label className="text-sm font-medium text-gray-700 mr-2 dark:text-gray-200">Center / group:</label>
             <select
               value={selectedCenter}
               onChange={(e) => setSelectedCenter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm dark:border-gray-600"
             >
               {centers.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -292,30 +292,30 @@ export default function UploadPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-6">
+      <div className="bg-white rounded-lg shadow p-6 space-y-6 dark:bg-gray-800">
         {/* Few-shot Examples Upload Section */}
-        <div className="border-b border-gray-200 pb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Few-Shot Examples (Optional)</h2>
-          <p className="text-sm text-gray-600 mb-4">
+        <div className="border-b border-gray-200 pb-6 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 dark:text-gray-100">Few-Shot Examples (Optional)</h2>
+          <p className="text-sm text-gray-600 mb-4 dark:text-gray-300">
             Upload a CSV file with few-shot examples to improve annotation quality.
             Select the center these examples belong to.
           </p>
-          <div className="text-xs text-gray-500 mb-4 bg-gray-50 p-3 rounded">
-            <strong>Required columns:</strong> <code className="bg-white px-1 rounded">prompt_type</code>, <code className="bg-white px-1 rounded">note_text</code>, <code className="bg-white px-1 rounded">annotation</code>
+          <div className="text-xs text-gray-500 mb-4 bg-gray-50 p-3 rounded dark:text-gray-400 dark:bg-gray-900">
+            <strong>Required columns:</strong> <code className="bg-white px-1 rounded dark:bg-gray-800">prompt_type</code>, <code className="bg-white px-1 rounded dark:bg-gray-800">note_text</code>, <code className="bg-white px-1 rounded dark:bg-gray-800">annotation</code>
             <br />
-            <strong>Example:</strong> <code className="bg-white px-1 rounded">gender,"Patient is a 65-year-old male...","Patient's gender male."</code>
+            <strong>Example:</strong> <code className="bg-white px-1 rounded dark:bg-gray-800">gender,"Patient is a 65-year-old male...","Patient's gender male."</code>
             <br />
-            <span className="text-gray-400">Note: prompt_type should be the base name (e.g., &quot;gender&quot;, not &quot;gender-int-sarc&quot;). The center suffix is added automatically.</span>
+            <span className="text-gray-400 dark:text-gray-500">Note: prompt_type should be the base name (e.g., &quot;gender&quot;, not &quot;gender-int-sarc&quot;). The center suffix is added automatically.</span>
             <br />
-            <a href="/fewshots_example.csv" download className="text-blue-600 hover:underline">Download example CSV</a>
+            <a href="/fewshots_example.csv" download className="text-blue-600 hover:underline dark:text-blue-300">Download example CSV</a>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Center for Few-Shots</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Center for Few-Shots</label>
             <select
               value={fewshotCenter}
               onChange={(e) => setFewshotCenter(e.target.value)}
-              className="block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:border-gray-600"
             >
               {centers.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -324,19 +324,19 @@ export default function UploadPage() {
           </div>
           
           {fewshotLoading ? (
-            <div className="mb-4 p-3 rounded-md border bg-gray-50 border-gray-200">
-              <div className="text-sm font-medium text-gray-500">Loading fewshot status...</div>
+            <div className="mb-4 p-3 rounded-md border bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Loading fewshot status...</div>
             </div>
           ) : fewshotStatus && (
-            <div className={`mb-4 p-3 rounded-md border ${fewshotStatus.simple_fewshots_available ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+            <div className={`mb-4 p-3 rounded-md border ${fewshotStatus.simple_fewshots_available ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'}`}>
               <div className="flex justify-between items-center">
                 <div className="text-sm font-medium">
                   {fewshotStatus.simple_fewshots_available ? (
-                    <span className="text-green-800">
+                    <span className="text-green-800 dark:text-green-200">
                       Fewshots are properly configured ({fewshotStatus.total_examples} examples, {Object.keys(fewshotStatus.counts_by_prompt).length} prompt types)
                     </span>
                   ) : (
-                    <span className="text-amber-800">
+                    <span className="text-amber-800 dark:text-amber-200">
                       Fewshots are missing for {fewshotCenter || 'this center'}
                     </span>
                   )}
@@ -346,14 +346,14 @@ export default function UploadPage() {
                     <button
                       onClick={handleFewshotDownload}
                       disabled={fewshotDownloading}
-                      className="text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                      className="text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium dark:text-blue-300 dark:hover:text-blue-200"
                     >
                       {fewshotDownloading ? 'Downloading...' : 'Download CSV'}
                     </button>
                     <button
                       onClick={handleFewshotDelete}
                       disabled={fewshotDeleting}
-                      className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                      className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium dark:text-red-300 dark:hover:text-red-200"
                     >
                       {fewshotDeleting ? 'Deleting...' : 'Delete'}
                     </button>
@@ -365,25 +365,25 @@ export default function UploadPage() {
 
           <div className="mb-4 flex gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Standard mode examples (k)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Standard mode examples (k)</label>
               <input
                 type="number"
                 min={1}
                 max={10}
                 value={standardK}
                 onChange={(e) => setStandardK(parseInt(e.target.value, 10) || 1)}
-                className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:border-gray-600"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fast mode examples (k)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Fast mode examples (k)</label>
               <input
                 type="number"
                 min={1}
                 max={5}
                 value={fastK}
                 onChange={(e) => setFastK(parseInt(e.target.value, 10) || 1)}
-                className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:border-gray-600"
               />
             </div>
           </div>
@@ -394,7 +394,7 @@ export default function UploadPage() {
               type="file"
               accept=".csv"
               onChange={handleFewshotFileChange}
-              className="block flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              className="block flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400 dark:file:bg-blue-900/20 dark:file:text-blue-300 dark:hover:file:bg-blue-900/40"
             />
             {fewshotFile && (
               <button
@@ -409,16 +409,16 @@ export default function UploadPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
             CSV File (Patient Notes)
           </label>
           <input
             type="file"
             accept=".csv"
             onChange={handleFileChange}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:text-gray-400 dark:file:bg-primary-900/30 dark:file:text-primary-300 dark:hover:file:bg-primary-900/40"
           />
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Expected columns: text, date, p_id, note_id, report_type (optional: annotations)
           </p>
         </div>
@@ -434,25 +434,25 @@ export default function UploadPage() {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded dark:bg-red-900/20 dark:border-red-800 dark:text-red-300">
             {error}
           </div>
         )}
 
         {uploadResult && (
           <div className="space-y-4">
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded dark:bg-green-900/20 dark:border-green-800 dark:text-green-300">
               {uploadResult.message}
             </div>
 
             {uploadResult.duplicate_note_ids_detected && (
-              <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded">
+              <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded dark:bg-yellow-900/20 dark:border-yellow-700 dark:text-yellow-200">
                 <strong>Warning: Duplicate Note IDs detected.</strong> Your CSV contained rows with the same <code>note_id</code> value. Each note ID has been made unique by appending its row index (e.g. <code>1</code> → <code>1_3</code>). Annotations are keyed by Note ID, so duplicates would otherwise cause all affected notes to share the same annotation. Check your CSV file if this is unexpected.
               </div>
             )}
 
             {uploadResult.duplicate_text_detected && (
-              <div className="bg-orange-50 border border-orange-300 text-orange-800 px-4 py-3 rounded">
+              <div className="bg-orange-50 border border-orange-300 text-orange-800 px-4 py-3 rounded dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-200">
                 <strong>Warning: Duplicate text content removed.</strong>{' '}
                 {uploadResult.duplicate_text_removed_count} row
                 {uploadResult.duplicate_text_removed_count !== 1 ? 's were' : ' was'} removed
@@ -462,7 +462,7 @@ export default function UploadPage() {
                 {uploadResult.duplicate_text_note_ids && uploadResult.duplicate_text_note_ids.length > 0 && (
                   <div className="mt-2 text-sm">
                     <span className="font-medium">Removed Note IDs: </span>
-                    <code className="bg-orange-100 px-1 rounded">
+                    <code className="bg-orange-100 px-1 rounded dark:bg-orange-900/40">
                       {uploadResult.duplicate_text_note_ids.join(', ')}
                     </code>
                   </div>
@@ -471,14 +471,14 @@ export default function UploadPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Session Name
               </label>
               <input
                 type="text"
                 value={sessionName}
                 onChange={(e) => setSessionName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md dark:border-gray-600"
                 placeholder="Enter session name"
               />
             </div>
@@ -507,18 +507,18 @@ export default function UploadPage() {
             {uploadResult.report_types && uploadResult.report_types.length > 0 && (
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                     Map Report Types to Prompt Types
                   </label>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     Select which prompts to run for each report type
                   </span>
                 </div>
-                <div className="space-y-4 border border-gray-300 rounded-md p-4">
+                <div className="space-y-4 border border-gray-300 rounded-md p-4 dark:border-gray-600">
                   {uploadResult.report_types.map((reportType) => (
-                    <div key={reportType} className="border-b border-gray-200 last:border-b-0 pb-4 last:pb-0">
+                    <div key={reportType} className="border-b border-gray-200 last:border-b-0 pb-4 last:pb-0 dark:border-gray-700">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-semibold text-gray-800">
+                        <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                           {reportType}
                         </h4>
                         <button
@@ -533,7 +533,7 @@ export default function UploadPage() {
                               }
                             })
                           }}
-                          className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                          className="text-xs text-primary-600 hover:text-primary-700 font-medium dark:text-primary-400 dark:hover:text-primary-300"
                         >
                           {reportTypeMapping[reportType]?.length === prompts.length ? 'Deselect All' : 'Select All'}
                         </button>
@@ -558,14 +558,14 @@ export default function UploadPage() {
                                   }
                                 })
                               }}
-                              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:text-primary-400"
                             />
-                            <span className="text-gray-700">{prompt.prompt_type}</span>
+                            <span className="text-gray-700 dark:text-gray-200">{prompt.prompt_type}</span>
                           </label>
                         ))}
                       </div>
                       {reportTypeMapping[reportType] && reportTypeMapping[reportType].length > 0 && (
-                        <div className="mt-2 text-xs text-gray-500">
+                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                           {reportTypeMapping[reportType].length} prompt{reportTypeMapping[reportType].length !== 1 ? 's' : ''} selected
                         </div>
                       )}
@@ -576,28 +576,28 @@ export default function UploadPage() {
             )}
 
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Preview (first 10 rows)</h3>
-              <div className="border border-gray-300 rounded-md overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+              <h3 className="text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">Preview (first 10 rows)</h3>
+              <div className="border border-gray-300 rounded-md overflow-x-auto dark:border-gray-600">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
                       {uploadResult.columns.map((col) => (
                         <th
                           key={col}
-                          className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                          className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400"
                         >
                           {col}
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                     {uploadResult.preview.map((row: any, idx: number) => (
                       <tr key={idx}>
                         {uploadResult.columns.map((col) => (
                           <td
                             key={col}
-                            className="px-3 py-2 text-xs text-gray-700 max-w-xs truncate"
+                            className="px-3 py-2 text-xs text-gray-700 max-w-xs truncate dark:text-gray-200"
                             title={String(row[col] || '')}
                           >
                             {String(row[col] || '').substring(0, 50)}

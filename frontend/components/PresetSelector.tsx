@@ -107,13 +107,13 @@ export default function PresetSelector({
   }
 
   return (
-    <div className="border border-gray-200 rounded-md p-3 bg-gray-50">
+    <div className="border border-gray-200 rounded-md p-3 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-700">Annotation Presets</span>
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Annotation Presets</span>
         <button
           type="button"
           onClick={() => setShowSaveForm(!showSaveForm)}
-          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+          className="text-xs text-blue-600 hover:text-blue-800 font-medium dark:text-blue-300 dark:hover:text-blue-200"
         >
           {showSaveForm ? 'Cancel' : 'Save as Preset'}
         </button>
@@ -124,7 +124,7 @@ export default function PresetSelector({
         <select
           value={selectedPresetId}
           onChange={(e) => setSelectedPresetId(e.target.value)}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm dark:border-gray-600"
         >
           <option value="">Select a preset...</option>
           {presets.map((p) => {
@@ -152,20 +152,20 @@ export default function PresetSelector({
 
       {/* Save form */}
       {showSaveForm && (
-        <div className="border-t border-gray-200 pt-2 mt-2 space-y-2">
+        <div className="border-t border-gray-200 pt-2 mt-2 space-y-2 dark:border-gray-700">
           <input
             type="text"
             placeholder="Preset name"
             value={saveName}
             onChange={(e) => setSaveName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm dark:border-gray-600"
           />
           <input
             type="text"
             placeholder="Description (optional)"
             value={saveDescription}
             onChange={(e) => setSaveDescription(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm dark:border-gray-600"
           />
           <button
             type="button"
@@ -180,12 +180,12 @@ export default function PresetSelector({
 
       {/* Feedback messages */}
       {message && (
-        <div className="mt-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">
+        <div className="mt-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1 dark:text-green-300 dark:bg-green-900/20 dark:border-green-800">
           {message}
         </div>
       )}
       {warning && (
-        <div className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+        <div className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 dark:text-amber-300 dark:bg-amber-900/20 dark:border-amber-800">
           {warning}
         </div>
       )}
