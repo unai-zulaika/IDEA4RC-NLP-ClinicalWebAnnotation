@@ -804,7 +804,7 @@ export default function AnnotatePage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center text-gray-500">Loading session...</div>
+        <div className="text-center text-gray-500 dark:text-gray-400">Loading session...</div>
       </div>
     )
   }
@@ -812,7 +812,7 @@ export default function AnnotatePage() {
   if (!session) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center text-red-600">Session not found</div>
+        <div className="text-center text-red-600 dark:text-red-300">Session not found</div>
       </div>
     )
   }
@@ -821,7 +821,7 @@ export default function AnnotatePage() {
   if (!currentNote) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center text-red-600">Note not found</div>
+        <div className="text-center text-red-600 dark:text-red-300">Note not found</div>
       </div>
     )
   }
@@ -903,32 +903,32 @@ export default function AnnotatePage() {
       <div className="mb-6">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{session.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{session.name}</h1>
             <div className="flex items-center gap-2 mt-1">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Note {selectedNoteIndex + 1} of {session.notes.length}
               </p>
-              <span className="text-sm text-gray-500">•</span>
-              <p className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {session.prompt_types.length} prompt type{session.prompt_types.length !== 1 ? 's' : ''}
               </p>
               <button
                 onClick={() => setShowPromptTypesModal(true)}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium dark:text-blue-300 dark:hover:text-blue-200"
               >
                 Manage
               </button>
               {session.evaluation_mode === 'evaluation' && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800 font-medium">
+                  <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800 font-medium dark:bg-blue-900/40 dark:text-blue-200">
                     Evaluation Mode
                   </span>
                   {evaluationStats && evaluationStats.totalAnnotations > 0 && (
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="text-gray-600">
+                      <span className="text-gray-600 dark:text-gray-300">
                         {evaluationStats.totalMatches}/{evaluationStats.totalAnnotations} matches
                       </span>
-                      <span className="text-gray-500">
+                      <span className="text-gray-500 dark:text-gray-400">
                         ({evaluationStats.matchRate.toFixed(1)}%)
                       </span>
                     </div>
@@ -942,7 +942,7 @@ export default function AnnotatePage() {
             <button
               onClick={() => setSelectedNoteIndex(Math.max(0, selectedNoteIndex - 1))}
               disabled={selectedNoteIndex === 0}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 dark:border-gray-600"
             >
               Previous
             </button>
@@ -953,7 +953,7 @@ export default function AnnotatePage() {
                 )
               }
               disabled={selectedNoteIndex === session.notes.length - 1}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 dark:border-gray-600"
             >
               Next
             </button>
@@ -966,68 +966,68 @@ export default function AnnotatePage() {
             onClick={() => setShowDiagnosisPanel(prev => !prev)}
             className={`px-3 py-1.5 border rounded-md text-sm font-medium ${
               showDiagnosisPanel
-                ? 'border-primary-500 bg-primary-50 text-primary-700'
-                : 'border-purple-300 text-purple-700 hover:bg-purple-50'
+                ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                : 'border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/20'
             }`}
           >
             Patient Diagnoses
           </button>
-          <div className="w-px h-6 bg-gray-200" />
+          <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
           <button
             onClick={() => setExportConfirmMode('labels')}
             disabled={exporting !== null}
-            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50"
+            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:hover:bg-gray-700"
           >
             {exporting === 'labels' ? 'Exporting...' : 'Export Labels CSV'}
           </button>
           <button
             onClick={() => setExportConfirmMode('codes')}
             disabled={exporting !== null}
-            className="px-3 py-1.5 border border-indigo-300 text-indigo-700 rounded-md text-sm hover:bg-indigo-50 disabled:opacity-50"
+            className="px-3 py-1.5 border border-indigo-300 text-indigo-700 rounded-md text-sm hover:bg-indigo-50 disabled:opacity-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
           >
             {exporting === 'codes' ? 'Exporting...' : 'Export Codes CSV'}
           </button>
           <button
             onClick={() => handleExport('session')}
             disabled={exporting !== null}
-            className="px-3 py-1.5 border border-green-300 text-green-700 rounded-md text-sm hover:bg-green-50 disabled:opacity-50"
+            className="px-3 py-1.5 border border-green-300 text-green-700 rounded-md text-sm hover:bg-green-50 disabled:opacity-50 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-900/20"
           >
             {exporting === 'session' ? 'Exporting...' : 'Export Session JSON'}
           </button>
         </div>
 
         {/* Process All Button and Progress */}
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
+        <div className="bg-white rounded-lg shadow p-4 mb-4 dark:bg-gray-800">
           <div className="flex justify-between items-center mb-2">
             <div className="flex-1">
-              <h3 className="text-sm font-semibold text-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                 Batch Processing
               </h3>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Process all {session.notes.length} notes with all {session.prompt_types.length} prompt types
               </p>
               {/* Evaluation Statistics */}
               {session.evaluation_mode === 'evaluation' && evaluationStats && evaluationStats.totalAnnotations > 0 && (
                 <div className="mt-2 flex gap-4 text-xs">
                   <div className="flex items-center gap-1">
-                    <span className="text-gray-600">Total:</span>
+                    <span className="text-gray-600 dark:text-gray-300">Total:</span>
                     <span className="font-medium">{evaluationStats.totalAnnotations}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-green-600">✓ Matches:</span>
-                    <span className="font-medium text-green-700">{evaluationStats.totalMatches}</span>
+                    <span className="text-green-600 dark:text-green-300">✓ Matches:</span>
+                    <span className="font-medium text-green-700 dark:text-green-300">{evaluationStats.totalMatches}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-red-600">✗ Mismatches:</span>
-                    <span className="font-medium text-red-700">{evaluationStats.totalMismatches}</span>
+                    <span className="text-red-600 dark:text-red-300">✗ Mismatches:</span>
+                    <span className="font-medium text-red-700 dark:text-red-300">{evaluationStats.totalMismatches}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-gray-600">Match Rate:</span>
+                    <span className="text-gray-600 dark:text-gray-300">Match Rate:</span>
                     <span className="font-medium">{evaluationStats.matchRate.toFixed(1)}%</span>
                   </div>
                   {evaluationStats.avgSimilarity > 0 && (
                     <div className="flex items-center gap-1">
-                      <span className="text-gray-600">Avg Similarity:</span>
+                      <span className="text-gray-600 dark:text-gray-300">Avg Similarity:</span>
                       <span className="font-medium">{evaluationStats.avgSimilarity.toFixed(3)}</span>
                     </div>
                   )}
@@ -1044,10 +1044,10 @@ export default function AnnotatePage() {
                     disabled={processing || processingAll || processingSinglePrompt !== null}
                     className="sr-only peer"
                   />
-                  <div className="w-9 h-5 bg-gray-300 rounded-full peer peer-checked:bg-amber-500 peer-disabled:opacity-50 transition-colors" />
-                  <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform" />
+                  <div className="w-9 h-5 bg-gray-300 rounded-full peer peer-checked:bg-amber-500 peer-disabled:opacity-50 transition-colors dark:bg-gray-600" />
+                  <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform dark:bg-gray-800" />
                 </div>
-                <span className={`text-xs font-semibold ${fastMode ? 'text-amber-600' : 'text-gray-500'}`}>
+                <span className={`text-xs font-semibold ${fastMode ? 'text-amber-600 dark:text-amber-300' : 'text-gray-500 dark:text-gray-400'}`}>
                   {fastMode ? 'FAST' : 'Standard'}
                 </span>
               </label>
@@ -1071,19 +1071,19 @@ export default function AnnotatePage() {
 
           {processingAll && (
             <div className="mt-4">
-              <div className="flex justify-between text-xs text-gray-600 mb-1">
+              <div className="flex justify-between text-xs text-gray-600 mb-1 dark:text-gray-300">
                 <span>{progress.currentNote}</span>
                 <span>
                   {progress.current} / {progress.total} tasks ({progress.percentage}%)
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                 <div
                   className="bg-green-600 h-2.5 rounded-full transition-all duration-300"
                   style={{ width: `${progress.percentage}%` }}
                 />
               </div>
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <div className="flex justify-between text-xs text-gray-500 mt-1 dark:text-gray-400">
                 <span>Elapsed: {formatTimeRemaining(elapsedTime)}</span>
                 {progress.timeRemaining > 0 && (
                   <span>Estimated remaining: {formatTimeRemaining(progress.timeRemaining)}</span>
@@ -1091,7 +1091,7 @@ export default function AnnotatePage() {
               </div>
               {/* History notes summary during batch processing */}
               {historyNotes.size > 0 && (
-                <div data-testid="batch-history-summary" className="mt-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-md text-xs text-purple-800">
+                <div data-testid="batch-history-summary" className="mt-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-md text-xs text-purple-800 dark:bg-purple-900/20 dark:border-purple-800 dark:text-purple-200">
                   <span className="font-medium">{historyNotes.size} history note{historyNotes.size !== 1 ? 's' : ''} detected</span>
                   {' \u2014 '}
                   {Array.from(historyNotes.values()).filter(h => h.was_split).length > 0
@@ -1106,13 +1106,13 @@ export default function AnnotatePage() {
 
       {/* Batch timing report (shown after batch processing completes) */}
       {!processingAll && batchTimingReport && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg dark:bg-green-900/20 dark:border-green-800">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-sm font-semibold text-green-800">
+              <h3 className="text-sm font-semibold text-green-800 dark:text-green-200">
                 Processing Complete &mdash; {batchTimingReport.processed} notes in {formatTimeRemaining(Math.round(batchTimingReport.totalTime))}
               </h3>
-              <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1 text-xs text-green-700">
+              <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1 text-xs text-green-700 dark:text-green-300">
                 <div>Processed: <span className="font-medium">{batchTimingReport.processed}</span></div>
                 <div>Skipped: <span className="font-medium">{batchTimingReport.skipped}</span></div>
                 <div>Errors: <span className="font-medium">{batchTimingReport.errors}</span></div>
@@ -1123,7 +1123,7 @@ export default function AnnotatePage() {
             </div>
             <button
               onClick={() => { setBatchTimingReport(null); setHistoryNotes(new Map()) }}
-              className="text-green-400 hover:text-green-600 text-sm ml-2"
+              className="text-green-400 hover:text-green-600 text-sm ml-2 dark:hover:text-green-300"
               title="Dismiss"
             >
               &times;
@@ -1131,7 +1131,7 @@ export default function AnnotatePage() {
           </div>
           {/* History note splitting summary in completion report */}
           {historyNotes.size > 0 && (
-            <div data-testid="batch-history-report" className="mt-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-md text-xs text-purple-800">
+            <div data-testid="batch-history-report" className="mt-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-md text-xs text-purple-800 dark:bg-purple-900/20 dark:border-purple-800 dark:text-purple-200">
               <span className="font-medium">History notes: {historyNotes.size}/{batchTimingReport.processed + batchTimingReport.skipped} split into {Array.from(historyNotes.values()).reduce((sum, h) => sum + h.events_count, 0)} events</span>
             </div>
           )}
@@ -1139,7 +1139,7 @@ export default function AnnotatePage() {
       )}
 
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded dark:bg-red-900/20 dark:border-red-800 dark:text-red-300">
           {error}
         </div>
       )}
@@ -1158,9 +1158,9 @@ export default function AnnotatePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Panel - Text Viewer */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800">
           <div className="mb-4 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-900">Clinical Note</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Clinical Note</h2>
             <div className="flex gap-2">
               <button
                 onClick={handleProcessNote}
@@ -1182,10 +1182,10 @@ export default function AnnotatePage() {
 
           {/* Progress feedback for single note processing */}
           {processing && noteProgress.total > 0 && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md dark:bg-blue-900/20 dark:border-blue-800">
               {/* History note splitting banner */}
               {noteProgress.historyDetection && (
-                <div data-testid="history-splitting-banner" className="mb-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-md text-xs text-purple-800">
+                <div data-testid="history-splitting-banner" className="mb-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-md text-xs text-purple-800 dark:bg-purple-900/20 dark:border-purple-800 dark:text-purple-200">
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-medium">
@@ -1194,7 +1194,7 @@ export default function AnnotatePage() {
                           ? ` \u2014 splitting into ${noteProgress.historyDetection.events_count} events`
                           : ' (no split needed)'}
                       </span>
-                      <span className="text-purple-600 ml-2">
+                      <span className="text-purple-600 ml-2 dark:text-purple-300">
                         {noteProgress.historyDetection.detection_methods.map(m =>
                           m === 'date_count' ? `${noteProgress.historyDetection!.date_count} dates` :
                           m === 'event_markers' ? `${noteProgress.historyDetection!.event_marker_count} event markers` :
@@ -1206,31 +1206,31 @@ export default function AnnotatePage() {
                       <button
                         type="button"
                         onClick={() => setShowSplitEvents(!showSplitEvents)}
-                        className="text-purple-600 hover:text-purple-800 font-medium ml-2 whitespace-nowrap"
+                        className="text-purple-600 hover:text-purple-800 font-medium ml-2 whitespace-nowrap dark:text-purple-300 dark:hover:text-purple-200"
                       >
                         {showSplitEvents ? '\u25BC Hide events' : '\u25B6 Show events'}
                       </button>
                     )}
                   </div>
                   {showSplitEvents && noteProgress.historyDetection.events && noteProgress.historyDetection.events.length > 0 && (
-                    <div className="mt-2 space-y-1.5 border-t border-purple-200 pt-2">
+                    <div className="mt-2 space-y-1.5 border-t border-purple-200 pt-2 dark:border-purple-800">
                       {noteProgress.historyDetection.events.map((event, idx) => (
-                        <div key={idx} className="px-2 py-1.5 bg-white border border-purple-100 rounded text-xs">
+                        <div key={idx} className="px-2 py-1.5 bg-white border border-purple-100 rounded text-xs dark:bg-gray-800">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <span className="font-semibold text-purple-700">Event {idx + 1}</span>
-                            <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">{event.event_type}</span>
+                            <span className="font-semibold text-purple-700 dark:text-purple-300">Event {idx + 1}</span>
+                            <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-medium dark:bg-purple-900/40 dark:text-purple-300">{event.event_type}</span>
                             {event.event_date && (
-                              <span className="text-purple-500">{event.event_date}</span>
+                              <span className="text-purple-500 dark:text-purple-400">{event.event_date}</span>
                             )}
                           </div>
-                          <p className="text-gray-700 leading-snug">{event.event_text.length > 200 ? event.event_text.substring(0, 200) + '...' : event.event_text}</p>
+                          <p className="text-gray-700 leading-snug dark:text-gray-200">{event.event_text.length > 200 ? event.event_text.substring(0, 200) + '...' : event.event_text}</p>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
               )}
-              <div className="flex justify-between text-xs text-gray-700 mb-1">
+              <div className="flex justify-between text-xs text-gray-700 mb-1 dark:text-gray-200">
                 <span>
                   {noteProgress.currentPrompt || 'Starting...'}
                 </span>
@@ -1238,7 +1238,7 @@ export default function AnnotatePage() {
                   {noteProgress.current} / {noteProgress.total} prompts ({noteProgress.percentage}%)
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
                 <div
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${noteProgress.percentage}%` }}
@@ -1249,37 +1249,37 @@ export default function AnnotatePage() {
 
           {/* Timing breakdown (shown after processing completes) */}
           {!processing && lastTimingBreakdown && (
-            <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md dark:bg-gray-900 dark:border-gray-700">
               <button
                 onClick={() => setLastTimingBreakdown(null)}
-                className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-800 mb-1"
+                className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-800 mb-1 dark:text-gray-300 dark:hover:text-gray-200"
               >
                 Timing Breakdown
-                <span className="text-gray-400 ml-1">(click to dismiss)</span>
+                <span className="text-gray-400 ml-1 dark:text-gray-500">(click to dismiss)</span>
               </button>
               {/* Summary stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-gray-600">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
                 {Object.entries(lastTimingBreakdown)
                   .filter(([k]) => !k.startsWith('avg_') && !k.startsWith('sum_') && k !== 'prompt_count')
                   .sort(([, a], [, b]) => b - a)
                   .map(([step, duration]) => (
                     <div key={step} className="flex justify-between">
-                      <span className="text-gray-500">{step.replace(/_/g, ' ')}:</span>
+                      <span className="text-gray-500 dark:text-gray-400">{step.replace(/_/g, ' ')}:</span>
                       <span className="font-mono font-medium">{duration.toFixed(2)}s</span>
                     </div>
                   ))}
               </div>
               {/* Per-prompt-type averages (batch mode) */}
               {Object.entries(lastTimingBreakdown).some(([k]) => k.startsWith('avg_')) && (
-                <div className="mt-2 pt-2 border-t border-gray-200">
-                  <div className="text-xs font-medium text-gray-500 mb-1">Avg time per prompt type:</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-gray-600">
+                <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">Avg time per prompt type:</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
                     {Object.entries(lastTimingBreakdown)
                       .filter(([k]) => k.startsWith('avg_'))
                       .sort(([, a], [, b]) => b - a)
                       .map(([step, duration]) => (
                         <div key={step} className="flex justify-between">
-                          <span className="text-gray-500">{step.replace('avg_', '').replace(/_/g, ' ')}:</span>
+                          <span className="text-gray-500 dark:text-gray-400">{step.replace('avg_', '').replace(/_/g, ' ')}:</span>
                           <span className="font-mono font-medium">{duration.toFixed(2)}s</span>
                         </div>
                       ))}
@@ -1288,15 +1288,15 @@ export default function AnnotatePage() {
               )}
               {/* Aggregated step totals (batch mode) */}
               {Object.entries(lastTimingBreakdown).some(([k]) => k.startsWith('sum_')) && (
-                <div className="mt-2 pt-2 border-t border-gray-200">
-                  <div className="text-xs font-medium text-gray-500 mb-1">Total time per step (all notes):</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-gray-600">
+                <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">Total time per step (all notes):</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
                     {Object.entries(lastTimingBreakdown)
                       .filter(([k]) => k.startsWith('sum_'))
                       .sort(([, a], [, b]) => b - a)
                       .map(([step, duration]) => (
                         <div key={step} className="flex justify-between">
-                          <span className="text-gray-500">{step.replace('sum_', '').replace(/_/g, ' ')}:</span>
+                          <span className="text-gray-500 dark:text-gray-400">{step.replace('sum_', '').replace(/_/g, ' ')}:</span>
                           <span className="font-mono font-medium">{duration.toFixed(2)}s</span>
                         </div>
                       ))}
@@ -1305,13 +1305,13 @@ export default function AnnotatePage() {
               )}
             </div>
           )}
-          <div className="mb-2 text-xs text-gray-500">
+          <div className="mb-2 text-xs text-gray-500 dark:text-gray-400">
             <span>Note ID: {currentNote.note_id}</span>
             <span className="ml-4">Patient ID: {currentNote.p_id}</span>
             <span className="ml-4">Report Type: {currentNote.report_type}</span>
             <span className="ml-4">Date: {currentNote.date}</span>
           </div>
-          <div className="border border-gray-200 rounded-lg p-4 max-h-[600px] overflow-y-auto bg-gray-50">
+          <div className="border border-gray-200 rounded-lg p-4 max-h-[600px] overflow-y-auto bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
             <TextHighlighter
               text={currentNote.text}
               spans={allSpans}
@@ -1322,11 +1322,11 @@ export default function AnnotatePage() {
         </div>
 
         {/* Right Panel - Annotations */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Annotations</h2>
+        <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 dark:text-gray-100">Annotations</h2>
           <div className="space-y-4 max-h-[700px] overflow-y-auto">
             {getPromptTypesForNote(currentNote).length === 0 ? (
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 No prompt types selected. Process the note to generate annotations.
               </div>
             ) : (
@@ -1346,14 +1346,14 @@ export default function AnnotatePage() {
                     {/* Per-prompt header with Process button */}
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500">{promptType}</span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{promptType}</span>
                         {isOverride && (
-                          <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded font-medium">per-note</span>
+                          <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded font-medium dark:bg-amber-900/40 dark:text-amber-300">per-note</span>
                         )}
                       </div>
                       <div className="flex items-center gap-1">
                         <button
-                          className="text-xs px-1.5 py-0.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded disabled:opacity-50"
+                          className="text-xs px-1.5 py-0.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
                           onClick={(e) => { e.stopPropagation(); handleRemoveNotePrompt(currentNote.note_id, promptType) }}
                           disabled={anyProcessing}
                           title={isOverride ? "Remove this per-note prompt" : "Exclude this prompt from this note"}
@@ -1361,7 +1361,7 @@ export default function AnnotatePage() {
                           Remove
                         </button>
                         <button
-                          className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 disabled:opacity-50 flex items-center gap-1"
+                          className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 disabled:opacity-50 flex items-center gap-1 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
                           onClick={() => handleProcessSinglePrompt(promptType)}
                           disabled={anyProcessing}
                           title="Process only this prompt"
@@ -1446,9 +1446,9 @@ export default function AnnotatePage() {
                 ...addablePrompts.filter(pt => !excludedPrompts.includes(pt)),
               ]
               return (
-                <div className="mt-3 pt-3 border-t border-gray-200">
+                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                   <select
-                    className="text-sm border border-gray-300 rounded px-2 py-1.5 w-full text-gray-600 bg-white hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="text-sm border border-gray-300 rounded px-2 py-1.5 w-full text-gray-600 bg-white hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:text-gray-300 dark:bg-gray-800 dark:hover:border-gray-500"
                     value=""
                     onChange={(e) => {
                       if (e.target.value) {
@@ -1494,17 +1494,17 @@ export default function AnnotatePage() {
       {/* Reprocess Confirmation Modal */}
       {reprocessConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">All notes already annotated</h3>
-              <p className="text-sm text-gray-500 mt-1">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full dark:bg-gray-800">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">All notes already annotated</h3>
+              <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">
                 All notes have been processed. Do you want to re-process them? This will overwrite the existing annotations.
               </p>
             </div>
             <div className="px-6 py-4 flex justify-end gap-2">
               <button
                 onClick={() => setReprocessConfirm(false)}
-                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
               >
                 Cancel
               </button>
@@ -1525,23 +1525,23 @@ export default function AnnotatePage() {
       {/* Export Confirmation Modal — Remind to review diagnoses */}
       {exportConfirmMode && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="px-6 py-4 border-b border-amber-200 bg-amber-50 rounded-t-lg">
-              <h3 className="text-lg font-semibold text-amber-800">Review Before Exporting</h3>
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full dark:bg-gray-800">
+            <div className="px-6 py-4 border-b border-amber-200 bg-amber-50 rounded-t-lg dark:border-amber-800 dark:bg-amber-900/20">
+              <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200">Review Before Exporting</h3>
             </div>
             <div className="px-6 py-5">
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-200">
                 Before exporting, please make sure you have reviewed the <strong>Patient Diagnoses</strong> panel
                 to validate the <strong>topography and morphology</strong> combinations for each patient.
               </p>
-              <p className="text-sm text-gray-500 mt-3">
+              <p className="text-sm text-gray-500 mt-3 dark:text-gray-400">
                 Incorrect combinations may lead to invalid ICD-O-3 codes in the exported file.
               </p>
             </div>
-            <div className="px-6 py-3 border-t border-gray-200 flex justify-end gap-2">
+            <div className="px-6 py-3 border-t border-gray-200 flex justify-end gap-2 dark:border-gray-700">
               <button
                 onClick={() => setExportConfirmMode(null)}
-                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
               >
                 Cancel
               </button>
@@ -1563,10 +1563,10 @@ export default function AnnotatePage() {
       {/* Cardinality Conflict Modal */}
       {exportConflicts && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
-            <div className="px-6 py-4 border-b border-red-200 bg-red-50 rounded-t-lg">
-              <h3 className="text-lg font-semibold text-red-700">Export Blocked: Data Conflicts Detected</h3>
-              <p className="text-sm text-red-600 mt-1">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col dark:bg-gray-800">
+            <div className="px-6 py-4 border-b border-red-200 bg-red-50 rounded-t-lg dark:border-red-800 dark:bg-red-900/20">
+              <h3 className="text-lg font-semibold text-red-700 dark:text-red-300">Export Blocked: Data Conflicts Detected</h3>
+              <p className="text-sm text-red-600 mt-1 dark:text-red-300">
                 {exportConflicts.length} conflict(s) must be resolved before exporting.
                 Each variable must have a single unique value per entity instance.
               </p>
@@ -1575,7 +1575,7 @@ export default function AnnotatePage() {
             <div className="px-6 py-4 overflow-y-auto flex-1">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-gray-500 border-b">
+                  <tr className="text-left text-gray-500 border-b dark:text-gray-400">
                     <th className="pb-2 pr-3">Patient</th>
                     <th className="pb-2 pr-3">Variable</th>
                     <th className="pb-2 pr-3">Date</th>
@@ -1585,19 +1585,19 @@ export default function AnnotatePage() {
                 </thead>
                 <tbody>
                   {exportConflicts.map((c, i) => (
-                    <tr key={i} className="border-b border-gray-100">
+                    <tr key={i} className="border-b border-gray-100 dark:border-gray-800">
                       <td className="py-2 pr-3 font-mono text-xs">{c.patient_id}</td>
                       <td className="py-2 pr-3 text-xs">{c.core_variable}</td>
-                      <td className="py-2 pr-3 text-xs text-gray-500">
+                      <td className="py-2 pr-3 text-xs text-gray-500 dark:text-gray-400">
                         {c.date_ref || <span className="italic">N/A</span>}
                       </td>
                       <td className="py-2 pr-3">
                         {c.conflict_type === 'non_repeatable' ? (
-                          <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700">
+                          <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
                             Unique entity
                           </span>
                         ) : (
-                          <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-orange-100 text-orange-700">
+                          <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
                             Same date
                           </span>
                         )}
@@ -1612,21 +1612,21 @@ export default function AnnotatePage() {
                                 : s.note_id
                               return (
                                 <div key={j} className="flex items-center gap-2">
-                                  <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-gray-100 text-gray-700 font-mono">
+                                  <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-gray-100 text-gray-700 font-mono dark:bg-gray-700 dark:text-gray-200">
                                     {s.value}
                                   </span>
                                   {noteExists ? (
                                     <button
                                       type="button"
                                       onClick={() => navigateToAnnotation(s.note_id, s.prompt_type)}
-                                      className="text-xs text-primary-600 hover:text-primary-800 underline"
+                                      className="text-xs text-primary-600 hover:text-primary-800 underline dark:text-primary-400 dark:hover:text-primary-300"
                                       title={`Jump to note ${s.note_id}`}
                                     >
                                       → Note {shortLabel}
                                     </button>
                                   ) : (
                                     <span
-                                      className="text-xs text-gray-400 italic"
+                                      className="text-xs text-gray-400 italic dark:text-gray-500"
                                       title="Source note not found in this session"
                                     >
                                       (note not found)
@@ -1638,7 +1638,7 @@ export default function AnnotatePage() {
                           ) : (
                             <div className="flex flex-wrap gap-1">
                               {c.conflicting_values.map((v, j) => (
-                                <span key={j} className="inline-block px-1.5 py-0.5 text-xs rounded bg-gray-100 text-gray-700 font-mono">
+                                <span key={j} className="inline-block px-1.5 py-0.5 text-xs rounded bg-gray-100 text-gray-700 font-mono dark:bg-gray-700 dark:text-gray-200">
                                   {v}
                                 </span>
                               ))}
@@ -1652,8 +1652,8 @@ export default function AnnotatePage() {
               </table>
             </div>
 
-            <div className="px-6 py-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
-              <p className="text-xs text-gray-500 mb-3">
+            <div className="px-6 py-3 border-t border-gray-200 bg-gray-50 rounded-b-lg dark:border-gray-700 dark:bg-gray-900">
+              <p className="text-xs text-gray-500 mb-3 dark:text-gray-400">
                 To resolve: edit the conflicting annotations in the notes so that each variable has a single consistent value.
                 For unique entities (Patient, Diagnosis, etc.), only one value is allowed across all notes.
                 For repeatable entities (Surgery, Radiotherapy, etc.), different values require different dates.
@@ -1683,10 +1683,10 @@ export default function AnnotatePage() {
       {/* Pre-Export Diagnosis Validation Dialog */}
       {diagnosisValidation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-yellow-700">Unresolved Patient Diagnoses</h3>
-              <p className="text-sm text-gray-500 mt-1">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full dark:bg-gray-800">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">Unresolved Patient Diagnoses</h3>
+              <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">
                 {diagnosisValidation.report.needs_review} patient(s) have unresolved diagnoses.
                 These will appear as &quot;UNRESOLVED&quot; in the export.
               </p>
@@ -1696,17 +1696,17 @@ export default function AnnotatePage() {
                 .filter(p => p.status === 'needs_review')
                 .map(p => (
                   <div key={p.patient_id} className="py-2 border-b last:border-0">
-                    <span className="font-mono text-xs text-gray-700">{p.patient_id}</span>
+                    <span className="font-mono text-xs text-gray-700 dark:text-gray-200">{p.patient_id}</span>
                     {p.review_reasons.map((r, i) => (
-                      <div key={i} className="text-xs text-yellow-600 ml-4">- {r}</div>
+                      <div key={i} className="text-xs text-yellow-600 ml-4 dark:text-yellow-300">- {r}</div>
                     ))}
                   </div>
                 ))}
             </div>
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-2">
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-2 dark:border-gray-700">
               <button
                 onClick={() => setDiagnosisValidation(null)}
-                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
               >
                 Cancel
               </button>
@@ -1715,7 +1715,7 @@ export default function AnnotatePage() {
                   setDiagnosisValidation(null)
                   setShowDiagnosisPanel(true)
                 }}
-                className="px-4 py-2 text-sm border border-primary-300 text-primary-700 rounded-md hover:bg-primary-50"
+                className="px-4 py-2 text-sm border border-primary-300 text-primary-700 rounded-md hover:bg-primary-50 dark:border-primary-700 dark:text-primary-300 dark:hover:bg-primary-900/30"
               >
                 Review Diagnoses
               </button>
@@ -1737,17 +1737,17 @@ export default function AnnotatePage() {
       {/* Exclusion Report Modal */}
       {exclusionReport && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col dark:bg-gray-800">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between dark:border-gray-700">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Export Exclusion Report</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Export Exclusion Report</h3>
+                <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">
                   {exclusionReport.length} row(s) excluded from the export
                 </p>
               </div>
               <button
                 onClick={() => setExclusionReport(null)}
-                className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+                className="text-gray-400 hover:text-gray-600 text-xl leading-none dark:text-gray-500 dark:hover:text-gray-300"
               >
                 &times;
               </button>
@@ -1756,7 +1756,7 @@ export default function AnnotatePage() {
             <div className="px-6 py-4 overflow-y-auto flex-1">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-gray-500 border-b">
+                  <tr className="text-left text-gray-500 border-b dark:text-gray-400">
                     <th className="pb-2 pr-3">Patient</th>
                     <th className="pb-2 pr-3">Variable</th>
                     <th className="pb-2 pr-3">Value</th>
@@ -1765,20 +1765,20 @@ export default function AnnotatePage() {
                 </thead>
                 <tbody>
                   {exclusionReport.map((row, i) => (
-                    <tr key={i} className="border-b border-gray-100">
+                    <tr key={i} className="border-b border-gray-100 dark:border-gray-800">
                       <td className="py-2 pr-3 font-mono text-xs">{row.patient_id}</td>
                       <td className="py-2 pr-3">{row.variable}</td>
-                      <td className="py-2 pr-3 text-gray-600 italic">
+                      <td className="py-2 pr-3 text-gray-600 italic dark:text-gray-300">
                         {row.value || '(empty)'}
                       </td>
-                      <td className="py-2 text-gray-500 text-xs">{row.reason}</td>
+                      <td className="py-2 text-gray-500 text-xs dark:text-gray-400">{row.reason}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            <div className="px-6 py-3 border-t border-gray-200 flex justify-end gap-3">
+            <div className="px-6 py-3 border-t border-gray-200 flex justify-end gap-3 dark:border-gray-700">
               <button
                 onClick={() => {
                   const lines = [
@@ -1803,7 +1803,7 @@ export default function AnnotatePage() {
                   a.remove()
                   window.URL.revokeObjectURL(url)
                 }}
-                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
               >
                 Download as TXT
               </button>

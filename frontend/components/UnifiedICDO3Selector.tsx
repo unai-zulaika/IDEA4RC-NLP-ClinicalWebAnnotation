@@ -155,23 +155,23 @@ export default function UnifiedICDO3Selector({
   const hasExtractedCodes = Boolean(morphologyCode || topographyCode)
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-lg overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-lg overflow-hidden dark:bg-gray-800 dark:border-gray-700">
       {/* Header */}
-      <div className="bg-indigo-50 border-b border-indigo-200 px-4 py-3">
+      <div className="bg-indigo-50 border-b border-indigo-200 px-4 py-3 dark:bg-indigo-900/20 dark:border-indigo-800">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-indigo-900">
+          <h3 className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">
             Unified ICD-O-3 Diagnosis Code
           </h3>
           {onClose && (
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 text-lg font-bold"
+              className="text-gray-400 hover:text-gray-600 text-lg font-bold dark:text-gray-500 dark:hover:text-gray-300"
             >
               x
             </button>
           )}
         </div>
-        <p className="text-xs text-indigo-700 mt-1">
+        <p className="text-xs text-indigo-700 mt-1 dark:text-indigo-300">
           Combine histology and topography codes into a validated diagnosis code
         </p>
       </div>
@@ -179,64 +179,64 @@ export default function UnifiedICDO3Selector({
       <div className="p-4 space-y-4">
         {/* Extracted Codes Section */}
         {hasExtractedCodes && (
-          <div className="bg-gray-50 rounded-md p-3 border border-gray-200">
-            <div className="text-xs font-medium text-gray-600 mb-2">
+          <div className="bg-gray-50 rounded-md p-3 border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+            <div className="text-xs font-medium text-gray-600 mb-2 dark:text-gray-300">
               Extracted from annotations:
             </div>
             <div className="space-y-2">
               {/* Histology/Morphology */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-gray-700 w-20">Histology:</span>
+                <span className="text-xs font-medium text-gray-700 w-20 dark:text-gray-200">Histology:</span>
                 {morphologyCode ? (
                   <>
-                    <span className="font-mono text-sm bg-white px-2 py-1 rounded border border-gray-300">
+                    <span className="font-mono text-sm bg-white px-2 py-1 rounded border border-gray-300 dark:bg-gray-800 dark:border-gray-600">
                       {morphologyCode}
                     </span>
                     {morphologyDescription && (
-                      <span className="text-xs text-gray-600 truncate max-w-48">
+                      <span className="text-xs text-gray-600 truncate max-w-48 dark:text-gray-300">
                         {morphologyDescription}
                       </span>
                     )}
                     {validation && (
                       <span className={`text-xs px-1.5 py-0.5 rounded ${
                         validation.morphology_valid
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
                       }`}>
                         {validation.morphology_valid ? 'Valid' : 'Invalid'}
                       </span>
                     )}
                   </>
                 ) : (
-                  <span className="text-xs text-gray-400 italic">Not extracted</span>
+                  <span className="text-xs text-gray-400 italic dark:text-gray-500">Not extracted</span>
                 )}
               </div>
 
               {/* Site/Topography */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-gray-700 w-20">Site:</span>
+                <span className="text-xs font-medium text-gray-700 w-20 dark:text-gray-200">Site:</span>
                 {topographyCode ? (
                   <>
-                    <span className="font-mono text-sm bg-white px-2 py-1 rounded border border-gray-300">
+                    <span className="font-mono text-sm bg-white px-2 py-1 rounded border border-gray-300 dark:bg-gray-800 dark:border-gray-600">
                       {topographyCode}
                     </span>
                     {topographyDescription && (
-                      <span className="text-xs text-gray-600 truncate max-w-48">
+                      <span className="text-xs text-gray-600 truncate max-w-48 dark:text-gray-300">
                         {topographyDescription}
                       </span>
                     )}
                     {validation && (
                       <span className={`text-xs px-1.5 py-0.5 rounded ${
                         validation.topography_valid
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
                       }`}>
                         {validation.topography_valid ? 'Valid' : 'Invalid'}
                       </span>
                     )}
                   </>
                 ) : (
-                  <span className="text-xs text-gray-400 italic">Not extracted</span>
+                  <span className="text-xs text-gray-400 italic dark:text-gray-500">Not extracted</span>
                 )}
               </div>
             </div>
@@ -247,35 +247,35 @@ export default function UnifiedICDO3Selector({
         {combinedCode && (
           <div className={`rounded-md p-3 border ${
             isValidating
-              ? 'bg-gray-50 border-gray-200'
+              ? 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700'
               : isValidCombination
-              ? 'bg-green-50 border-green-200'
-              : 'bg-red-50 border-red-200'
+              ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
+              : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
           }`}>
             <div className="flex items-center gap-3">
-              <span className="text-xs font-medium text-gray-700">Combined Code:</span>
-              <span className="font-mono text-sm font-bold bg-white px-2 py-1 rounded border border-gray-300">
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-200">Combined Code:</span>
+              <span className="font-mono text-sm font-bold bg-white px-2 py-1 rounded border border-gray-300 dark:bg-gray-800 dark:border-gray-600">
                 {combinedCode}
               </span>
               {isValidating ? (
-                <span className="text-xs text-gray-500">Validating...</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Validating...</span>
               ) : isValidCombination ? (
-                <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-800 font-medium">
+                <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-800 font-medium dark:bg-green-900/40 dark:text-green-200">
                   Valid
                 </span>
               ) : (
-                <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-800 font-medium">
+                <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-800 font-medium dark:bg-red-900/40 dark:text-red-200">
                   Invalid Combination
                 </span>
               )}
             </div>
             {validation?.name && (
-              <div className="mt-2 text-sm text-gray-700">
+              <div className="mt-2 text-sm text-gray-700 dark:text-gray-200">
                 "{validation.name}"
               </div>
             )}
             {!isValidCombination && !isValidating && (
-              <div className="mt-2 text-xs text-red-600">
+              <div className="mt-2 text-xs text-red-600 dark:text-red-300">
                 This combination does not exist in the ICD-O-3 reference. Use the search below to find a valid code.
               </div>
             )}
@@ -283,8 +283,8 @@ export default function UnifiedICDO3Selector({
         )}
 
         {/* Search Section */}
-        <div className="border-t border-gray-200 pt-4">
-          <div className="text-xs font-medium text-gray-600 mb-2">
+        <div className="border-t border-gray-200 pt-4 dark:border-gray-700">
+          <div className="text-xs font-medium text-gray-600 mb-2 dark:text-gray-300">
             Search for ICD-O-3 code:
           </div>
           <div className="relative">
@@ -293,11 +293,11 @@ export default function UnifiedICDO3Selector({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name or code (e.g., 'carcinoma' or '8031/3')..."
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:border-gray-600"
             />
             {isSearching && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <svg className="animate-spin h-4 w-4 text-indigo-500" viewBox="0 0 24 24">
+                <svg className="animate-spin h-4 w-4 text-indigo-500 dark:text-indigo-400" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
@@ -307,14 +307,14 @@ export default function UnifiedICDO3Selector({
 
           {/* Search Results */}
           {searchResults.length > 0 && (
-            <div className="mt-3 max-h-60 overflow-y-auto border border-gray-200 rounded-md">
+            <div className="mt-3 max-h-60 overflow-y-auto border border-gray-200 rounded-md dark:border-gray-700">
               {searchResults.map((result, index) => (
                 <label
                   key={`${result.query_code}-${index}`}
-                  className={`flex items-start gap-3 p-3 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0 ${
+                  className={`flex items-start gap-3 p-3 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0 dark:border-gray-800 ${
                     selectedCode?.query_code === result.query_code
-                      ? 'bg-indigo-50 border-l-4 border-l-indigo-500'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-indigo-50 border-l-4 border-l-indigo-500 dark:border-l-indigo-400 dark:bg-indigo-900/20'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <input
@@ -322,27 +322,27 @@ export default function UnifiedICDO3Selector({
                     name="icdo3-search-result"
                     checked={selectedCode?.query_code === result.query_code}
                     onChange={() => handleSelectResult(result)}
-                    className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                    className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:text-indigo-300 dark:border-gray-600"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-sm font-semibold text-indigo-800">
+                      <span className="font-mono text-sm font-semibold text-indigo-800 dark:text-indigo-200">
                         {result.query_code}
                       </span>
                       <span className={`text-xs px-2 py-0.5 rounded ${
                         result.match_score >= 0.8
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
                           : result.match_score >= 0.5
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                       }`}>
                         {(result.match_score * 100).toFixed(0)}%
                       </span>
                     </div>
-                    <div className="text-sm text-gray-700 mt-1">
+                    <div className="text-sm text-gray-700 mt-1 dark:text-gray-200">
                       {result.name}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">
                       Morphology: <span className="font-mono">{result.morphology_code}</span>
                       {' | '}
                       Topography: <span className="font-mono">{result.topography_code}</span>
@@ -354,7 +354,7 @@ export default function UnifiedICDO3Selector({
           )}
 
           {searchQuery && !isSearching && searchResults.length === 0 && (
-            <div className="mt-3 text-sm text-gray-500 italic text-center py-4">
+            <div className="mt-3 text-sm text-gray-500 italic text-center py-4 dark:text-gray-400">
               No results found for "{searchQuery}"
             </div>
           )}
@@ -362,14 +362,14 @@ export default function UnifiedICDO3Selector({
 
         {/* Selected Code Summary */}
         {selectedCode && (
-          <div className="bg-indigo-50 border border-indigo-200 rounded-md p-3">
-            <div className="text-xs font-medium text-indigo-700 mb-2">Selected Code:</div>
+          <div className="bg-indigo-50 border border-indigo-200 rounded-md p-3 dark:bg-indigo-900/20 dark:border-indigo-800">
+            <div className="text-xs font-medium text-indigo-700 mb-2 dark:text-indigo-300">Selected Code:</div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-bold bg-white px-3 py-1.5 rounded border border-indigo-300 text-indigo-900">
+              <span className="font-mono text-sm font-bold bg-white px-3 py-1.5 rounded border border-indigo-300 text-indigo-900 dark:bg-gray-800 dark:border-indigo-700 dark:text-indigo-100">
                 {selectedCode.query_code}
               </span>
             </div>
-            <div className="text-sm text-gray-700 mt-2">
+            <div className="text-sm text-gray-700 mt-2 dark:text-gray-200">
               {selectedCode.name}
             </div>
           </div>
@@ -377,15 +377,15 @@ export default function UnifiedICDO3Selector({
 
         {/* Saved Code Display */}
         {savedCode && (
-          <div className="bg-green-50 border border-green-200 rounded-md p-3">
+          <div className="bg-green-50 border border-green-200 rounded-md p-3 dark:bg-green-900/20 dark:border-green-800">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-green-600 font-bold">Saved</span>
-              <span className="font-mono text-sm font-bold bg-white px-3 py-1.5 rounded border border-green-300 text-green-900">
+              <span className="text-green-600 font-bold dark:text-green-300">Saved</span>
+              <span className="font-mono text-sm font-bold bg-white px-3 py-1.5 rounded border border-green-300 text-green-900 dark:bg-gray-800 dark:border-green-700 dark:text-green-100">
                 {savedCode.query_code}
               </span>
             </div>
-            <div className="text-sm text-gray-700">{savedCode.name}</div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-sm text-gray-700 dark:text-gray-200">{savedCode.name}</div>
+            <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">
               Source: {savedCode.source} | User Selected: {savedCode.user_selected ? 'Yes' : 'No'}
             </div>
           </div>
@@ -393,17 +393,17 @@ export default function UnifiedICDO3Selector({
 
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-700">
+          <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300">
             {error}
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-200">
+        <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
           {onClose && (
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
@@ -414,7 +414,7 @@ export default function UnifiedICDO3Selector({
             className={`px-4 py-2 text-sm font-medium rounded-md ${
               selectedCode && !isSaving
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                : 'bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
             }`}
           >
             {isSaving ? (

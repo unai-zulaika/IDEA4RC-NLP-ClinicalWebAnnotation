@@ -166,15 +166,15 @@ export default function PresetsPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Annotation Presets</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Annotation Presets</h1>
         <div className="flex items-center gap-4">
           {centers.length > 0 && (
             <div className="flex items-center">
-              <label className="text-sm font-medium text-gray-700 mr-2">Center:</label>
+              <label className="text-sm font-medium text-gray-700 mr-2 dark:text-gray-200">Center:</label>
               <select
                 value={selectedCenter}
                 onChange={(e) => setSelectedCenter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm dark:border-gray-600"
               >
                 {centers.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -195,44 +195,44 @@ export default function PresetsPage() {
 
       {/* Create/Edit Form */}
       {showForm && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-white rounded-lg shadow p-6 mb-6 dark:bg-gray-800">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 dark:text-gray-100">
             {editingPreset ? 'Edit Preset' : 'Create Preset'}
           </h2>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Name</label>
               <input
                 type="text"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm dark:border-gray-600"
                 placeholder="e.g. Breast Cancer Standard"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Description (optional)</label>
               <input
                 type="text"
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm dark:border-gray-600"
                 placeholder="Standard mapping for breast cancer reports"
               />
             </div>
 
             {/* Report type mapping */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Report Type Mappings</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">Report Type Mappings</label>
               <div className="flex gap-2 mb-3">
                 <input
                   type="text"
                   value={reportTypeInput}
                   onChange={(e) => setReportTypeInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddReportType() } }}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm dark:border-gray-600"
                   placeholder="Add report type (e.g. pathology, radiology)"
                 />
                 <button
@@ -246,20 +246,20 @@ export default function PresetsPage() {
               </div>
 
               {Object.keys(formMapping).length === 0 ? (
-                <div className="text-sm text-gray-500 border border-gray-200 rounded-md p-4 text-center">
+                <div className="text-sm text-gray-500 border border-gray-200 rounded-md p-4 text-center dark:text-gray-400 dark:border-gray-700">
                   No report types added yet. Type a report type name above and click Add.
                 </div>
               ) : (
-                <div className="space-y-4 border border-gray-300 rounded-md p-4">
+                <div className="space-y-4 border border-gray-300 rounded-md p-4 dark:border-gray-600">
                   {Object.keys(formMapping).sort().map((rt) => (
-                    <div key={rt} className="border-b border-gray-200 last:border-b-0 pb-4 last:pb-0">
+                    <div key={rt} className="border-b border-gray-200 last:border-b-0 pb-4 last:pb-0 dark:border-gray-700">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-semibold text-gray-800">{rt}</h4>
+                        <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{rt}</h4>
                         <div className="flex gap-2 items-center">
-                          <span className="text-xs text-gray-500">{(formMapping[rt] || []).length} selected</span>
-                          <button type="button" onClick={() => selectAllForRT(rt)} className="text-xs text-blue-600 hover:text-blue-800">All</button>
-                          <button type="button" onClick={() => deselectAllForRT(rt)} className="text-xs text-gray-500 hover:text-gray-700">None</button>
-                          <button type="button" onClick={() => handleRemoveReportType(rt)} className="text-xs text-red-600 hover:text-red-800">Remove</button>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{(formMapping[rt] || []).length} selected</span>
+                          <button type="button" onClick={() => selectAllForRT(rt)} className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200">All</button>
+                          <button type="button" onClick={() => deselectAllForRT(rt)} className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">None</button>
+                          <button type="button" onClick={() => handleRemoveReportType(rt)} className="text-xs text-red-600 hover:text-red-800 dark:text-red-300 dark:hover:text-red-200">Remove</button>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
@@ -269,9 +269,9 @@ export default function PresetsPage() {
                               type="checkbox"
                               checked={(formMapping[rt] || []).includes(pt)}
                               onChange={() => togglePromptForRT(rt, pt)}
-                              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:text-primary-400"
                             />
-                            <span className="text-gray-700">{pt}</span>
+                            <span className="text-gray-700 dark:text-gray-200">{pt}</span>
                           </label>
                         ))}
                       </div>
@@ -282,7 +282,7 @@ export default function PresetsPage() {
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm dark:bg-red-900/20 dark:border-red-800 dark:text-red-300">
                 {error}
               </div>
             )}
@@ -291,7 +291,7 @@ export default function PresetsPage() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 Cancel
               </button>
@@ -310,9 +310,9 @@ export default function PresetsPage() {
 
       {/* Presets List */}
       {loading ? (
-        <div className="text-center text-gray-500 py-8">Loading...</div>
+        <div className="text-center text-gray-500 py-8 dark:text-gray-400">Loading...</div>
       ) : presets.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+        <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500 dark:bg-gray-800 dark:text-gray-400">
           No presets found for center "{selectedCenter}". Create one to get started.
         </div>
       ) : (
@@ -321,14 +321,14 @@ export default function PresetsPage() {
             const rtCount = Object.keys(preset.report_type_mapping).length
             const ptCount = new Set(Object.values(preset.report_type_mapping).flat()).size
             return (
-              <div key={preset.id} className="bg-white rounded-lg shadow p-5">
+              <div key={preset.id} className="bg-white rounded-lg shadow p-5 dark:bg-gray-800">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">{preset.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{preset.name}</h3>
                     {preset.description && (
-                      <p className="text-sm text-gray-600 mt-1">{preset.description}</p>
+                      <p className="text-sm text-gray-600 mt-1 dark:text-gray-300">{preset.description}</p>
                     )}
-                    <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                    <div className="flex gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                       <span>{rtCount} report type{rtCount !== 1 ? 's' : ''}</span>
                       <span>{ptCount} prompt type{ptCount !== 1 ? 's' : ''}</span>
                       <span>Updated {new Date(preset.updated_at).toLocaleDateString()}</span>
@@ -336,7 +336,7 @@ export default function PresetsPage() {
                     {/* Show mapping summary */}
                     <div className="mt-3 space-y-1">
                       {Object.entries(preset.report_type_mapping).map(([rt, pts]) => (
-                        <div key={rt} className="text-xs text-gray-600">
+                        <div key={rt} className="text-xs text-gray-600 dark:text-gray-300">
                           <span className="font-medium">{rt}:</span>{' '}
                           {pts.length > 3
                             ? `${pts.slice(0, 3).join(', ')} +${pts.length - 3} more`
@@ -348,13 +348,13 @@ export default function PresetsPage() {
                   <div className="flex gap-2 ml-4">
                     <button
                       onClick={() => startEdit(preset)}
-                      className="px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+                      className="px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(preset)}
-                      className="px-3 py-1.5 border border-red-300 rounded-md text-sm text-red-700 hover:bg-red-50"
+                      className="px-3 py-1.5 border border-red-300 rounded-md text-sm text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20"
                     >
                       Delete
                     </button>

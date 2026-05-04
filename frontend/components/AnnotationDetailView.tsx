@@ -212,23 +212,23 @@ export default function AnnotationDetailView({
     return (
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-600">Date:</span>
-          <span className="text-xs text-gray-900">{dateInfo.date_value || 'Not specified'}</span>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Date:</span>
+          <span className="text-xs text-gray-900 dark:text-gray-100">{dateInfo.date_value || 'Not specified'}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-600">Source:</span>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Source:</span>
           <span className={`text-xs px-2 py-0.5 rounded ${
             dateInfo.source === 'extracted_from_text'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-blue-100 text-blue-800'
+              ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
+              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'
           }`}>
             {dateInfo.source === 'extracted_from_text' ? 'Extracted from Text' : 'Derived from CSV'}
           </span>
         </div>
         {dateInfo.csv_date && dateInfo.source === 'derived_from_csv' && (
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-gray-600">CSV Date:</span>
-            <span className="text-xs text-gray-700">{dateInfo.csv_date}</span>
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-300">CSV Date:</span>
+            <span className="text-xs text-gray-700 dark:text-gray-200">{dateInfo.csv_date}</span>
           </div>
         )}
       </div>
@@ -237,15 +237,15 @@ export default function AnnotationDetailView({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col dark:bg-gray-800">
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Annotation Details: {annotation.prompt_type}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+            className="text-gray-400 hover:text-gray-600 text-2xl font-bold dark:text-gray-500 dark:hover:text-gray-300"
           >
             ×
           </button>
@@ -257,23 +257,23 @@ export default function AnnotationDetailView({
           {annotation.evaluation_result && (
             <div className={`border-2 rounded-md p-4 ${
               annotation.evaluation_result.overall_match
-                ? 'bg-green-50 border-green-300'
-                : 'bg-red-50 border-red-300'
+                ? 'bg-green-50 border-green-300 dark:bg-green-900/20 dark:border-green-700'
+                : 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-700'
             }`}>
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">✓ Correctness Evaluation</h3>
-                  <p className="text-xs text-gray-600">Compare expected vs predicted annotation</p>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">✓ Correctness Evaluation</h3>
+                  <p className="text-xs text-gray-600 dark:text-gray-300">Compare expected vs predicted annotation</p>
                 </div>
                 {/* Toggle between prompt-level and field-level evaluation */}
                 {hasFieldEvaluation && (
-                  <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                  <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 dark:bg-gray-700">
                     <button
                       onClick={() => setEvaluationViewMode('prompt')}
                       className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                         evaluationViewMode === 'prompt'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-100'
+                          : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100'
                       }`}
                     >
                       Prompt Level
@@ -282,8 +282,8 @@ export default function AnnotationDetailView({
                       onClick={() => setEvaluationViewMode('field')}
                       className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                         evaluationViewMode === 'field'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-100'
+                          : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100'
                       }`}
                     >
                       Per-Value
@@ -296,44 +296,44 @@ export default function AnnotationDetailView({
               {evaluationViewMode === 'prompt' && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-gray-700">Match Status:</span>
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-200">Match Status:</span>
                     <span className={`text-xs px-3 py-1.5 rounded font-semibold ${
                       annotation.evaluation_result.overall_match
-                        ? 'bg-green-200 text-green-900'
-                        : 'bg-red-200 text-red-900'
+                        ? 'bg-green-200 text-green-900 dark:bg-green-900/60 dark:text-green-100'
+                        : 'bg-red-200 text-red-900 dark:bg-red-900/60 dark:text-red-100'
                     }`}>
                       {annotation.evaluation_result.overall_match ? '✓ Match' : '✗ Mismatch'}
                     </span>
                     {annotation.evaluation_result.match_type && (
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         ({annotation.evaluation_result.match_type})
                       </span>
                     )}
                   </div>
                   {annotation.evaluation_result.similarity_score !== undefined && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-600">Similarity Score:</span>
-                      <span className="text-xs text-gray-900">
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Similarity Score:</span>
+                      <span className="text-xs text-gray-900 dark:text-gray-100">
                         {annotation.evaluation_result.similarity_score.toFixed(4)}
                       </span>
                     </div>
                   )}
                   {annotation.evaluation_result.exact_match !== undefined && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-600">Exact Match:</span>
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Exact Match:</span>
                       <span className={`text-xs px-2 py-1 rounded ${
                         annotation.evaluation_result.exact_match
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                       }`}>
                         {annotation.evaluation_result.exact_match ? 'Yes' : 'No'}
                       </span>
                     </div>
                   )}
                   {annotation.evaluation_result.expected_annotation !== undefined && (
-                    <div className="mt-3 pt-3 border-t border-blue-200">
-                      <span className="text-xs font-medium text-gray-600 block mb-1">Expected Annotation:</span>
-                      <div className="bg-white border border-blue-200 rounded p-2 text-xs text-gray-900">
+                    <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+                      <span className="text-xs font-medium text-gray-600 block mb-1 dark:text-gray-300">Expected Annotation:</span>
+                      <div className="bg-white border border-blue-200 rounded p-2 text-xs text-gray-900 dark:bg-gray-800 dark:border-blue-800 dark:text-gray-100">
                         {annotation.evaluation_result.expected_annotation || '[NO EXPECTED ANNOTATION]'}
                       </div>
                     </div>
@@ -347,20 +347,20 @@ export default function AnnotationDetailView({
                   {/* Field-Level Summary */}
                   <div className="flex items-center gap-4 flex-wrap">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-700">Field Match:</span>
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-200">Field Match:</span>
                       <span className={`text-xs px-3 py-1.5 rounded font-semibold ${
                         fieldEvaluation.overall_field_match
-                          ? 'bg-green-200 text-green-900'
-                          : 'bg-red-200 text-red-900'
+                          ? 'bg-green-200 text-green-900 dark:bg-green-900/60 dark:text-green-100'
+                          : 'bg-red-200 text-red-900 dark:bg-red-900/60 dark:text-red-100'
                       }`}>
                         {fieldEvaluation.fields_matched}/{fieldEvaluation.total_fields} fields
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-600">Match Rate:</span>
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Match Rate:</span>
                       <span className={`text-xs font-mono ${
-                        (fieldEvaluation.field_match_rate ?? 0) >= 0.8 ? 'text-green-700' :
-                        (fieldEvaluation.field_match_rate ?? 0) >= 0.5 ? 'text-yellow-700' : 'text-red-700'
+                        (fieldEvaluation.field_match_rate ?? 0) >= 0.8 ? 'text-green-700 dark:text-green-300' :
+                        (fieldEvaluation.field_match_rate ?? 0) >= 0.5 ? 'text-yellow-700 dark:text-yellow-300' : 'text-red-700 dark:text-red-300'
                       }`}>
                         {((fieldEvaluation.field_match_rate ?? 0) * 100).toFixed(0)}%
                       </span>
@@ -369,63 +369,63 @@ export default function AnnotationDetailView({
 
                   {/* Field Results Table */}
                   {fieldEvaluation.field_results && fieldEvaluation.field_results.length > 0 && (
-                    <div className="mt-3 border border-gray-200 rounded-md overflow-hidden">
+                    <div className="mt-3 border border-gray-200 rounded-md overflow-hidden dark:border-gray-700">
                       <table className="min-w-full text-xs">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-50 dark:bg-gray-900">
                           <tr>
-                            <th className="text-left py-2 px-3 font-medium text-gray-700">Field</th>
-                            <th className="text-left py-2 px-3 font-medium text-gray-700">Type</th>
-                            <th className="text-left py-2 px-3 font-medium text-gray-700">Expected</th>
-                            <th className="text-left py-2 px-3 font-medium text-gray-700">Predicted</th>
-                            <th className="text-left py-2 px-3 font-medium text-gray-700">Result</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-200">Field</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-200">Type</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-200">Expected</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-200">Predicted</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-200">Result</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200 bg-white">
+                        <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                           {fieldEvaluation.field_results.map((field: FieldEvaluationResult, idx: number) => (
-                            <tr key={idx} className={field.match ? 'bg-green-50' : 'bg-red-50'}>
+                            <tr key={idx} className={field.match ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'}>
                               <td className="py-2 px-3">
-                                <span className="font-mono text-gray-800">{field.field_name}</span>
+                                <span className="font-mono text-gray-800 dark:text-gray-200">{field.field_name}</span>
                               </td>
                               <td className="py-2 px-3">
                                 <span className={`px-2 py-0.5 rounded text-xs ${
-                                  field.field_type === 'date' ? 'bg-purple-100 text-purple-800' :
-                                  field.field_type === 'categorical' ? 'bg-blue-100 text-blue-800' :
-                                  'bg-gray-100 text-gray-800'
+                                  field.field_type === 'date' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200' :
+                                  field.field_type === 'categorical' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200' :
+                                  'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                                 }`}>
                                   {field.field_type}
                                 </span>
                               </td>
                               <td className="py-2 px-3">
-                                <span className="font-mono text-gray-700">
-                                  {field.expected || <em className="text-gray-400">empty</em>}
+                                <span className="font-mono text-gray-700 dark:text-gray-200">
+                                  {field.expected || <em className="text-gray-400 dark:text-gray-500">empty</em>}
                                 </span>
                               </td>
                               <td className="py-2 px-3">
-                                <span className="font-mono text-gray-700">
-                                  {field.predicted || <em className="text-gray-400">empty</em>}
+                                <span className="font-mono text-gray-700 dark:text-gray-200">
+                                  {field.predicted || <em className="text-gray-400 dark:text-gray-500">empty</em>}
                                 </span>
                               </td>
                               <td className="py-2 px-3">
                                 <div className="flex items-center gap-2">
-                                  <span className={`font-semibold ${field.match ? 'text-green-700' : 'text-red-700'}`}>
+                                  <span className={`font-semibold ${field.match ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
                                     {field.match ? '✓' : '✗'}
                                   </span>
                                   <span className={`text-xs px-1.5 py-0.5 rounded ${
-                                    field.match_method === 'exact' ? 'bg-green-100 text-green-700' :
-                                    field.match_method === 'date_normalized' ? 'bg-green-100 text-green-700' :
-                                    field.match_method === 'semantic' ? 'bg-blue-100 text-blue-700' :
-                                    field.match_method === 'extraction_success' ? 'bg-indigo-100 text-indigo-700' :
-                                    field.match_method === 'extraction_failed' ? 'bg-red-100 text-red-700' :
-                                    field.match_method === 'false_positive' ? 'bg-orange-100 text-orange-700' :
-                                    field.match_method === 'both_placeholder' ? 'bg-gray-100 text-gray-700' :
-                                    field.match_method === 'both_empty' ? 'bg-gray-100 text-gray-700' :
-                                    'bg-gray-100 text-gray-600'
+                                    field.match_method === 'exact' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' :
+                                    field.match_method === 'date_normalized' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' :
+                                    field.match_method === 'semantic' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
+                                    field.match_method === 'extraction_success' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' :
+                                    field.match_method === 'extraction_failed' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' :
+                                    field.match_method === 'false_positive' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300' :
+                                    field.match_method === 'both_placeholder' ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' :
+                                    field.match_method === 'both_empty' ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' :
+                                    'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                                   }`}>
                                     {field.match_method.replace(/_/g, ' ')}
                                   </span>
                                 </div>
                                 {field.note && (
-                                  <div className="mt-1 text-xs text-gray-500 italic">{field.note}</div>
+                                  <div className="mt-1 text-xs text-gray-500 italic dark:text-gray-400">{field.note}</div>
                                 )}
                               </td>
                             </tr>
@@ -436,11 +436,11 @@ export default function AnnotationDetailView({
                   )}
 
                   {/* Field-Level Feedback */}
-                  <div className="mt-3 pt-3 border-t border-gray-200">
-                    <div className="text-xs font-medium text-gray-600 mb-2">Feedback:</div>
+                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div className="text-xs font-medium text-gray-600 mb-2 dark:text-gray-300">Feedback:</div>
                     <div className="space-y-1">
                       {fieldEvaluation.field_results?.filter((f: FieldEvaluationResult) => f.match).length! > 0 && (
-                        <div className="flex items-start gap-2 text-xs text-green-700">
+                        <div className="flex items-start gap-2 text-xs text-green-700 dark:text-green-300">
                           <span className="flex-shrink-0">✓</span>
                           <span>
                             Correct: {fieldEvaluation.field_results?.filter((f: FieldEvaluationResult) => f.match).map((f: FieldEvaluationResult) => f.field_name).join(', ')}
@@ -448,7 +448,7 @@ export default function AnnotationDetailView({
                         </div>
                       )}
                       {fieldEvaluation.field_results?.filter((f: FieldEvaluationResult) => !f.match).length! > 0 && (
-                        <div className="flex items-start gap-2 text-xs text-red-700">
+                        <div className="flex items-start gap-2 text-xs text-red-700 dark:text-red-300">
                           <span className="flex-shrink-0">✗</span>
                           <span>
                             Incorrect: {fieldEvaluation.field_results?.filter((f: FieldEvaluationResult) => !f.match).map((f: FieldEvaluationResult) => f.field_name).join(', ')}
@@ -456,7 +456,7 @@ export default function AnnotationDetailView({
                         </div>
                       )}
                       {fieldEvaluation.field_results?.some((f: FieldEvaluationResult) => f.match_method === 'extraction_success') && (
-                        <div className="flex items-start gap-2 text-xs text-indigo-700">
+                        <div className="flex items-start gap-2 text-xs text-indigo-700 dark:text-indigo-300">
                           <span className="flex-shrink-0">ℹ</span>
                           <span>
                             Values extracted where expected had placeholders: {
@@ -470,9 +470,9 @@ export default function AnnotationDetailView({
 
                   {/* Expected Annotation (for reference) */}
                   {annotation.evaluation_result.expected_annotation !== undefined && (
-                    <div className="mt-3 pt-3 border-t border-blue-200">
-                      <span className="text-xs font-medium text-gray-600 block mb-1">Expected Annotation:</span>
-                      <div className="bg-white border border-blue-200 rounded p-2 text-xs text-gray-900 font-mono">
+                    <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+                      <span className="text-xs font-medium text-gray-600 block mb-1 dark:text-gray-300">Expected Annotation:</span>
+                      <div className="bg-white border border-blue-200 rounded p-2 text-xs text-gray-900 font-mono dark:bg-gray-800 dark:border-blue-800 dark:text-gray-100">
                         {annotation.evaluation_result.expected_annotation || '[NO EXPECTED ANNOTATION]'}
                       </div>
                     </div>
@@ -482,7 +482,7 @@ export default function AnnotationDetailView({
 
               {/* No field evaluation available message */}
               {evaluationViewMode === 'field' && !hasFieldEvaluation && (
-                <div className="text-xs text-gray-500 italic p-3 bg-gray-50 rounded">
+                <div className="text-xs text-gray-500 italic p-3 bg-gray-50 rounded dark:text-gray-400 dark:bg-gray-900">
                   {fieldEvaluation?.reason || 'Field-level evaluation not available for this prompt type'}
                 </div>
               )}
@@ -491,22 +491,22 @@ export default function AnnotationDetailView({
 
           {/* Final Annotation */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">LLM Generated Annotation</h3>
+            <h3 className="text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">LLM Generated Annotation</h3>
             <div className="space-y-3">
-              <div className={`bg-gray-50 border rounded-md p-3 text-sm text-gray-900 ${
-                templateIncomplete 
-                  ? 'border-yellow-400 bg-yellow-50' 
-                  : 'border-gray-200'
+              <div className={`bg-gray-50 border rounded-md p-3 text-sm text-gray-900 dark:bg-gray-900 dark:text-gray-100 ${
+                templateIncomplete
+                  ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-600'
+                  : 'border-gray-200 dark:border-gray-700'
               }`}>
                 {annotation.annotation_text || 'No annotation text available'}
                 {templateIncomplete && (
-                  <div className="mt-2 pt-2 border-t border-yellow-300">
-                    <div className="flex items-center gap-2 text-xs text-yellow-800">
+                  <div className="mt-2 pt-2 border-t border-yellow-300 dark:border-yellow-700">
+                    <div className="flex items-center gap-2 text-xs text-yellow-800 dark:text-yellow-200">
                       <span className="font-semibold">⚠️ Template Incomplete:</span>
                       <span>The annotation contains placeholders indicating missing information.</span>
                     </div>
                     {placeholders.length > 0 && (
-                      <div className="mt-1 text-xs text-yellow-700">
+                      <div className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
                         <span className="font-medium">Placeholders found:</span>{' '}
                         {placeholders.join(', ')}
                       </div>
@@ -518,15 +518,15 @@ export default function AnnotationDetailView({
               {/* Derived field values from output_word_mappings */}
               {annotation.derived_field_values && Object.keys(annotation.derived_field_values).length > 0 && (
                 <div>
-                  <h4 className="text-xs font-medium text-gray-600 mb-1">Mapped Values</h4>
+                  <h4 className="text-xs font-medium text-gray-600 mb-1 dark:text-gray-300">Mapped Values</h4>
                   <div className="flex flex-wrap gap-1.5">
                     {Object.entries(annotation.derived_field_values).map(([field, value]) => (
                       <span
                         key={field}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-800"
                         title={`Field "${field}" resolved via output_word_mappings`}
                       >
-                        <span className="text-blue-500 font-semibold">{field}:</span>
+                        <span className="text-blue-500 font-semibold dark:text-blue-400">{field}:</span>
                         {value}
                       </span>
                     ))}
@@ -537,8 +537,8 @@ export default function AnnotationDetailView({
               {/* Expected Annotation */}
               {expectedAnnotation && (
                 <div>
-                  <h4 className="text-xs font-medium text-gray-600 mb-1">Expected Annotation (from CSV)</h4>
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-gray-900">
+                  <h4 className="text-xs font-medium text-gray-600 mb-1 dark:text-gray-300">Expected Annotation (from CSV)</h4>
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-gray-900 dark:bg-blue-900/20 dark:border-blue-800 dark:text-gray-100">
                     {expectedAnnotation}
                   </div>
                 </div>
@@ -549,13 +549,13 @@ export default function AnnotationDetailView({
           {/* Status */}
           {annotation.status && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Processing Status</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Processing Status</h3>
               <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-md ${
                 annotation.status === 'error'
-                  ? 'bg-red-100 text-red-800 border border-red-200'
+                  ? 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/40 dark:text-red-200 dark:border-red-800'
                   : annotation.status === 'incomplete'
-                  ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
-                  : 'bg-blue-100 text-blue-800 border border-blue-200'
+                  ? 'bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-200 dark:border-yellow-800'
+                  : 'bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-800'
               }`}>
                 <span className="text-sm font-medium">
                   {annotation.status === 'error' ? '❌ Parse Error' : annotation.status === 'incomplete' ? '⚠️ Incomplete' : '✓ Parsed'}
@@ -578,29 +578,29 @@ export default function AnnotationDetailView({
           {annotation.hallucination_flags && annotation.hallucination_flags.length > 0 && (
             <div className={`rounded-lg p-4 flex items-start gap-3 ${
               annotation.hallucination_flags.some(f => f.severity === 'high')
-                ? 'bg-red-50 border-2 border-red-400 ring-2 ring-red-200'
-                : 'bg-orange-50 border-2 border-orange-400 ring-2 ring-orange-200'
+                ? 'bg-red-50 border-2 border-red-400 ring-2 ring-red-200 dark:bg-red-900/20 dark:border-red-600 dark:ring-red-900/40'
+                : 'bg-orange-50 border-2 border-orange-400 ring-2 ring-orange-200 dark:bg-orange-900/20 dark:border-orange-600 dark:ring-orange-900/40'
             }`}>
               <span className="text-3xl flex-shrink-0">{'\u26A0\uFE0F'}</span>
               <div>
                 <h3 className={`text-base font-bold mb-1 ${
                   annotation.hallucination_flags.some(f => f.severity === 'high')
-                    ? 'text-red-800'
-                    : 'text-orange-800'
+                    ? 'text-red-800 dark:text-red-200'
+                    : 'text-orange-800 dark:text-orange-200'
                 }`}>
                   Possible hallucination detected
                 </h3>
                 {annotation.hallucination_flags.map((flag, idx) => (
                   <p key={idx} className={`text-sm ${
-                    flag.severity === 'high' ? 'text-red-700' : 'text-orange-700'
+                    flag.severity === 'high' ? 'text-red-700 dark:text-red-300' : 'text-orange-700 dark:text-orange-300'
                   }`}>
                     {flag.message} — field: <span className="font-semibold">{flag.field}</span> ({Math.round(flag.duplicate_ratio * 100)}% duplicated)
                   </p>
                 ))}
                 <p className={`text-xs mt-2 italic ${
                   annotation.hallucination_flags.some(f => f.severity === 'high')
-                    ? 'text-red-600'
-                    : 'text-orange-600'
+                    ? 'text-red-600 dark:text-red-300'
+                    : 'text-orange-600 dark:text-orange-300'
                 }`}>
                   This annotation may be unreliable. Please review carefully before accepting.
                 </p>
@@ -611,8 +611,8 @@ export default function AnnotationDetailView({
           {/* Negation Status - only show when something is actually negated */}
           {annotation.is_negated === true && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Negation Status</h3>
-              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-red-100 text-red-800 border border-red-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Negation Status</h3>
+              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/40 dark:text-red-200 dark:border-red-800">
                 <span className="text-sm font-medium">
                   ⚠️ Negated
                 </span>
@@ -625,9 +625,9 @@ export default function AnnotationDetailView({
 
           {/* Evidence */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Evidence</h3>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-              <div className="text-sm text-gray-900 mb-2 font-medium">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Evidence</h3>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 dark:bg-yellow-900/20 dark:border-yellow-800">
+              <div className="text-sm text-gray-900 mb-2 font-medium dark:text-gray-100">
                 Evidence Text ({annotation.evidence_spans.length} span{annotation.evidence_spans.length !== 1 ? 's' : ''}):
               </div>
               {annotation.evidence_spans.length > 0 ? (
@@ -635,10 +635,10 @@ export default function AnnotationDetailView({
                   {annotation.evidence_spans.map((span, idx) => (
                     <div
                       key={idx}
-                      className="bg-white border border-yellow-300 rounded px-3 py-2 text-sm text-gray-800 cursor-pointer hover:bg-yellow-100"
+                      className="bg-white border border-yellow-300 rounded px-3 py-2 text-sm text-gray-800 cursor-pointer hover:bg-yellow-100 dark:bg-gray-800 dark:border-yellow-700 dark:text-gray-200 dark:hover:bg-yellow-900/40"
                       onClick={() => onSelectSpan?.(span)}
                     >
-                      <div className="font-medium text-xs text-gray-500 mb-1">
+                      <div className="font-medium text-xs text-gray-500 mb-1 dark:text-gray-400">
                         Span {idx + 1} (position {span.start}-{span.end})
                       </div>
                       <div>{span.text}</div>
@@ -646,13 +646,13 @@ export default function AnnotationDetailView({
                   ))}
                 </div>
               ) : (
-                <div className="text-sm text-gray-800">
+                <div className="text-sm text-gray-800 dark:text-gray-200">
                   {annotation.evidence_text ? (
-                    <div className="bg-white border border-yellow-300 rounded px-3 py-2">
+                    <div className="bg-white border border-yellow-300 rounded px-3 py-2 dark:bg-gray-800 dark:border-yellow-700">
                       {annotation.evidence_text}
                     </div>
                   ) : (
-                    <div className="text-gray-500 italic">No evidence spans or evidence text available</div>
+                    <div className="text-gray-500 italic dark:text-gray-400">No evidence spans or evidence text available</div>
                   )}
                 </div>
               )}
@@ -661,14 +661,14 @@ export default function AnnotationDetailView({
 
           {/* Reasoning - Always show if available */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Reasoning Process</h3>
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Reasoning Process</h3>
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 dark:bg-blue-900/20 dark:border-blue-800">
               {annotation.reasoning ? (
-                <div className="text-sm text-gray-800 whitespace-pre-wrap">
+                <div className="text-sm text-gray-800 whitespace-pre-wrap dark:text-gray-200">
                   {annotation.reasoning}
                 </div>
               ) : (
-                <div className="text-sm text-gray-500 italic">No reasoning provided</div>
+                <div className="text-sm text-gray-500 italic dark:text-gray-400">No reasoning provided</div>
               )}
             </div>
           </div>
@@ -676,8 +676,8 @@ export default function AnnotationDetailView({
           {/* Date Information */}
           {annotation.date_info && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Date Information</h3>
-              <div className="bg-purple-50 border border-purple-200 rounded-md p-3">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Date Information</h3>
+              <div className="bg-purple-50 border border-purple-200 rounded-md p-3 dark:bg-purple-900/20 dark:border-purple-800">
                 {formatDateInfo(annotation.date_info)}
               </div>
             </div>
@@ -686,30 +686,30 @@ export default function AnnotationDetailView({
           {/* Extracted Entity Mappings */}
           {entityMapping && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Extracted Entity Mappings</h3>
-              <div className="bg-green-50 border border-green-200 rounded-md p-3">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Extracted Entity Mappings</h3>
+              <div className="bg-green-50 border border-green-200 rounded-md p-3 dark:bg-green-900/20 dark:border-green-800">
                 {loadingMapping ? (
-                  <div className="text-sm text-gray-500 italic">Loading mappings...</div>
+                  <div className="text-sm text-gray-500 italic dark:text-gray-400">Loading mappings...</div>
                 ) : (
                   <div className="space-y-3">
                     {/* Main Entity */}
                     {extractedMappings['_entity_type'] && (
-                      <div className="bg-white border border-green-300 rounded-md p-3">
-                        <div className="text-xs font-semibold text-gray-700 mb-2">Main Entity</div>
+                      <div className="bg-white border border-green-300 rounded-md p-3 dark:bg-gray-800 dark:border-green-700">
+                        <div className="text-xs font-semibold text-gray-700 mb-2 dark:text-gray-200">Main Entity</div>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-gray-600">Entity Type:</span>
-                            <span className="text-xs text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded">
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Entity Type:</span>
+                            <span className="text-xs text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded dark:text-gray-100 dark:bg-gray-700">
                               {extractedMappings['_entity_type']}
                             </span>
                           </div>
                           {extractedMappings['_fact_detected'] && (
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-gray-600">Fact Detected:</span>
+                              <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Fact Detected:</span>
                               <span className={`text-xs px-2 py-1 rounded ${
                                 extractedMappings['_fact_detected'] === 'Yes'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-gray-100 text-gray-800'
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
+                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                               }`}>
                                 {extractedMappings['_fact_detected']}
                               </span>
@@ -717,8 +717,8 @@ export default function AnnotationDetailView({
                           )}
                           {entityMapping.fact_trigger && (
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-gray-600">Fact Trigger Pattern:</span>
-                              <span className="text-xs text-gray-700 italic">"{entityMapping.fact_trigger}"</span>
+                              <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Fact Trigger Pattern:</span>
+                              <span className="text-xs text-gray-700 italic dark:text-gray-200">"{entityMapping.fact_trigger}"</span>
                             </div>
                           )}
                         </div>
@@ -727,31 +727,31 @@ export default function AnnotationDetailView({
 
                     {/* Field Mappings */}
                     {entityMapping.field_mappings.length > 0 && (
-                      <div className="bg-white border border-green-300 rounded-md p-3">
-                        <div className="text-xs font-semibold text-gray-700 mb-2">Field Mappings</div>
+                      <div className="bg-white border border-green-300 rounded-md p-3 dark:bg-gray-800 dark:border-green-700">
+                        <div className="text-xs font-semibold text-gray-700 mb-2 dark:text-gray-200">Field Mappings</div>
                         <div className="space-y-2">
                           {entityMapping.field_mappings.map((fieldMapping, idx) => {
                             const key = `${fieldMapping.entity_type}.${fieldMapping.field_name}`
                             const value = extractedMappings[key]
                             return (
-                              <div key={idx} className="border-b border-green-200 last:border-b-0 pb-2 last:pb-0">
+                              <div key={idx} className="border-b border-green-200 last:border-b-0 pb-2 last:pb-0 dark:border-green-800">
                                 <div className="flex items-start gap-2">
                                   <div className="flex-1">
-                                    <div className="text-xs font-medium text-gray-700 mb-1">
+                                    <div className="text-xs font-medium text-gray-700 mb-1 dark:text-gray-200">
                                       {fieldMapping.entity_type}.{fieldMapping.field_name}
                                     </div>
-                                    <div className="text-xs text-gray-600 mb-1">
+                                    <div className="text-xs text-gray-600 mb-1 dark:text-gray-300">
                                       <span className="font-medium">From:</span>{' '}
-                                      <span className="font-mono bg-gray-100 px-1 rounded">
+                                      <span className="font-mono bg-gray-100 px-1 rounded dark:bg-gray-700">
                                         {fieldMapping.template_placeholder}
                                       </span>
                                     </div>
-                                    <div className="text-xs text-gray-900 mt-1">
+                                    <div className="text-xs text-gray-900 mt-1 dark:text-gray-100">
                                       <span className="font-medium">Value:</span>{' '}
                                       <span className={`font-mono px-2 py-1 rounded ${
                                         value && value !== '[Not extracted]' && value !== '[Placeholder not filled]'
-                                          ? 'bg-green-100 text-green-900'
-                                          : 'bg-yellow-100 text-yellow-900'
+                                          ? 'bg-green-100 text-green-900 dark:bg-green-900/40 dark:text-green-100'
+                                          : 'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/40 dark:text-yellow-100'
                                       }`}>
                                         {value || '[Not found]'}
                                       </span>
@@ -767,10 +767,10 @@ export default function AnnotationDetailView({
 
                     {/* Date Information */}
                     {extractedMappings['_date'] && (
-                      <div className="bg-white border border-green-300 rounded-md p-3">
-                        <div className="text-xs font-semibold text-gray-700 mb-2">Date</div>
-                        <div className="text-xs text-gray-900">
-                          <span className="font-mono bg-green-100 text-green-900 px-2 py-1 rounded">
+                      <div className="bg-white border border-green-300 rounded-md p-3 dark:bg-gray-800 dark:border-green-700">
+                        <div className="text-xs font-semibold text-gray-700 mb-2 dark:text-gray-200">Date</div>
+                        <div className="text-xs text-gray-900 dark:text-gray-100">
+                          <span className="font-mono bg-green-100 text-green-900 px-2 py-1 rounded dark:bg-green-900/40 dark:text-green-100">
                             {extractedMappings['_date']}
                           </span>
                         </div>
@@ -779,16 +779,16 @@ export default function AnnotationDetailView({
 
                     {/* Summary Table */}
                     {(entityMapping.field_mappings.length > 0 || extractedMappings['_date']) && (
-                      <div className="bg-white border border-green-300 rounded-md p-3">
-                        <div className="text-xs font-semibold text-gray-700 mb-2">Extracted Values Summary</div>
+                      <div className="bg-white border border-green-300 rounded-md p-3 dark:bg-gray-800 dark:border-green-700">
+                        <div className="text-xs font-semibold text-gray-700 mb-2 dark:text-gray-200">Extracted Values Summary</div>
                         <div className="overflow-x-auto">
                           <table className="min-w-full text-xs">
                             <thead>
-                              <tr className="border-b border-gray-200">
-                                <th className="text-left py-1 px-2 font-medium text-gray-700">Variable</th>
-                                <th className="text-left py-1 px-2 font-medium text-gray-700">Value</th>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <th className="text-left py-1 px-2 font-medium text-gray-700 dark:text-gray-200">Variable</th>
+                                <th className="text-left py-1 px-2 font-medium text-gray-700 dark:text-gray-200">Value</th>
                                 {extractedMappings['_date'] && (
-                                  <th className="text-left py-1 px-2 font-medium text-gray-700">Date</th>
+                                  <th className="text-left py-1 px-2 font-medium text-gray-700 dark:text-gray-200">Date</th>
                                 )}
                               </tr>
                             </thead>
@@ -798,21 +798,21 @@ export default function AnnotationDetailView({
                                 const value = extractedMappings[key]
                                 const hasValue = value && value !== '[Not extracted]' && value !== '[Placeholder not filled]'
                                 return (
-                                  <tr key={idx} className="border-b border-gray-100">
-                                    <td className="py-1 px-2 font-mono text-gray-700">
+                                  <tr key={idx} className="border-b border-gray-100 dark:border-gray-800">
+                                    <td className="py-1 px-2 font-mono text-gray-700 dark:text-gray-200">
                                       {fieldMapping.entity_type}.{fieldMapping.field_name}
                                     </td>
                                     <td className="py-1 px-2">
                                       <span className={`font-mono px-2 py-0.5 rounded ${
                                         hasValue
-                                          ? 'bg-green-100 text-green-900'
-                                          : 'bg-yellow-100 text-yellow-900'
+                                          ? 'bg-green-100 text-green-900 dark:bg-green-900/40 dark:text-green-100'
+                                          : 'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/40 dark:text-yellow-100'
                                       }`}>
                                         {value || '[Not found]'}
                                       </span>
                                     </td>
                                     {extractedMappings['_date'] && (
-                                      <td className="py-1 px-2 font-mono text-gray-700">
+                                      <td className="py-1 px-2 font-mono text-gray-700 dark:text-gray-200">
                                         {extractedMappings['_date']}
                                       </td>
                                     )}
@@ -826,7 +826,7 @@ export default function AnnotationDetailView({
                     )}
 
                     {entityMapping.field_mappings.length === 0 && !extractedMappings['_entity_type'] && (
-                      <div className="text-sm text-gray-500 italic">
+                      <div className="text-sm text-gray-500 italic dark:text-gray-400">
                         No field mappings defined for this prompt type
                       </div>
                     )}
@@ -839,13 +839,13 @@ export default function AnnotationDetailView({
           {/* Values */}
           {annotation.values.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Extracted Values</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Extracted Values</h3>
               <div className="space-y-2">
                 {annotation.values.map((value, idx) => (
-                  <div key={idx} className="bg-gray-50 border border-gray-200 rounded-md p-2 text-sm">
-                    <div className="font-medium text-gray-700">{value.value}</div>
+                  <div key={idx} className="bg-gray-50 border border-gray-200 rounded-md p-2 text-sm dark:bg-gray-900 dark:border-gray-700">
+                    <div className="font-medium text-gray-700 dark:text-gray-200">{value.value}</div>
                     {value.reasoning && (
-                      <div className="text-xs text-gray-500 mt-1">{value.reasoning}</div>
+                      <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">{value.reasoning}</div>
                     )}
                   </div>
                 ))}
@@ -854,12 +854,12 @@ export default function AnnotationDetailView({
           )}
 
           {/* Raw Prompt and Response */}
-          <div className="border-t border-gray-300 pt-4 mt-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Raw Prompt & Response</h3>
+          <div className="border-t border-gray-300 pt-4 mt-4 dark:border-gray-600">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-200">Raw Prompt & Response</h3>
             <div className="space-y-4">
               {annotation.raw_prompt && (
                 <div>
-                  <h4 className="text-xs font-medium text-gray-600 mb-1">Prompt Sent to LLM:</h4>
+                  <h4 className="text-xs font-medium text-gray-600 mb-1 dark:text-gray-300">Prompt Sent to LLM:</h4>
                   <div className="bg-gray-900 text-gray-100 rounded-md p-3 text-xs font-mono overflow-x-auto max-h-60 overflow-y-auto">
                     <pre className="whitespace-pre-wrap">{annotation.raw_prompt}</pre>
                   </div>
@@ -867,14 +867,14 @@ export default function AnnotationDetailView({
               )}
               {annotation.raw_response && (
                 <div>
-                  <h4 className="text-xs font-medium text-gray-600 mb-1">Raw LLM Response:</h4>
+                  <h4 className="text-xs font-medium text-gray-600 mb-1 dark:text-gray-300">Raw LLM Response:</h4>
                   <div className="bg-gray-900 text-gray-100 rounded-md p-3 text-xs font-mono overflow-x-auto max-h-60 overflow-y-auto">
                     <pre className="whitespace-pre-wrap">{annotation.raw_response}</pre>
                   </div>
                 </div>
               )}
               {!annotation.raw_prompt && !annotation.raw_response && (
-                <div className="text-xs text-gray-500 italic">
+                <div className="text-xs text-gray-500 italic dark:text-gray-400">
                   Raw prompt and response not available
                 </div>
               )}
@@ -883,7 +883,7 @@ export default function AnnotationDetailView({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-4 flex justify-end">
+        <div className="border-t border-gray-200 p-4 flex justify-end dark:border-gray-700">
           <button
             onClick={onClose}
             className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm"

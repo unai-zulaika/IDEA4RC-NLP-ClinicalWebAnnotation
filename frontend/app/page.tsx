@@ -76,7 +76,7 @@ export default function Dashboard() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
         <div>
           <input
             ref={importInputRef}
@@ -96,38 +96,38 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
             LLM Server Status (vLLM)
           </h2>
           <ServerStatus />
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
             Total Notes
           </h2>
-          <p className="text-3xl font-bold text-primary-600">{totalNotes}</p>
+          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">{totalNotes}</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
             Active Sessions
           </h2>
-          <p className="text-3xl font-bold text-primary-600">{sessions.length}</p>
+          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">{sessions.length}</p>
         </div>
       </div>
 
       {metrics && (
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">
             Server Metrics
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {metrics.gpu_memory_used_gb !== undefined && metrics.gpu_memory_used_gb !== null && (
               <div>
-                <p className="text-sm text-gray-500">GPU Memory Used</p>
-                <p className="text-xl font-semibold">
+                <p className="text-sm text-gray-500 dark:text-gray-400">GPU Memory Used</p>
+                <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                   {metrics.gpu_memory_used_gb.toFixed(2)} GB
                   {metrics.gpu_memory_total_gb !== undefined && metrics.gpu_memory_total_gb !== null &&
                     ` / ${metrics.gpu_memory_total_gb.toFixed(2)} GB`}
@@ -136,16 +136,16 @@ export default function Dashboard() {
             )}
             {metrics.throughput_tokens_per_sec !== undefined && metrics.throughput_tokens_per_sec !== null && (
               <div>
-                <p className="text-sm text-gray-500">Throughput</p>
-                <p className="text-xl font-semibold">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Throughput</p>
+                <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                   {metrics.throughput_tokens_per_sec.toFixed(1)} tokens/s
                 </p>
               </div>
             )}
             {metrics.active_requests !== undefined && (
               <div>
-                <p className="text-sm text-gray-500">Active Requests</p>
-                <p className="text-xl font-semibold">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Active Requests</p>
+                <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                   {metrics.active_requests}
                 </p>
               </div>
@@ -154,26 +154,26 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
             Recent Sessions
           </h2>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {loading ? (
-            <div className="px-6 py-4 text-center text-gray-500">
+            <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
               Loading...
             </div>
           ) : sessions.length === 0 ? (
-            <div className="px-6 py-4 text-center text-gray-500">
-              No sessions yet. <Link href="/upload" className="text-primary-600 hover:underline">Upload a CSV</Link> to get started.
+            <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+              No sessions yet. <Link href="/upload" className="text-primary-600 dark:text-primary-400 hover:underline">Upload a CSV</Link> to get started.
             </div>
           ) : (
             sessions.slice(0, 10).map((session) => (
               <div
                 key={session.session_id}
-                className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                className="px-6 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-gray-700"
               >
                 <div className="flex justify-between items-center">
                   <Link
@@ -181,22 +181,22 @@ export default function Dashboard() {
                     className="flex-1"
                   >
                     <div>
-                      <h3 className="text-sm font-medium text-gray-900">
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {session.name}
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {session.note_count} notes • {session.prompt_types.length} prompt types
                       </p>
                     </div>
                   </Link>
                   <div className="flex items-center gap-4">
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(session.updated_at).toLocaleDateString()}
                     </div>
                     <button
                       onClick={(e) => handleDeleteSession(session.session_id, e)}
                       disabled={deletingSessionId === session.session_id}
-                      className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                      className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium dark:text-red-300 dark:hover:text-red-200"
                       title="Delete session"
                     >
                       {deletingSessionId === session.session_id ? 'Deleting...' : 'Delete'}

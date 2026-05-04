@@ -149,17 +149,17 @@ Output format:
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">Prompt Editor</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-4 dark:text-gray-100">Prompt Editor</h1>
 
       {/* Mode toggle */}
       <div className="mb-6">
-        <div className="inline-flex rounded-lg border border-gray-300 overflow-hidden">
+        <div className="inline-flex rounded-lg border border-gray-300 overflow-hidden dark:border-gray-600">
           <button
             onClick={() => { setPromptMode('standard'); setNewPromptTemplate(defaultStandardTemplate) }}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               promptMode === 'standard'
                 ? 'bg-primary-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             Standard Prompts
@@ -169,14 +169,14 @@ Output format:
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               promptMode === 'fast'
                 ? 'bg-amber-500 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             Fast Prompts
           </button>
         </div>
         {promptMode === 'fast' && (
-          <p className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 inline-block">
+          <p className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 inline-block dark:text-amber-300 dark:bg-amber-900/20 dark:border-amber-800">
             Condensed prompts for fast mode (single few-shot example)
           </p>
         )}
@@ -184,14 +184,14 @@ Output format:
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-800">
             {/* Center / group selector */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Center / group</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Center / group</label>
               <select
                 value={selectedCenter}
                 onChange={(e) => setSelectedCenter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm dark:border-gray-600"
               >
                 {centers.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -200,20 +200,20 @@ Output format:
               <button
                 type="button"
                 onClick={() => setShowNewCenterForm(!showNewCenterForm)}
-                className="mt-2 w-full px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="mt-2 w-full px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
               >
                 + New group
               </button>
               {showNewCenterForm && (
-                <div className="mt-2 p-2 bg-gray-50 rounded-md border border-gray-200">
+                <div className="mt-2 p-2 bg-gray-50 rounded-md border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
                   <input
                     type="text"
                     placeholder="Center name (e.g. MSCI, VGR)"
                     value={newCenterName}
                     onChange={(e) => setNewCenterName(e.target.value)}
-                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-2"
+                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-2 dark:border-gray-600"
                   />
-                  {centerError && <div className="text-red-600 text-xs mb-1">{centerError}</div>}
+                  {centerError && <div className="text-red-600 text-xs mb-1 dark:text-red-300">{centerError}</div>}
                   <div className="flex gap-1">
                     <button
                       onClick={handleCreateCenter}
@@ -225,7 +225,7 @@ Output format:
                     <button
                       type="button"
                       onClick={() => { setShowNewCenterForm(false); setNewCenterName(''); setCenterError(null); }}
-                      className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-sm"
+                      className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-sm dark:bg-gray-700 dark:text-gray-200"
                     >
                       Cancel
                     </button>
@@ -242,23 +242,23 @@ Output format:
                 {showCreateForm ? 'Cancel' : '+ Create New Prompt'}
               </button>
               {showCreateForm && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <div className="mb-4 p-3 bg-gray-50 rounded-md border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
                   <input
                     type="text"
                     placeholder="Prompt name (e.g., new-prompt-int)"
                     value={newPromptName}
                     onChange={(e) => setNewPromptName(e.target.value)}
-                    className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm mb-2"
+                    className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm mb-2 dark:border-gray-600"
                   />
                   <textarea
                     placeholder="Prompt template (use {{note_original_text}} and {few_shot_examples} as placeholders)"
                     value={newPromptTemplate}
                     onChange={(e) => setNewPromptTemplate(e.target.value)}
                     rows={4}
-                    className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm mb-2 font-mono text-xs"
+                    className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm mb-2 font-mono text-xs dark:border-gray-600"
                   />
                   {error && (
-                    <div className="text-red-600 text-xs mb-2">{error}</div>
+                    <div className="text-red-600 text-xs mb-2 dark:text-red-300">{error}</div>
                   )}
                   <button
                     onClick={handleCreatePrompt}
@@ -275,11 +275,11 @@ Output format:
               placeholder="Search prompts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md mb-4"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md mb-4 dark:border-gray-600"
             />
             <div className="space-y-1 max-h-[600px] overflow-y-auto">
               {loading ? (
-                <div className="text-gray-500 text-sm">Loading...</div>
+                <div className="text-gray-500 text-sm dark:text-gray-400">Loading...</div>
               ) : (
                 filteredPrompts.map((prompt) => (
                   <button
@@ -287,8 +287,8 @@ Output format:
                     onClick={() => setSelectedPrompt(prompt.prompt_type)}
                     className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                       selectedPrompt === prompt.prompt_type
-                        ? 'bg-primary-100 text-primary-900 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-primary-100 text-primary-900 font-medium dark:bg-primary-900/40 dark:text-primary-200'
+                        : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700'
                     }`}
                   >
                     {prompt.prompt_type}
@@ -300,7 +300,7 @@ Output format:
         </div>
 
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800">
             {selectedPrompt && prompts.some((p) => p.prompt_type === selectedPrompt) ? (
               <PromptEditor
                 promptType={selectedPrompt}
@@ -313,7 +313,7 @@ Output format:
                 }}
               />
             ) : (
-              <div className="text-gray-500 text-center py-12">
+              <div className="text-gray-500 text-center py-12 dark:text-gray-400">
                 Select a prompt to edit
               </div>
             )}

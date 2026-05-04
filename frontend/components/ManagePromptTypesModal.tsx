@@ -97,27 +97,27 @@ export default function ManagePromptTypesModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col">
-        <div className="p-6 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
-          <h2 className="text-xl font-bold text-gray-900">Manage Report Type → Prompt Mapping</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">
+      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col dark:bg-gray-800">
+        <div className="p-6 border-b border-gray-200 flex justify-between items-center flex-shrink-0 dark:border-gray-700">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Manage Report Type → Prompt Mapping</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl dark:text-gray-500 dark:hover:text-gray-300">
             ✕
           </button>
         </div>
 
         <div className="p-6 overflow-y-auto flex-1">
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-xs text-gray-500 mb-3 dark:text-gray-400">
             Select which prompt types apply to each report type. The session&apos;s prompt types are determined by the union of all selections below.
           </p>
 
           {/* Global controls */}
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-gray-700 dark:text-gray-200">
               <strong>{effectivePromptTypes.size}</strong> prompt type{effectivePromptTypes.size !== 1 ? 's' : ''} active across {reportTypes.length} report type{reportTypes.length !== 1 ? 's' : ''}
             </span>
             <div className="flex gap-2">
-              <button onClick={selectAllGlobal} className="text-xs text-blue-600 hover:text-blue-800 font-medium">Select All Everywhere</button>
-              <button onClick={deselectAllGlobal} className="text-xs text-gray-500 hover:text-gray-700 font-medium">Clear All</button>
+              <button onClick={selectAllGlobal} className="text-xs text-blue-600 hover:text-blue-800 font-medium dark:text-blue-300 dark:hover:text-blue-200">Select All Everywhere</button>
+              <button onClick={deselectAllGlobal} className="text-xs text-gray-500 hover:text-gray-700 font-medium dark:text-gray-400 dark:hover:text-gray-200">Clear All</button>
             </div>
           </div>
 
@@ -148,13 +148,13 @@ export default function ManagePromptTypesModal({
               {reportTypes.map((rt) => {
                 const selectedForRT = mapping[rt] || []
                 return (
-                  <div key={rt} className="border border-gray-200 rounded p-3">
+                  <div key={rt} className="border border-gray-200 rounded p-3 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-medium text-gray-800">{rt}</h4>
+                      <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">{rt}</h4>
                       <div className="flex gap-2 items-center">
-                        <span className="text-xs text-gray-500">{selectedForRT.length} selected</span>
-                        <button onClick={() => selectAllForRT(rt)} className="text-xs text-blue-600 hover:text-blue-800">All</button>
-                        <button onClick={() => deselectAllForRT(rt)} className="text-xs text-gray-500 hover:text-gray-700">None</button>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{selectedForRT.length} selected</span>
+                        <button onClick={() => selectAllForRT(rt)} className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200">All</button>
+                        <button onClick={() => deselectAllForRT(rt)} className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">None</button>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -172,8 +172,8 @@ export default function ManagePromptTypesModal({
                             }}
                             className={`text-xs px-2 py-1 rounded-full border transition-colors ${
                               isOn
-                                ? 'bg-blue-100 border-blue-300 text-blue-800'
-                                : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300'
+                                ? 'bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-900/40 dark:border-blue-700 dark:text-blue-200'
+                                : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600'
                             }`}
                           >
                             {pt}
@@ -186,30 +186,30 @@ export default function ManagePromptTypesModal({
               })}
             </div>
           ) : (
-            <div className="text-sm text-gray-500 border border-gray-200 rounded p-4 text-center">
+            <div className="text-sm text-gray-500 border border-gray-200 rounded p-4 text-center dark:text-gray-400 dark:border-gray-700">
               No report types found in this session&apos;s notes.
             </div>
           )}
 
           {/* Warning about annotation deletion */}
           {removedWithAnnotations.length > 0 && (
-            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded text-sm">
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded text-sm dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-200">
               Saving will remove <strong>{removedWithAnnotations.length}</strong> prompt type{removedWithAnnotations.length !== 1 ? 's' : ''} that have existing annotations: {removedWithAnnotations.join(', ')}. Their annotations will be deleted.
             </div>
           )}
 
           {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm dark:bg-red-900/20 dark:border-red-800 dark:text-red-300">
               {error}
             </div>
           )}
         </div>
 
         {/* Footer with Save */}
-        <div className="p-4 border-t border-gray-200 flex justify-end gap-3 flex-shrink-0">
+        <div className="p-4 border-t border-gray-200 flex justify-end gap-3 flex-shrink-0 dark:border-gray-700">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             Cancel
           </button>

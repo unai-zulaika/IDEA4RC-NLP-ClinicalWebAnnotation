@@ -49,18 +49,18 @@ function ValueCodeMappingsSection({
   }
 
   return (
-    <div className="mt-2 border border-gray-200 rounded-md">
+    <div className="mt-2 border border-gray-200 rounded-md dark:border-gray-700">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex justify-between items-center px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-t-md"
+        className="w-full flex justify-between items-center px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-t-md dark:text-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700"
       >
         <span>Value-to-Code Mappings {entries.length > 0 && `(${entries.length})`}</span>
         <span>{expanded ? '\u25B2' : '\u25BC'}</span>
       </button>
       {expanded && (
         <div className="p-2 space-y-1.5">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Map extracted values to IDEA4RC code IDs. When a match is found, the code is used directly during export.
           </p>
           {entries.map(([key, val], i) => (
@@ -70,15 +70,15 @@ function ValueCodeMappingsSection({
                 value={key}
                 onChange={(e) => updateKey(key, e.target.value)}
                 placeholder="Value (e.g. 1)"
-                className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
+                className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs dark:border-gray-600"
               />
-              <span className="text-xs text-gray-400">{'\u2192'}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{'\u2192'}</span>
               <input
                 type="text"
                 value={val}
                 onChange={(e) => updateValue(key, e.target.value)}
                 placeholder="Code (e.g. 1634371)"
-                className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
+                className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs dark:border-gray-600"
               />
               <button
                 type="button"
@@ -93,7 +93,7 @@ function ValueCodeMappingsSection({
           <button
             type="button"
             onClick={addPair}
-            className="text-xs text-green-700 hover:text-green-900 font-medium"
+            className="text-xs text-green-700 hover:text-green-900 font-medium dark:text-green-300 dark:hover:text-green-100"
           >
             + Add Value Mapping
           </button>
@@ -164,42 +164,42 @@ function OutputWordMappingsSection({
   }
 
   return (
-    <div className="mt-2 border border-purple-200 rounded-md">
+    <div className="mt-2 border border-purple-200 rounded-md dark:border-purple-800">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex justify-between items-center px-2 py-1.5 text-xs font-medium text-purple-800 bg-purple-50 hover:bg-purple-100 rounded-t-md"
+        className="w-full flex justify-between items-center px-2 py-1.5 text-xs font-medium text-purple-800 bg-purple-50 hover:bg-purple-100 rounded-t-md dark:text-purple-200 dark:bg-purple-900/20 dark:hover:bg-purple-900/40"
       >
         <span>Output Word Mappings {list.length > 0 && `(${list.length} pattern${list.length > 1 ? 's' : ''})`}</span>
         <span>{expanded ? '\u25B2' : '\u25BC'}</span>
       </button>
       {expanded && (
         <div className="p-2 space-y-2">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Regex patterns tested against LLM output in order; first match sets the field value. Composes with Value-to-Code Mappings.
           </p>
           {list.map((owm, i) => (
-            <div key={keys[i] ?? i} className="border border-purple-100 rounded p-2 bg-purple-50 space-y-1.5">
+            <div key={keys[i] ?? i} className="border border-purple-100 rounded p-2 bg-purple-50 space-y-1.5 dark:bg-purple-900/20">
               <div className="flex items-center gap-1.5">
                 <input
                   type="text"
                   value={owm.pattern}
                   onChange={(e) => updatePattern(i, { pattern: e.target.value })}
                   placeholder="Pattern (e.g. recurrence)"
-                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs font-mono"
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs font-mono dark:border-gray-600"
                 />
                 <input
                   type="text"
                   value={owm.value}
                   onChange={(e) => updatePattern(i, { value: e.target.value })}
                   placeholder="Value (e.g. recurrence)"
-                  className="w-32 px-2 py-1 border border-gray-300 rounded text-xs"
+                  className="w-32 px-2 py-1 border border-gray-300 rounded text-xs dark:border-gray-600"
                 />
                 <button
                   type="button"
                   onClick={() => moveUp(i)}
                   disabled={i === 0}
-                  className="px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded text-xs hover:bg-gray-300 disabled:opacity-30"
+                  className="px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded text-xs hover:bg-gray-300 disabled:opacity-30 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                   title="Move up"
                 >
                   ↑
@@ -208,7 +208,7 @@ function OutputWordMappingsSection({
                   type="button"
                   onClick={() => moveDown(i)}
                   disabled={i === list.length - 1}
-                  className="px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded text-xs hover:bg-gray-300 disabled:opacity-30"
+                  className="px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded text-xs hover:bg-gray-300 disabled:opacity-30 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                   title="Move down"
                 >
                   ↓
@@ -223,7 +223,7 @@ function OutputWordMappingsSection({
                 </button>
               </div>
               <div className="flex items-center gap-3 pl-0.5">
-                <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+                <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer dark:text-gray-300">
                   <input
                     type="checkbox"
                     checked={hasFlag(owm.flags, 'IGNORECASE')}
@@ -232,7 +232,7 @@ function OutputWordMappingsSection({
                   />
                   Case-insensitive
                 </label>
-                <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+                <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer dark:text-gray-300">
                   <input
                     type="checkbox"
                     checked={hasFlag(owm.flags, 'MULTILINE')}
@@ -247,7 +247,7 @@ function OutputWordMappingsSection({
           <button
             type="button"
             onClick={addPattern}
-            className="text-xs text-purple-700 hover:text-purple-900 font-medium"
+            className="text-xs text-purple-700 hover:text-purple-900 font-medium dark:text-purple-300 dark:hover:text-purple-100"
           >
             + Add Pattern
           </button>
@@ -343,9 +343,9 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
   const hasMapping = entityType || fieldMappings.length > 0
 
   return (
-    <div className="bg-white border border-gray-300 rounded-lg p-4 space-y-4">
+    <div className="bg-white border border-gray-300 rounded-lg p-4 space-y-4 dark:bg-gray-800 dark:border-gray-600">
       <div className="flex justify-between items-center">
-        {/* <h3 className="text-lg font-semibold text-gray-900">Entity Mapping</h3> */}
+        {/* <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Entity Mapping</h3> */}
         <div className="flex gap-2 items-center">
           {hasMapping && (
             <>
@@ -357,17 +357,17 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
                 {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? '✓ Saved' : 'Save Mapping'}
               </button>
               {saveStatus === 'saved' && (
-                <span className="text-sm text-green-600">Mapping saved!</span>
+                <span className="text-sm text-green-600 dark:text-green-300">Mapping saved!</span>
               )}
               {saveStatus === 'error' && (
-                <span className="text-sm text-red-600">Error saving mapping</span>
+                <span className="text-sm text-red-600 dark:text-red-300">Error saving mapping</span>
               )}
             </>
           )}
           {hasMapping && (
             <button
               onClick={handleClear}
-              className="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 text-sm"
+              className="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 text-sm dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
             >
               Clear
             </button>
@@ -376,12 +376,12 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
       </div>
 
       {!hasMapping && (
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-          <p className="text-sm text-blue-800 font-semibold mb-2">How Entity Mapping Works:</p>
-          <p className="text-xs text-blue-700 mb-2">
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-3 dark:bg-blue-900/20 dark:border-blue-800">
+          <p className="text-sm text-blue-800 font-semibold mb-2 dark:text-blue-200">How Entity Mapping Works:</p>
+          <p className="text-xs text-blue-700 mb-2 dark:text-blue-300">
             Entity mappings connect annotation template values to structured entity fields. There are two types:
           </p>
-          <div className="space-y-2 text-xs text-blue-700">
+          <div className="space-y-2 text-xs text-blue-700 dark:text-blue-300">
             <div>
               <strong>1. Main Fact (Entity Type):</strong> Maps to the fact that something happened
               <ul className="ml-4 mt-1 list-disc">
@@ -398,7 +398,7 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
               </ul>
             </div>
           </div>
-          <p className="text-xs text-blue-600 mt-2 italic">
+          <p className="text-xs text-blue-600 mt-2 italic dark:text-blue-300">
             Example annotation: "pre-operative radiotherapy (conventional) with [select intention] intention started [please select where] on [put date]"
           </p>
         </div>
@@ -406,25 +406,25 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
 
       <div className="space-y-3">
         {/* Entity Type - Maps to the main fact */}
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Entity Type (Main Fact) <span className="text-red-500">*</span>
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-3 dark:bg-blue-900/20 dark:border-blue-800">
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
+            Entity Type (Main Fact) <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="text"
             value={entityType}
             onChange={(e) => setEntityType(e.target.value)}
             placeholder="e.g., Radiotherapy"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600"
           />
-          <p className="text-xs text-gray-600 mt-1">
+          <p className="text-xs text-gray-600 mt-1 dark:text-gray-300">
             <strong>Maps to:</strong> The fact that this entity/event occurred (e.g., "Radiotherapy happened")
           </p>
         </div>
 
         {/* Fact Trigger (Optional) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
             Fact Trigger Pattern (Optional)
           </label>
           <input
@@ -432,9 +432,9 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
             value={factTrigger}
             onChange={(e) => setFactTrigger(e.target.value)}
             placeholder="e.g., pre-operative radiotherapy"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
             Text pattern in the annotation that indicates this fact occurred (helps identify when to create the entity)
           </p>
         </div>
@@ -443,10 +443,10 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
         <div>
           <div className="flex justify-between items-center mb-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Field Mappings (Placeholder Values)
               </label>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Map individual placeholder values in brackets to entity fields
               </p>
             </div>
@@ -459,20 +459,20 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
           </div>
 
           {fieldMappings.length === 0 ? (
-            <p className="text-sm text-gray-500 italic">No field mappings defined</p>
+            <p className="text-sm text-gray-500 italic dark:text-gray-400">No field mappings defined</p>
           ) : (
             <div className="space-y-2">
               {fieldMappings.map((fm, index) => (
-                <div key={index} className="border border-gray-200 rounded-md p-3 bg-gray-50">
+                <div key={index} className="border border-gray-200 rounded-md p-3 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                      <label className="block text-xs font-medium text-gray-600 mb-1 dark:text-gray-300">
                         Template Placeholder
                       </label>
                       <select
                         value={fm.template_placeholder}
                         onChange={(e) => updateFieldMapping(index, { template_placeholder: e.target.value })}
-                        className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
+                        className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm dark:border-gray-600"
                       >
                         <option value="">Select placeholder or fact...</option>
                         <option value="[FULL_ANNOTATION]">[FULL_ANNOTATION] - The entire annotation text</option>
@@ -484,7 +484,7 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                      <label className="block text-xs font-medium text-gray-600 mb-1 dark:text-gray-300">
                         Entity Type
                       </label>
                       <input
@@ -492,12 +492,12 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
                         value={fm.entity_type}
                         onChange={(e) => updateFieldMapping(index, { entity_type: e.target.value })}
                         placeholder="e.g., Radiotherapy"
-                        className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
+                        className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm dark:border-gray-600"
                       />
                     </div>
                     <div className="flex gap-2">
                       <div className="flex-1">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1 dark:text-gray-300">
                           Field Name
                         </label>
                         <input
@@ -505,7 +505,7 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
                           value={fm.field_name}
                           onChange={(e) => updateFieldMapping(index, { field_name: e.target.value })}
                           placeholder="e.g., intent"
-                          className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
+                          className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm dark:border-gray-600"
                         />
                       </div>
                       <button
@@ -518,7 +518,7 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
                     </div>
                   </div>
                   <div className="mt-2">
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                    <label className="block text-xs font-medium text-gray-600 mb-1 dark:text-gray-300">
                       Hardcoded value (optional)
                     </label>
                     <input
@@ -526,9 +526,9 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
                       value={fm.hardcoded_value ?? ''}
                       onChange={(e) => updateFieldMapping(index, { hardcoded_value: e.target.value || undefined })}
                       placeholder="Fixed value for this field (overrides extraction)"
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
+                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm dark:border-gray-600"
                     />
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">
                       If set, this value is used for the field instead of extracting from the annotation.
                     </p>
                   </div>
@@ -547,19 +547,19 @@ export default function EntityMappingEditor({ mapping, template, onChange }: Ent
             </div>
           )}
 
-          <div className="mt-2 p-2 bg-blue-50 rounded-md">
-            <p className="text-xs font-medium text-blue-900 mb-1">Available options for mapping:</p>
+          <div className="mt-2 p-2 bg-blue-50 rounded-md dark:bg-blue-900/20">
+            <p className="text-xs font-medium text-blue-900 mb-1 dark:text-blue-100">Available options for mapping:</p>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono">
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono dark:bg-blue-900/40 dark:text-blue-200">
                   [FULL_ANNOTATION]
                 </span>
-                <span className="text-xs text-blue-700">- Map the entire annotation text</span>
+                <span className="text-xs text-blue-700 dark:text-blue-300">- Map the entire annotation text</span>
               </div>
               {placeholders.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {placeholders.map((ph) => (
-                    <span key={ph} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono">
+                    <span key={ph} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono dark:bg-blue-900/40 dark:text-blue-200">
                       {ph}
                     </span>
                   ))}

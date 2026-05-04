@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { promptsApi } from '@/lib/api'
 import { useDefaultCenter } from '@/lib/useDefaultCenter'
+import ThemeToggle from './ThemeToggle'
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -26,18 +27,18 @@ export default function Navbar() {
     const active = pathname === href
     return `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
       active
-        ? 'border-primary-500 text-gray-900'
-        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+        ? 'border-primary-500 text-gray-900 dark:text-gray-100'
+        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-200'
     }`
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 Clinical Data Curation
               </h1>
             </div>
@@ -57,21 +58,23 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Global center selector */}
-          {centers.length > 0 && (
-            <div className="flex items-center">
-              <label className="text-sm text-gray-500 mr-2">Center:</label>
-              <select
-                value={center}
-                onChange={(e) => setCenter(e.target.value)}
-                className="px-2 py-1 border border-gray-300 rounded-md text-sm bg-white"
-              >
-                {centers.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {centers.length > 0 && (
+              <div className="flex items-center">
+                <label className="text-sm text-gray-500 dark:text-gray-400 mr-2">Center:</label>
+                <select
+                  value={center}
+                  onChange={(e) => setCenter(e.target.value)}
+                  className="px-2 py-1 border border-gray-300 rounded-md text-sm bg-white dark:border-gray-600 dark:text-gray-100 dark:bg-gray-800"
+                >
+                  {centers.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </nav>

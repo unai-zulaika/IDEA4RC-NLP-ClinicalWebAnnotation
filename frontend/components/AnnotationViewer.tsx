@@ -34,17 +34,27 @@ export default function AnnotationViewer({
   const [isEditing, setIsEditing] = useState(false)
   const [showDetailView, setShowDetailView] = useState(false)
 
+  // For split multi-value annotations, render one editable field per event from
+  // values[] (annotation_text is a comma-joined summary that would collapse them).
+  // Otherwise, fall back to annotation_text plus any extra values that differ from it.
+  const computeFormValues = (): FormValues => ({
+    values:
+      annotation.multi_value_info?.was_split && annotation.values && annotation.values.length > 1
+        ? annotation.values.map((v) => ({ value: v.value }))
+        : annotation.annotation_text
+        ? [
+            { value: annotation.annotation_text },
+            ...(annotation.values || [])
+              .filter((v) => v.value && v.value !== annotation.annotation_text)
+              .map((v) => ({ value: v.value })),
+          ]
+        : annotation.values && annotation.values.length > 0
+        ? annotation.values.map((v) => ({ value: v.value }))
+        : [{ value: '' }],
+  })
+
   const { register, control, handleSubmit, watch, reset } = useForm<FormValues>({
-    defaultValues: {
-      // Always use annotation_text as the primary value for editing
-      // If values exist and are different, include them as additional editable fields
-      values:
-        annotation.annotation_text
-          ? [{ value: annotation.annotation_text }, ...(annotation.values || []).filter(v => v.value && v.value !== annotation.annotation_text).map((v) => ({ value: v.value }))]
-          : annotation.values.length > 0
-          ? annotation.values.map((v) => ({ value: v.value }))
-          : [{ value: '' }],
-    },
+    defaultValues: computeFormValues(),
   })
 
   const { fields, append, remove } = useFieldArray({
@@ -59,11 +69,14 @@ export default function AnnotationViewer({
   }
 
   const handleEdit = () => {
+    // Re-sync the form with the current annotation, since defaultValues is captured
+    // at mount and would be stale if the annotation has been (re)processed since then.
+    reset(computeFormValues())
     setIsEditing(true)
   }
 
   const handleCancel = () => {
-    reset()
+    reset(computeFormValues())
     setIsEditing(false)
   }
 
@@ -79,22 +92,22 @@ export default function AnnotationViewer({
 
   return (
     <>
-      <div className={`border-2 ${hasHallucination ? (hallucinationHigh ? 'border-red-400 bg-red-50/30' : 'border-orange-400 bg-orange-50/30') : `${colorClasses.border} bg-white`} rounded-lg p-4 space-y-4 ${isProcessed ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`} onClick={() => isProcessed && setShowDetailView(true)}>
+      <div className={`border-2 ${hasHallucination ? (hallucinationHigh ? 'border-red-400 bg-red-50/30 dark:bg-red-900/20 dark:border-red-600' : 'border-orange-400 bg-orange-50/30 dark:bg-orange-900/20 dark:border-orange-600') : `${colorClasses.border} bg-white dark:bg-gray-800`} rounded-lg p-4 space-y-4 ${isProcessed && !isEditing ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`} onClick={() => !isEditing && isProcessed && setShowDetailView(true)}>
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <h3 className="text-sm font-semibold" style={{ color: titleColor }}>
               {annotation.prompt_type}
             </h3>
             {annotation.confidence_score !== undefined && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
                 Confidence: {annotation.confidence_score.toFixed(3)}
               </p>
             )}
             
             {/* Show "Not Processed" message if annotation hasn't been processed */}
             {!isProcessed && (
-              <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-md">
-                <p className="text-sm text-gray-600 italic">
+              <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-md dark:bg-gray-900 dark:border-gray-700">
+                <p className="text-sm text-gray-600 italic dark:text-gray-300">
                   ⏳ This note has not been processed yet. Click "Process Note" to generate annotations.
                 </p>
               </div>
@@ -108,8 +121,8 @@ export default function AnnotationViewer({
                   <>
                     <span className={`text-xs px-2.5 py-1 rounded font-semibold border ${
                       annotation.evaluation_result.overall_match
-                        ? 'bg-green-200 text-green-900 border-green-300'
-                        : 'bg-red-200 text-red-900 border-red-300'
+                        ? 'bg-green-200 text-green-900 border-green-300 dark:bg-green-900/60 dark:text-green-100 dark:border-green-700'
+                        : 'bg-red-200 text-red-900 border-red-300 dark:bg-red-900/60 dark:text-red-100 dark:border-red-700'
                     }`}>
                       {annotation.evaluation_result.overall_match ? '✓ Match' : '✗ Mismatch'}
                     </span>
@@ -117,8 +130,8 @@ export default function AnnotationViewer({
                     {annotation.evaluation_result.field_evaluation?.field_evaluation_available && (
                       <span className={`text-xs px-2 py-0.5 rounded font-medium border ${
                         annotation.evaluation_result.field_evaluation.overall_field_match
-                          ? 'bg-indigo-100 text-indigo-800 border-indigo-200'
-                          : 'bg-orange-100 text-orange-800 border-orange-200'
+                          ? 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-200 dark:border-indigo-800'
+                          : 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200 dark:border-orange-800'
                       }`} title="Per-value evaluation available">
                         📊 {annotation.evaluation_result.field_evaluation.fields_matched}/{annotation.evaluation_result.field_evaluation.total_fields} fields
                       </span>
@@ -128,38 +141,38 @@ export default function AnnotationViewer({
                 {annotation.status && (
                   <span className={`text-xs px-2 py-0.5 rounded font-medium ${
                     annotation.status === 'error'
-                      ? 'bg-red-100 text-red-800'
+                      ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
                       : annotation.status === 'incomplete'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-blue-100 text-blue-800'
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200'
+                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'
                   }`}>
                     {annotation.status === 'error' ? '❌ Parse Error' : annotation.status === 'incomplete' ? '⚠️ Incomplete' : '✓ Parsed'}
                   </span>
                 )}
                 {/* Multi-value extraction badge */}
                 {annotation.multi_value_info && annotation.multi_value_info.was_split && annotation.multi_value_info.unique_values_extracted > 1 && (
-                  <span className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-medium">
+                  <span className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-medium dark:bg-purple-900/40 dark:text-purple-200">
                     {annotation.multi_value_info.unique_values_extracted} events extracted
                   </span>
                 )}
                 {/* Only show negation badge when something is actually negated */}
                 {annotation.is_negated === true && (
-                  <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-800">
+                  <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200">
                     ⚠️ Negated
                   </span>
                 )}
                 {annotation.date_info && (
-                  <span className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-800">
+                  <span className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200">
                     📅 {annotation.date_info.date_value || 'Date info'}
                   </span>
                 )}
                 {annotation.evidence_spans.length > 0 && (
-                  <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-800">
+                  <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200">
                     🔍 {annotation.evidence_spans.length} evidence span{annotation.evidence_spans.length !== 1 ? 's' : ''}
                   </span>
                 )}
                 {templateIncomplete && (
-                  <span className="text-xs px-2 py-0.5 rounded bg-orange-100 text-orange-800 font-medium">
+                  <span className="text-xs px-2 py-0.5 rounded bg-orange-100 text-orange-800 font-medium dark:bg-orange-900/40 dark:text-orange-200">
                     ⚠️ Template Incomplete
                   </span>
                 )}
@@ -172,7 +185,7 @@ export default function AnnotationViewer({
                 e.stopPropagation()
                 handleEdit()
               }}
-              className="text-sm text-primary-600 hover:text-primary-700"
+              className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
             >
               Edit
             </button>
@@ -183,21 +196,21 @@ export default function AnnotationViewer({
       {isProcessed && annotation.hallucination_flags && annotation.hallucination_flags.length > 0 && (
         <div className={`rounded-md p-3 flex items-start gap-3 ${
           annotation.hallucination_flags.some(f => f.severity === 'high')
-            ? 'bg-red-50 border-2 border-red-400'
-            : 'bg-orange-50 border-2 border-orange-400'
+            ? 'bg-red-50 border-2 border-red-400 dark:bg-red-900/20 dark:border-red-600'
+            : 'bg-orange-50 border-2 border-orange-400 dark:bg-orange-900/20 dark:border-orange-600'
         }`}>
           <span className="text-2xl flex-shrink-0">{'\u26A0\uFE0F'}</span>
           <div>
             <p className={`text-sm font-bold ${
               annotation.hallucination_flags.some(f => f.severity === 'high')
-                ? 'text-red-800'
-                : 'text-orange-800'
+                ? 'text-red-800 dark:text-red-200'
+                : 'text-orange-800 dark:text-orange-200'
             }`}>
               Possible hallucination detected
             </p>
             {annotation.hallucination_flags.map((flag, idx) => (
               <p key={idx} className={`text-xs mt-0.5 ${
-                flag.severity === 'high' ? 'text-red-700' : 'text-orange-700'
+                flag.severity === 'high' ? 'text-red-700 dark:text-red-300' : 'text-orange-700 dark:text-orange-300'
               }`}>
                 {flag.message} (field: <span className="font-semibold">{flag.field}</span>, {Math.round(flag.duplicate_ratio * 100)}% duplicated)
               </p>
@@ -208,9 +221,9 @@ export default function AnnotationViewer({
 
       {/* Only show expected annotation if note has been processed */}
       {isProcessed && expectedAnnotation && expectedAnnotation !== annotation.annotation_text && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-          <p className="text-xs font-medium text-yellow-800 mb-1">Expected:</p>
-          <p className="text-xs text-yellow-700">{expectedAnnotation}</p>
+        <div className="bg-yellow-50 border border-yellow-200 rounded p-2 dark:bg-yellow-900/20 dark:border-yellow-800">
+          <p className="text-xs font-medium text-yellow-800 mb-1 dark:text-yellow-200">Expected:</p>
+          <p className="text-xs text-yellow-700 dark:text-yellow-300">{expectedAnnotation}</p>
         </div>
       )}
 
@@ -220,14 +233,14 @@ export default function AnnotationViewer({
             <div key={field.id} className="flex gap-2">
               <input
                 {...register(`values.${index}.value` as const)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm dark:border-gray-600"
                 placeholder="Enter value"
               />
               {fields.length > 1 && (
                 <button
                   type="button"
                   onClick={() => remove(index)}
-                  className="px-3 py-2 text-red-600 hover:text-red-700 text-sm"
+                  className="px-3 py-2 text-red-600 hover:text-red-700 text-sm dark:text-red-300 dark:hover:text-red-300"
                 >
                   Remove
                 </button>
@@ -238,7 +251,7 @@ export default function AnnotationViewer({
             <button
               type="button"
               onClick={() => append({ value: '' })}
-              className="text-sm text-primary-600 hover:text-primary-700"
+              className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
             >
               + Add Value
             </button>
@@ -246,7 +259,7 @@ export default function AnnotationViewer({
             <button
               type="button"
               onClick={handleCancel}
-              className="px-3 py-1.5 text-sm text-gray-700 hover:text-gray-900"
+              className="px-3 py-1.5 text-sm text-gray-700 hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-100"
             >
               Cancel
             </button>
@@ -268,17 +281,17 @@ export default function AnnotationViewer({
                 return (
                   <div key={idx} className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-2 ${
                     isError
-                      ? 'bg-red-50 border border-red-200 text-red-700'
-                      : 'bg-purple-50 border border-purple-100 text-gray-900'
+                      ? 'bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
+                      : 'bg-purple-50 border border-purple-100 text-gray-900 dark:bg-purple-900/20 dark:border-purple-800 dark:text-gray-100'
                   }`}>
-                    <span className={`text-xs font-medium shrink-0 ${isError ? 'text-red-500' : 'text-purple-600'}`}>Event {idx + 1}</span>
+                    <span className={`text-xs font-medium shrink-0 ${isError ? 'text-red-500 dark:text-red-400' : 'text-purple-600 dark:text-purple-300'}`}>Event {idx + 1}</span>
                     <span>{isError ? 'LLM error (transient)' : v.value}</span>
                   </div>
                 )
               })}
             </div>
           ) : (
-            <div className="px-3 py-2 bg-gray-50 rounded-md text-sm text-gray-900">
+            <div className="px-3 py-2 bg-gray-50 rounded-md text-sm text-gray-900 dark:bg-gray-900 dark:text-gray-100">
               {annotation.annotation_text || 'No annotation generated'}
             </div>
           )}
@@ -289,7 +302,7 @@ export default function AnnotationViewer({
         <div>
           <button
             onClick={() => setShowReasoning(!showReasoning)}
-            className="text-xs text-gray-500 hover:text-gray-700 mb-2"
+            className="text-xs text-gray-500 hover:text-gray-700 mb-2 dark:text-gray-400 dark:hover:text-gray-200"
           >
             {showReasoning ? '▼' : '▶'} Evidence Spans ({annotation.evidence_spans.length})
           </button>
@@ -298,7 +311,7 @@ export default function AnnotationViewer({
               {annotation.evidence_spans.map((span, idx) => (
                 <div
                   key={idx}
-                  className="text-xs px-2 py-1 bg-blue-50 rounded cursor-pointer hover:bg-blue-100"
+                  className="text-xs px-2 py-1 bg-blue-50 rounded cursor-pointer hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40"
                   onClick={() => onSelectSpan?.(span)}
                 >
                   <span className="font-medium">{span.prompt_type}:</span>{' '}
@@ -315,12 +328,12 @@ export default function AnnotationViewer({
         <div>
           <button
             onClick={() => setShowReasoning(!showReasoning)}
-            className="text-xs text-gray-500 hover:text-gray-700 mb-2"
+            className="text-xs text-gray-500 hover:text-gray-700 mb-2 dark:text-gray-400 dark:hover:text-gray-200"
           >
             {showReasoning ? '▼' : '▶'} Why?
           </button>
           {showReasoning && (
-            <div className="mt-2 px-3 py-2 bg-gray-50 rounded-md text-xs text-gray-700">
+            <div className="mt-2 px-3 py-2 bg-gray-50 rounded-md text-xs text-gray-700 dark:bg-gray-900 dark:text-gray-200">
               {annotation.reasoning}
             </div>
           )}
@@ -329,7 +342,7 @@ export default function AnnotationViewer({
 
       {/* Click hint - only show if processed */}
       {isProcessed && (
-        <div className="text-xs text-gray-400 italic mt-2">
+        <div className="text-xs text-gray-400 italic mt-2 dark:text-gray-500">
           Click to view detailed annotation information
         </div>
       )}
