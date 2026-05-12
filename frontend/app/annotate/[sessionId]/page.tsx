@@ -66,6 +66,9 @@ export default function AnnotatePage() {
     report: DiagnosisValidationReport
   } | null>(null)
   const [exportConflicts, setExportConflicts] = useState<ExportConflict[] | null>(null)
+  // Remembers which export mode triggered the conflict modal, so the
+  // "Export with conflicts" button knows which export to retry with force=true.
+  const [conflictMode, setConflictMode] = useState<'labels' | 'codes' | null>(null)
   const [resolvingConflicts, setResolvingConflicts] = useState(false)
   const [exportConfirmMode, setExportConfirmMode] = useState<'labels' | 'codes' | null>(null)
   const [reprocessConfirm, setReprocessConfirm] = useState(false)
@@ -677,7 +680,15 @@ export default function AnnotatePage() {
   }
 
   // Handle export download
-  const handleExport = async (mode: 'labels' | 'codes' | 'session', skipValidation = false) => {
+  // - skipValidation: skip the pre-flight diagnosis + cardinality checks (used by "Export Anyway" on
+  //   the diagnosis warning modal so the cardinality 409 can still surface from the backend)
+  // - force: pass through to the backend so it bypasses the cardinality 409 entirely. Used by the
+  //   "Export with conflicts" button on the cardinality conflict modal.
+  const handleExport = async (
+    mode: 'labels' | 'codes' | 'session',
+    skipValidation = false,
+    force = false,
+  ) => {
     // Pre-export diagnosis validation for labels/codes exports
     if ((mode === 'labels' || mode === 'codes') && !skipValidation) {
       try {
@@ -690,15 +701,19 @@ export default function AnnotatePage() {
         console.warn('Diagnosis validation check failed, proceeding with export:', err)
       }
 
-      // Pre-export cardinality validation
-      try {
-        const validation = await sessionsApi.validateExport(sessionId)
-        if (!validation.valid) {
-          setExportConflicts(validation.conflicts)
-          return
+      // Pre-export cardinality validation. Skipped when force=true since the
+      // user has already seen and acknowledged the conflicts.
+      if (!force) {
+        try {
+          const validation = await sessionsApi.validateExport(sessionId)
+          if (!validation.valid) {
+            setExportConflicts(validation.conflicts)
+            setConflictMode(mode)
+            return
+          }
+        } catch (err) {
+          console.warn('Cardinality validation check failed, proceeding with export:', err)
         }
-      } catch (err) {
-        console.warn('Cardinality validation check failed, proceeding with export:', err)
       }
     }
 
@@ -708,12 +723,12 @@ export default function AnnotatePage() {
       let filename: string
       let excludedRows: import('@/lib/api').ExcludedRow[] = []
       if (mode === 'labels') {
-        const result = await sessionsApi.exportLabels(sessionId)
+        const result = await sessionsApi.exportLabels(sessionId, { force })
         blob = result.blob
         excludedRows = result.excludedRows
         filename = `${sessionId}_validated.csv`
       } else if (mode === 'codes') {
-        const result = await sessionsApi.exportCodes(sessionId)
+        const result = await sessionsApi.exportCodes(sessionId, { force })
         blob = result.blob
         excludedRows = result.excludedRows
         filename = `${sessionId}_coded.csv`
@@ -744,6 +759,9 @@ export default function AnnotatePage() {
           const detail = JSON.parse(text)?.detail
           if (detail?.conflicts) {
             setExportConflicts(detail.conflicts)
+            if (mode === 'labels' || mode === 'codes') {
+              setConflictMode(mode)
+            }
             return
           }
         } catch { /* fall through to generic error */ }
@@ -790,6 +808,7 @@ export default function AnnotatePage() {
       await loadSession()
       if (result.valid || result.remaining_conflicts.length === 0) {
         setExportConflicts(null)
+        setConflictMode(null)
       } else {
         setExportConflicts(result.remaining_conflicts)
       }
@@ -1657,6 +1676,12 @@ export default function AnnotatePage() {
                 To resolve: edit the conflicting annotations in the notes so that each variable has a single consistent value.
                 For unique entities (Patient, Diagnosis, etc.), only one value is allowed across all notes.
                 For repeatable entities (Surgery, Radiotherapy, etc.), different values require different dates.
+                <br />
+                <span className="text-amber-700 dark:text-amber-300">
+                  <strong>Tip:</strong> "Resolve All" permanently deletes the listed annotations.
+                  If you might want to undo, click <em>Export Session JSON</em> first to keep a backup
+                  you can re-import.
+                </span>
               </p>
               <div className="flex justify-between items-center gap-2">
                 <button
@@ -1667,13 +1692,35 @@ export default function AnnotatePage() {
                 >
                   {resolvingConflicts ? 'Resolving…' : 'Resolve All (delete entries)'}
                 </button>
-                <button
-                  onClick={() => setExportConflicts(null)}
-                  disabled={resolvingConflicts}
-                  className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-                >
-                  Close
-                </button>
+                <div className="flex items-center gap-2">
+                  {conflictMode && (
+                    <button
+                      onClick={() => {
+                        const mode = conflictMode
+                        setExportConflicts(null)
+                        setConflictMode(null)
+                        // skipValidation=true so we don't re-prompt the diagnosis modal,
+                        // force=true so the backend skips its 409 conflict gate.
+                        handleExport(mode, true, true)
+                      }}
+                      disabled={resolvingConflicts || exporting !== null}
+                      className="px-4 py-2 text-sm bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Download the CSV including the conflicting rows. Resolve them downstream."
+                    >
+                      Export with conflicts
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setExportConflicts(null)
+                      setConflictMode(null)
+                    }}
+                    disabled={resolvingConflicts}
+                    className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>

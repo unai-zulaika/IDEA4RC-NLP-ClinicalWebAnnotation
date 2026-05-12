@@ -411,3 +411,63 @@ class TestValidateEndpoint:
 
         assert resp.status_code == 200
         assert 'text/csv' in resp.headers.get('content-type', '')
+
+
+class TestForceExport:
+    """The ?force=true query param bypasses the cardinality conflict gate."""
+
+    def _seed_conflicting_session(self, tmp_path):
+        session = _make_session({
+            'N001': {'gender-int': "Patient's gender male."},
+            'N002': {'gender-int': "Patient's gender female."},
+        })
+        session['notes'][1]['p_id'] = 'P001'  # same patient → cardinality=1 conflict
+        session_file = tmp_path / 'test-session-001.json'
+        session_file.write_text(json.dumps(session))
+        return session_file
+
+    def test_export_labels_force_true_bypasses_409(self, tmp_path):
+        self._seed_conflicting_session(tmp_path)
+        with patch('routes.sessions._get_sessions_dir', return_value=tmp_path):
+            resp = client.get('/api/sessions/test-session-001/export?force=true')
+
+        assert resp.status_code == 200
+        assert 'text/csv' in resp.headers.get('content-type', '')
+        # Both conflicting values must be in the body — force exports everything
+        body = resp.text
+        assert 'male' in body.lower()
+        assert 'female' in body.lower()
+
+    def test_export_codes_force_true_bypasses_409(self, tmp_path):
+        self._seed_conflicting_session(tmp_path)
+        with patch('routes.sessions._get_sessions_dir', return_value=tmp_path):
+            resp = client.get('/api/sessions/test-session-001/export/codes?force=true')
+
+        assert resp.status_code == 200
+        assert 'text/csv' in resp.headers.get('content-type', '')
+
+    def test_export_default_still_blocks_409(self, tmp_path):
+        """Default behavior (no force param) must remain unchanged."""
+        self._seed_conflicting_session(tmp_path)
+        with patch('routes.sessions._get_sessions_dir', return_value=tmp_path):
+            resp = client.get('/api/sessions/test-session-001/export')
+        assert resp.status_code == 409
+
+    def test_force_false_explicit_blocks_409(self, tmp_path):
+        """Explicit force=false should also block."""
+        self._seed_conflicting_session(tmp_path)
+        with patch('routes.sessions._get_sessions_dir', return_value=tmp_path):
+            resp = client.get('/api/sessions/test-session-001/export?force=false')
+        assert resp.status_code == 409
+
+    def test_force_true_with_no_conflicts_works(self, tmp_path):
+        """force=true on a clean session is a harmless no-op."""
+        session = _make_session({
+            'N001': {'gender-int': "Patient's gender male."},
+        })
+        session_file = tmp_path / 'test-session-001.json'
+        session_file.write_text(json.dumps(session))
+
+        with patch('routes.sessions._get_sessions_dir', return_value=tmp_path):
+            resp = client.get('/api/sessions/test-session-001/export?force=true')
+        assert resp.status_code == 200
