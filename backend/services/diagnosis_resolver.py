@@ -95,9 +95,12 @@ def _extract_code_from_annotation(ann: dict, classification: str) -> Optional[st
         match = re.search(r'(\d{4}/\d)', annotation_text)
         if match:
             return match.group(1)
-        # Fallback: icdo3_code field
+        # Fallback: icdo3_code field, but only if the auto-pick wasn't flagged
+        # as low confidence. Low-confidence matches (kidney-cancer style) are
+        # likely wrong; better to surface as "needs review" than persist a
+        # confidently-wrong code.
         icdo3 = ann.get('icdo3_code')
-        if icdo3 and isinstance(icdo3, dict):
+        if icdo3 and isinstance(icdo3, dict) and not icdo3.get('low_confidence'):
             return (icdo3.get('morphology_code') or '').strip() or None
 
     elif classification == 'topography':

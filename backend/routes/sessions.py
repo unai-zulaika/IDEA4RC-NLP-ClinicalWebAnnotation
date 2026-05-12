@@ -1271,12 +1271,23 @@ async def resolve_conflicts(session_id: str, request: ConflictResolveRequest):
 
 
 @router.get("/{session_id}/export")
-async def export_session_for_pipeline(session_id: str):
+async def export_session_for_pipeline(
+    session_id: str,
+    force: bool = Query(
+        False,
+        description=(
+            "If true, bypass the cardinality conflict gate. Conflicting rows "
+            "still pass through deduplication and end up in the CSV; "
+            "downstream consumers are responsible for resolving them."
+        ),
+    ),
+):
     """Export validated annotations in pipeline-compatible CSV format (labels).
 
     Format matches SARC_V2(in).csv: semicolon-delimited, 8 columns.
     Rows with absence values (Not applicable, Unknown, etc.) are excluded.
-    Blocks with HTTP 409 if cardinality conflicts are detected.
+    Blocks with HTTP 409 if cardinality conflicts are detected,
+    unless ?force=true is set.
     """
     try:
         session = _load_session(session_id)
@@ -1292,13 +1303,18 @@ async def export_session_for_pipeline(session_id: str):
 
     # Validate cardinality constraints and deduplicate
     rows, conflicts, _ = _validate_and_deduplicate_rows(rows)
-    if conflicts:
+    if conflicts and not force:
         raise HTTPException(
             status_code=409,
             detail={
                 "message": "Export blocked: cardinality conflicts detected. Resolve them before exporting.",
                 "conflicts": [c.model_dump() for c in conflicts],
             },
+        )
+    if conflicts and force:
+        print(
+            f"[INFO] Forced export of {session_id} (validated): "
+            f"bypassing {len(conflicts)} cardinality conflict(s)"
         )
 
     # Strip internal fields before CSV output
@@ -1326,13 +1342,25 @@ async def export_session_for_pipeline(session_id: str):
 
 
 @router.get("/{session_id}/export/codes")
-async def export_session_coded(session_id: str):
+async def export_session_coded(
+    session_id: str,
+    force: bool = Query(
+        False,
+        description=(
+            "If true, bypass the cardinality conflict gate. Conflicting rows "
+            "still pass through deduplication and end up in the CSV; "
+            "downstream consumers are responsible for resolving them."
+        ),
+    ),
+):
     """Export annotations with CodeableConcept values resolved to IDEA4RC codes.
 
     Histology + topography rows are merged into a single Diagnosis.diagnosisCode
     row using the unified ICD-O-3 code saved during annotation.
     Non-CodeableConcept values pass through unchanged.
     Unresolved values are prefixed with 'UNRESOLVED::'.
+    Blocks with HTTP 409 if cardinality conflicts are detected,
+    unless ?force=true is set.
     """
     try:
         session = _load_session(session_id)
@@ -1371,13 +1399,18 @@ async def export_session_coded(session_id: str):
 
     # Validate cardinality constraints and deduplicate
     rows, conflicts, _ = _validate_and_deduplicate_rows(rows)
-    if conflicts:
+    if conflicts and not force:
         raise HTTPException(
             status_code=409,
             detail={
                 "message": "Export blocked: cardinality conflicts detected. Resolve them before exporting.",
                 "conflicts": [c.model_dump() for c in conflicts],
             },
+        )
+    if conflicts and force:
+        print(
+            f"[INFO] Forced export of {session_id} (coded): "
+            f"bypassing {len(conflicts)} cardinality conflict(s)"
         )
 
     # Build coded rows (resolve CodeableConcept values to IDEA4RC codes)

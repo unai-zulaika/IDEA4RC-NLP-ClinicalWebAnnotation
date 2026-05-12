@@ -176,6 +176,14 @@ export default function AnnotationViewer({
                     ⚠️ Template Incomplete
                   </span>
                 )}
+                {annotation.icdo3_code?.low_confidence && (
+                  <span
+                    className="text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-medium border border-amber-300 dark:bg-amber-900/40 dark:text-amber-100 dark:border-amber-700"
+                    title={`Auto-picked ICD-O-3 code may be wrong (match score ${annotation.icdo3_code.match_score?.toFixed(2) ?? 'low'}). Open the card and choose a different candidate if needed.`}
+                  >
+                    ⚠️ Low-confidence code — verify
+                  </span>
+                )}
               </div>
             )}
           </div>

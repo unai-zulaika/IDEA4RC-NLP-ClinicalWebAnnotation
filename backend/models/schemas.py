@@ -153,6 +153,11 @@ class ICDO3CodeInfo(BaseModel):
     candidates: List[ICDO3CodeCandidate] = []  # Top 5 candidates from CSV
     selected_candidate_index: int = 0  # Which candidate is currently selected (0-4)
     user_selected: bool = False  # True if user manually selected a candidate
+    # True when the auto-selected candidate scored below the confidence
+    # threshold (LOW_CONFIDENCE_THRESHOLD in icdo3_extractor.py). The pick is
+    # likely wrong; downstream consumers should treat the code as needing
+    # user review and not auto-resolve diagnoses from it.
+    low_confidence: bool = False
 
 
 class ChunkInfo(BaseModel):

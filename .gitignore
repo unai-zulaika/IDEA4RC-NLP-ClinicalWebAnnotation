@@ -1,3 +1,6 @@
+examples/
+HOSPITAL*
+INT_DEPL*
 docs/
 extra_data/
 .playwright*

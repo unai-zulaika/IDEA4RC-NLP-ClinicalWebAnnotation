@@ -279,6 +279,10 @@ export interface ICDO3CodeInfo {
   candidates?: ICDO3CodeCandidate[]  // Top 5 candidates from CSV
   selected_candidate_index?: number  // Which candidate is currently selected (0-4)
   user_selected?: boolean  // True if user manually selected a candidate
+  // True when the auto-selected candidate scored below the backend
+  // confidence threshold. Surface as a warning so the user knows to verify
+  // (e.g., kidney-cancer case where SARC/HNC CSVs only produce weak text matches).
+  low_confidence?: boolean
 }
 
 // Unified ICD-O-3 Code Types (for combined histology + topography)
@@ -1162,9 +1166,11 @@ export const sessionsApi = {
 
   exportLabels: async (
     session_id: string,
+    options: { force?: boolean } = {},
   ): Promise<{ blob: Blob; excludedRows: ExcludedRow[]; diagnosisWarnings: DiagnosisWarning[] }> => {
     const response = await api.get(`/api/sessions/${session_id}/export`, {
       responseType: 'blob',
+      params: options.force ? { force: true } : undefined,
     })
     const headerRows = parseExcludedRowsHeader(response.headers['x-excluded-rows'])
     const meta = await loadExportMetadata(session_id, headerRows)
@@ -1173,9 +1179,11 @@ export const sessionsApi = {
 
   exportCodes: async (
     session_id: string,
+    options: { force?: boolean } = {},
   ): Promise<{ blob: Blob; excludedRows: ExcludedRow[]; diagnosisWarnings: DiagnosisWarning[] }> => {
     const response = await api.get(`/api/sessions/${session_id}/export/codes`, {
       responseType: 'blob',
+      params: options.force ? { force: true } : undefined,
     })
     const headerRows = parseExcludedRowsHeader(response.headers['x-excluded-rows'])
     const meta = await loadExportMetadata(session_id, headerRows)

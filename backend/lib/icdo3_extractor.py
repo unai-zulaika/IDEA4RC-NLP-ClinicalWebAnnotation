@@ -24,6 +24,21 @@ HISTOLOGY_SITE_PROMPTS = {
     'tumor-site-int',  # Alternative naming
 }
 
+# Score threshold below which the auto-selected CSV candidate is considered
+# unreliable and is flagged via `low_confidence=True`. The scoring tiers in
+# icdo3_csv_indexer.find_top_candidates are:
+#   1.00 = exact query code match
+#   0.90 = combined morphology + topography
+#   0.60-0.75 = morphology code only
+#   0.50-0.65 = topography code only
+#   0.30-0.60 = text-only fuzzy match on the NAME column
+# At 0.7 we accept exact / combined / strong morphology matches but flag
+# everything weaker (topography-only, text-only). The kidney-cancer case
+# reported by MSCI falls in this lower band: no morphology/topography codes
+# are extracted from the note, only the site word "kidney", which produces
+# low-confidence text-only matches that previously got silently auto-picked.
+LOW_CONFIDENCE_THRESHOLD = 0.7
+
 # No external dependencies - all extraction is done via LLM+CSV or pattern matching
 
 
@@ -455,6 +470,16 @@ async def _extract_with_llm_and_csv_match_async(
         else:
             primary_code = candidate_list[0]['query_code'] if candidate_list else None
 
+        low_confidence = best_score < LOW_CONFIDENCE_THRESHOLD
+        if low_confidence:
+            print(
+                f"[WARN] Low-confidence ICD-O-3 match (score={best_score:.2f} < "
+                f"{LOW_CONFIDENCE_THRESHOLD}, method={best_method}) for prompt "
+                f"'{prompt_type}' (async). Auto-selected '{description}' "
+                f"({primary_code}) may be wrong. {len(candidate_list)} "
+                f"candidate(s) available for user review."
+            )
+
         return {
             'code': primary_code,
             'query_code': query_code if query_code else None,
@@ -468,7 +493,8 @@ async def _extract_with_llm_and_csv_match_async(
             'match_score': best_score,
             'candidates': candidate_list,
             'selected_candidate_index': 0,
-            'user_selected': False
+            'user_selected': False,
+            'low_confidence': low_confidence,
         }
     except Exception as e:
         print(f"[WARN] Async LLM+CSV extraction error: {e}")
@@ -696,6 +722,16 @@ def _extract_with_llm_and_csv_match(
         else:
             primary_code = candidate_list[0]['query_code'] if candidate_list else None
 
+        low_confidence = best_score < LOW_CONFIDENCE_THRESHOLD
+        if low_confidence:
+            print(
+                f"[WARN] Low-confidence ICD-O-3 match (score={best_score:.2f} < "
+                f"{LOW_CONFIDENCE_THRESHOLD}, method={best_method}) for prompt "
+                f"'{prompt_type}'. Auto-selected '{description}' ({primary_code}) "
+                f"may be wrong. {len(candidate_list)} candidate(s) available for "
+                f"user review."
+            )
+
         return {
             'code': primary_code,
             'query_code': query_code if query_code else None,
@@ -710,7 +746,8 @@ def _extract_with_llm_and_csv_match(
             # Multi-candidate support
             'candidates': candidate_list,
             'selected_candidate_index': 0,
-            'user_selected': False
+            'user_selected': False,
+            'low_confidence': low_confidence,
         }
     except Exception as e:
         print(f"[WARN] LLM+CSV extraction error: {e}")
