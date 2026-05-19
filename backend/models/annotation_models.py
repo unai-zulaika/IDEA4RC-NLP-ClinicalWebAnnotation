@@ -53,7 +53,19 @@ class StructuredAnnotation(BaseModel):
     )
     final_output: str = Field(
         ...,
-        description="The final annotation text following the exact template format specified in the prompt. If the required information is not available in the note, use an empty string '' or a standard phrase like 'Unknown', 'Not available', 'Not specified', or 'Information not available in the note'."
+        description=(
+            "The final annotation text following the exact template format "
+            "specified in the prompt. It MUST be consistent with the reasoning "
+            "field above: if your reasoning identifies a specific value from "
+            "the prompt's controlled list (e.g. 'female', 'grade 2', a date, "
+            "a specific drug), final_output must use that value. Do not hedge "
+            "or fall back to a generic phrase when your reasoning has already "
+            "concluded an answer. Only use an abstention phrase ('Not "
+            "applicable', 'Unknown', 'Not available', 'Not specified', or "
+            "'Information not available in the note') when your reasoning "
+            "explicitly concludes that the relevant information is not "
+            "stated anywhere in the note."
+        )
     )
     is_negated: bool = Field(
         False,
@@ -122,7 +134,14 @@ class FastStructuredAnnotation(BaseModel):
     """
     final_output: str = Field(
         ...,
-        description="The final annotation text following the exact template format specified in the prompt. If the required information is not available in the note, use 'Not applicable'."
+        description=(
+            "The final annotation text following the exact template format "
+            "specified in the prompt. Commit to a specific value from the "
+            "prompt's controlled list whenever the note states that "
+            "information; do not hedge with a generic phrase when the value "
+            "is identifiable. Only use 'Not applicable' when the relevant "
+            "information is genuinely not stated anywhere in the note."
+        )
     )
     is_negated: bool = Field(
         False,
