@@ -1,0 +1,106 @@
+{# Default report template, mirrors docs/NLP_variables_analysis.pdf structure.
+   Strict-undefined: any missing field will crash loudly rather than silent-empty. #}
+# {{ center }} — Variables analysis
+
+**Generated:** {{ generated_at }}
+**Session:** `{{ session_id }}`
+**Total notes:** {{ totals.notes }} · **Annotations:** {{ totals.annotations }} · **Prompts:** {{ totals.prompt_types }}{% if totals.skipped %} · **Skipped:** {{ totals.skipped }} (no evaluation_result){% endif %}
+
+**Summary:** {{ summary_sentence }}
+
+{% macro pct(x) -%}
+{{ "%.0f"|format(x * 100) }}%
+{%- endmacro %}
+
+{% macro escape_pipe(s) -%}
+{{ s | replace("|", "\\|") }}
+{%- endmacro %}
+
+{% macro prompt_table(bucket_label, prompts) -%}
+{% if not prompts -%}
+_None._
+{%- else -%}
+| Prompt | Correct | Extract | Abstain | FP | N | Auto-reason |
+|---|---:|---:|---:|---:|---:|---|
+{% for p in prompts -%}
+| `{{ p.name }}` | **{{ pct(p.correctness_rate) }}** | {{ pct(p.match_rate) }} | {{ pct(p.abstention_rate) }} | {{ pct(p.fp_rate) }} | {{ p.total }} | {{ escape_pipe(p.auto_reason) }} |
+{% endfor %}
+
+_Correct = matches + correct abstentions (both gold and predicted empty). Extract = strict matches only (model produced the right value). Abstain = correctly produced no value on notes where the gold also has none._
+{%- endif %}
+{% endmacro %}
+
+{% macro prompt_detail(p) %}
+#### `{{ p.name }}` — N={{ p.total }}, correct {{ pct(p.correctness_rate) }} (extract {{ pct(p.match_rate) }})
+
+- Counts: match {{ p.counts.match }} · mismatch {{ p.counts.mismatch }} · FP {{ p.counts.false_positive }} · FN {{ p.counts.false_negative }} · both_empty {{ p.counts.both_empty }}{% if p.counts.other %} · other {{ p.counts.other }}{% endif %}
+- Avg similarity: {{ "%.2f"|format(p.avg_similarity) }}
+{% if p.field_metrics %}- Field-level: {% for f in p.field_metrics %}`{{ f.field }}` {{ f.matched }}/{{ f.filled }} ({{ pct(f.match_rate) }}){% if not loop.last %} · {% endif %}{% endfor %}
+{% endif %}
+{% if p.by_report_type|length > 1 %}- By report type: {% for rt, m in p.by_report_type.items() %}**{{ rt }}** correct {{ pct(m.correctness_rate) }} / extract {{ pct(m.match_rate) }} (N={{ m.total }}){% if not loop.last %} · {% endif %}{% endfor %}
+{% endif %}
+{% if p.predicted_value_histogram %}- Predicted value distribution: {% for v, n in p.predicted_value_histogram.items() %}`{{ v }}` ({{ n }}){% if not loop.last %} · {% endif %}{% endfor %}
+{% endif %}
+{% if p.flags %}- Flags: {% for f in p.flags %}`{{ f }}`{% if not loop.last %} · {% endif %}{% endfor %}
+{% endif %}
+
+**Sample errors** (note text redacted; annotation values visible):
+{% if p.samples -%}
+{% for s in p.samples %}
+- `[REDACTED]` (id={{ s.note_id }}, {{ s.report_type }}, **{{ s.match_type }}**)
+  - expected: `{{ s.expected if s.expected else "(empty)" }}`
+  - predicted: `{{ s.predicted if s.predicted else "(empty)" }}`
+{% endfor %}
+{%- else %}
+_No error cases sampled (clean prompt or no errors)._
+{%- endif %}
+
+> **Observations:** _TODO_
+
+{% endmacro %}
+
+## Reliable ({{ bucket_counts.reliable }} variables, suitable for automated pre-filling with spot-checks)
+
+The system correctly fills these values in the majority of cases. For variables that combine multiple fields, some fields may remain blank when the note does not contain that specific information. This is expected and correct behaviour.
+
+{{ prompt_table("reliable", buckets.reliable) }}
+
+### Per-prompt detail
+
+{% for p in buckets.reliable -%}
+{{ prompt_detail(p) }}
+{% endfor %}
+
+## Usable as suggestions ({{ bucket_counts.usable }} variables, require possible clinician review)
+
+These extractions provide a useful starting point but have known weaknesses. They should be presented as pre-filled suggestions that the annotator verifies.
+
+{{ prompt_table("usable", buckets.usable) }}
+
+### Per-prompt detail
+
+{% for p in buckets.usable -%}
+{{ prompt_detail(p) }}
+{% endfor %}
+
+## Unreliable ({{ bucket_counts.unreliable }} variables, not recommended for use)
+
+{{ prompt_table("unreliable", buckets.unreliable) }}
+
+### Per-prompt detail
+
+{% for p in buckets.unreliable -%}
+{{ prompt_detail(p) }}
+{% endfor %}
+
+## Lessons learned
+
+> _TODO: write 3–5 qualitative observations about prompt design, failure modes, or report-type filtering that came out of this evaluation. The original NLP analysis used four observations as a structure (allowed-list completeness, fallback caution, step-by-step reasoning, report-type matching) — you may want to confirm or revise each for this center._
+
+## How production results differ from the earlier NLP analysis
+
+> _TODO: optional. Fill in if a prior NLP-analysis report exists for this center. Compare per-variable accuracy between the curated-sample NLP run and the all-notes production run; surface variables that performed well in NLP but show false-positive drift in production._
+
+## Key takeaway
+
+> _TODO: 2–3 sentences summarising the practical recommendation (which variables to deploy with pre-fill, which to surface as suggestions, which to redesign)._

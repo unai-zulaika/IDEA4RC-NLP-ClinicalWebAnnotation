@@ -10,7 +10,10 @@ try:
 except ImportError:
     pynvml = None
 
-from llama_cpp import Llama
+try:
+    from llama_cpp import Llama
+except ImportError:
+    Llama = None  # llama.cpp backend optional; VLLM is the alternative
 
 # Try to import VLLM runner (optional)
 try:
@@ -22,7 +25,7 @@ except ImportError:
 
 
 # ---------- Global state (kept hot in production) ----------
-_LLM: Optional[Llama] = None
+_LLM: Optional["Llama"] = None
 _PROMPTS: Dict[str, Dict] = {}
 _USE_VLLM: bool = False
 
@@ -237,9 +240,14 @@ def run_model_with_prompt(prompt: str,
                 return_logprobs=return_logprobs
             )
         except Exception as e:
-            print(f"[WARN] VLLM request failed: {e}, falling back to llama.cpp")
-            _USE_VLLM = False
-    
+            # Don't permanently disable VLLM — one bad response shouldn't kill
+            # the rest of the run. Re-raise so the per-prompt error handler in
+            # the eval loop records this single failure and moves on.
+            print(f"[WARN] VLLM request failed for this prompt: {e}")
+            if _LLM is None:
+                raise
+            print("[WARN] Falling back to llama.cpp for this prompt only")
+
     # Fall back to llama.cpp (logprobs not supported)
     if _LLM is None:
         raise RuntimeError(

@@ -1,0 +1,183 @@
+{
+  "Porada lekarska": [
+    "gender-msci",
+    "ageatdiagnosis-msci",
+    "patient-status-msci",
+    "patient-bmi-msci",
+    "patient-weightheight-msci",
+    "previous_cancer_treatment-msci",
+    "occurrence_cancer-msci",
+    "last_contact_date-msci",
+    "recur_or_prog-msci",
+    "recurrencetype-msci"
+  ],
+  "Komentarze do porady lekarskiej": [
+    "patient-status-msci",
+    "recur_or_prog-msci"
+  ],
+  "Wywiad ogólny": [
+    "gender-msci",
+    "ageatdiagnosis-msci",
+    "previous_cancer_treatment-msci",
+    "occurrence_cancer-msci",
+    "patient-bmi-msci",
+    "patient-weightheight-msci"
+  ],
+  "Operacja / Zabieg": [
+    "surgerytype-msci",
+    "surgerymargins-msci"
+  ],
+  "Zgoda na operację": [
+    "surgerytype-msci"
+  ],
+  "Histopatologia (Ursynów)": [
+    "histological-msci",
+    "biopsygrading-msci",
+    "biopsymitoticcount-msci",
+    "tumorbiopsytype-msci",
+    "necrosis_in_biopsy-msci",
+    "necrosis_in_surgical-msci",
+    "tumordiameter-msci",
+    "tumorsite-msci"
+  ],
+  "Konsultacja Patomorfologiczna (Ursynów)": [
+    "histological-msci",
+    "biopsygrading-msci",
+    "biopsymitoticcount-msci",
+    "tumorbiopsytype-msci",
+    "necrosis_in_biopsy-msci"
+  ],
+  "Rozpoznanie histopatologiczne": [
+    "histological-msci",
+    "biopsygrading-msci"
+  ],
+  "Klasyfikacja TNM": [
+    "stage_at_diagnosis-msci",
+    "tumorsite-msci"
+  ],
+  "Notatka TRG Przyjęcie": [
+    "radiotherapy_start-msci",
+    "tumorsite-msci",
+    "stage_at_diagnosis-msci"
+  ],
+  "Notatka TRG Zakończenie": [
+    "radiotherapy_end-msci"
+  ],
+  "Kwalifikaja do teleradioterapii": [
+    "radiotherapy_start-msci"
+  ],
+  "Kwalifikacja do chem. dziennej": [
+    "chemotherapy_start-msci"
+  ],
+  "Notatka wypisowa": [
+    "patient-status-msci",
+    "last_contact_date-msci",
+    "recur_or_prog-msci",
+    "recurrencetype-msci"
+  ],
+  "Notatka przebieg hospitalizacji": [
+    "patient-status-msci",
+    "chemotherapy_start-msci",
+    "chemotherapy_end-msci",
+    "radiotherapy_start-msci",
+    "radiotherapy_end-msci"
+  ],
+  "Badanie przedmiotowe": [
+    "tumorsite-msci",
+    "patient-bmi-msci",
+    "patient-weightheight-msci"
+  ],
+  "Notatka lekarska": [
+    "gender-msci",
+    "patient-status-msci",
+    "tumorsite-msci"
+  ],
+  "Notatka lekarska 1 część": [
+    "gender-msci",
+    "patient-status-msci",
+    "tumorsite-msci"
+  ],
+  "Notatka lekarska 2 część": [
+    "gender-msci",
+    "patient-status-msci",
+    "tumorsite-msci"
+  ],
+  "Opis konsultacji": [
+    "gender-msci",
+    "patient-status-msci",
+    "previous_cancer_treatment-msci"
+  ],
+  "Pomiar parametrów życiowych": [
+    "patient-bmi-msci",
+    "patient-weightheight-msci"
+  ],
+  "Stan odzywienia - ocena ryzyka": [
+    "patient-bmi-msci",
+    "patient-weightheight-msci"
+  ],
+  "Obserwacje pielęgniarskie": [
+    "patient-status-msci"
+  ],
+  "RTG KLATKI PIERSIOWEJ PA + PRAWY BOK": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "TK KLATKI PIERSIOWEJ Z KONTRASTEM iv.": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "TK KLATKI PIERSIOWEJ I JAMY BRZUSZNEJ Z KONTRASTEM iv.+ KONTRAST DOUSTNY": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "TK KLATKI PIERSIOWEJ JAMY BRZUSZNEJ I MIEDNICY Z KONTRASTEM iv.+ KONTRAST DOUSTNY": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "TK KLATKI PIERSIOWEJ JAMY BRZUSZNEJ I MIEDNICY BEZ KONTRASTU iv. +  KONTRAST DOUSTNY": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "TK JAMY BRZUSZNEJ I MIEDNICY BEZ I Z KONTRASTEM iv.+ KONTRAST DOUSTNY + WLEWKA": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "TK MIEDNICY Z KONTRASTEM iv.+ KONTRAST DOUSTNY": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "TK SZYI KLATKI PIERSIOWEJ JAMY BRZUSZNEJ I MIEDNICY Z KONTRASTEM iv. + KONTRAST DOUSTNY": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "TK MÓZGU BEZ I Z KONTRASTEM iv.": [
+    "tumorsite-msci"
+  ],
+  "TK TWARZOCZASZKI I SZYI  BEZ KONTRASTU iv.": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "TK KOŃCZYN DOLNYCH BEZ I Z KONTRASTEM iv.": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "TK KOŚCI PRZEDRAMIENIA BEZ KONTRASTU iv.": [
+    "tumorsite-msci",
+    "tumordiameter-msci"
+  ],
+  "Zgłoszenie Operacji": [
+    "surgerytype-msci"
+  ],
+  "Zgoda na leczenie systemowe": [
+    "chemotherapy_start-msci"
+  ],
+  "Zgody na napromieniowanie": [
+    "radiotherapy_start-msci"
+  ],
+  "Kominek histopatologiczny": [
+    "histological-msci"
+  ],
+  "Komentarz do notatki lekarskiej": [
+    "patient-status-msci"
+  ]
+}

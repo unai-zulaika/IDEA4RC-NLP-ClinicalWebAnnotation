@@ -1,0 +1,616 @@
+{
+  "session_id": "synthetic-test-session",
+  "evaluation_mode": "evaluation",
+  "annotations": [
+    {
+      "note_id": "1001",
+      "report_type": "Visit note",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender female.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 1001.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Patient's gender female.",
+        "predicted_annotation": "Patient's gender female.",
+        "field_results": [
+          {"field_name": "[male/female/unknown]", "match": true, "expected": "female", "predicted": "female"}
+        ]
+      }
+    },
+    {
+      "note_id": "1002",
+      "report_type": "Visit note",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender male.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 1002.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Patient's gender male.",
+        "predicted_annotation": "Patient's gender male.",
+        "field_results": [
+          {"field_name": "[male/female/unknown]", "match": true, "expected": "male", "predicted": "male"}
+        ]
+      }
+    },
+    {
+      "note_id": "1003",
+      "report_type": "Visit note",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender female.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 1003.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Patient's gender female.",
+        "predicted_annotation": "Patient's gender female.",
+        "field_results": [
+          {"field_name": "[male/female/unknown]", "match": true, "expected": "female", "predicted": "female"}
+        ]
+      }
+    },
+    {
+      "note_id": "1004",
+      "report_type": "Visit note",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender female.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 1004.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Patient's gender female.",
+        "predicted_annotation": "Patient's gender female.",
+        "field_results": [
+          {"field_name": "[male/female/unknown]", "match": true, "expected": "female", "predicted": "female"}
+        ]
+      }
+    },
+    {
+      "note_id": "1005",
+      "report_type": "Pathology",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender male.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 1005.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Patient's gender male.",
+        "predicted_annotation": "Patient's gender male.",
+        "field_results": [
+          {"field_name": "[male/female/unknown]", "match": true, "expected": "male", "predicted": "male"}
+        ]
+      }
+    },
+    {
+      "note_id": "1006",
+      "report_type": "Pathology",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender female.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 1006.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 0.95,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Patient's gender female.",
+        "predicted_annotation": "Patient's gender female.",
+        "field_results": [
+          {"field_name": "[male/female/unknown]", "match": true, "expected": "female", "predicted": "female"}
+        ]
+      }
+    },
+    {
+      "note_id": "1007",
+      "report_type": "Visit note",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender female.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 1007.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Patient's gender female.",
+        "predicted_annotation": "Patient's gender female.",
+        "field_results": [
+          {"field_name": "[male/female/unknown]", "match": true, "expected": "female", "predicted": "female"}
+        ]
+      }
+    },
+    {
+      "note_id": "1008",
+      "report_type": "Visit note",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender male.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 1008.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Patient's gender male.",
+        "predicted_annotation": "Patient's gender male.",
+        "field_results": [
+          {"field_name": "[male/female/unknown]", "match": true, "expected": "male", "predicted": "male"}
+        ]
+      }
+    },
+    {
+      "note_id": "1009",
+      "report_type": "Visit note",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender female.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 1009.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Patient's gender female.",
+        "predicted_annotation": "Patient's gender female.",
+        "field_results": [
+          {"field_name": "[male/female/unknown]", "match": true, "expected": "female", "predicted": "female"}
+        ]
+      }
+    },
+    {
+      "note_id": "1010",
+      "report_type": "Pathology",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender female.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 1010.",
+      "evaluation_result": {
+        "match_type": "mismatch",
+        "overall_match": false,
+        "exact_match": false,
+        "similarity_score": 0.6,
+        "value_match_rate": 0.0,
+        "expected_annotation": "Patient's gender male.",
+        "predicted_annotation": "Patient's gender female.",
+        "field_results": [
+          {"field_name": "[male/female/unknown]", "match": false, "expected": "male", "predicted": "female"}
+        ]
+      }
+    },
+
+    {
+      "note_id": "2001",
+      "report_type": "Visit note",
+      "prompt_type": "tumorsite-msci",
+      "annotation_text": "Tumor site: Upper limb",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 2001.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Tumor site: Upper limb",
+        "predicted_annotation": "Tumor site: Upper limb",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "2002",
+      "report_type": "Visit note",
+      "prompt_type": "tumorsite-msci",
+      "annotation_text": "Tumor site: Upper limb",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 2002.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Tumor site: Upper limb",
+        "predicted_annotation": "Tumor site: Upper limb",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "2003",
+      "report_type": "Visit note",
+      "prompt_type": "tumorsite-msci",
+      "annotation_text": "Tumor site: Upper limb",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 2003.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Tumor site: Upper limb",
+        "predicted_annotation": "Tumor site: Upper limb",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "2004",
+      "report_type": "Visit note",
+      "prompt_type": "tumorsite-msci",
+      "annotation_text": "Tumor site: Upper limb",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 2004.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Tumor site: Upper limb",
+        "predicted_annotation": "Tumor site: Upper limb",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "2005",
+      "report_type": "Visit note",
+      "prompt_type": "tumorsite-msci",
+      "annotation_text": "Tumor site: Upper limb",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 2005.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Tumor site: Upper limb",
+        "predicted_annotation": "Tumor site: Upper limb",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "2006",
+      "report_type": "Visit note",
+      "prompt_type": "tumorsite-msci",
+      "annotation_text": "Tumor site: Upper limb",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 2006.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Tumor site: Upper limb",
+        "predicted_annotation": "Tumor site: Upper limb",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "2007",
+      "report_type": "Visit note",
+      "prompt_type": "tumorsite-msci",
+      "annotation_text": "Tumor site: Upper limb",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 2007.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Tumor site: Upper limb",
+        "predicted_annotation": "Tumor site: Upper limb",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "2008",
+      "report_type": "Visit note",
+      "prompt_type": "tumorsite-msci",
+      "annotation_text": "Tumor site: Upper limb",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 2008.",
+      "evaluation_result": {
+        "match_type": "mismatch",
+        "overall_match": false,
+        "exact_match": false,
+        "similarity_score": 0.5,
+        "value_match_rate": 0.0,
+        "expected_annotation": "Tumor site: Trunk wall",
+        "predicted_annotation": "Tumor site: Upper limb",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "2009",
+      "report_type": "Visit note",
+      "prompt_type": "tumorsite-msci",
+      "annotation_text": "Tumor site: Upper limb",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 2009.",
+      "evaluation_result": {
+        "match_type": "mismatch",
+        "overall_match": false,
+        "exact_match": false,
+        "similarity_score": 0.5,
+        "value_match_rate": 0.0,
+        "expected_annotation": "Tumor site: Head and neck",
+        "predicted_annotation": "Tumor site: Upper limb",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "2010",
+      "report_type": "Visit note",
+      "prompt_type": "tumorsite-msci",
+      "annotation_text": "Tumor site: Upper limb",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 2010.",
+      "evaluation_result": {
+        "match_type": "false_positive",
+        "overall_match": false,
+        "exact_match": false,
+        "similarity_score": 0.0,
+        "value_match_rate": 0.0,
+        "expected_annotation": "",
+        "predicted_annotation": "Tumor site: Upper limb",
+        "field_results": []
+      }
+    },
+
+    {
+      "note_id": "3001",
+      "report_type": "Visit note",
+      "prompt_type": "tumordepth-msci",
+      "annotation_text": "",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 3001.",
+      "evaluation_result": {
+        "match_type": "both_empty",
+        "overall_match": true,
+        "exact_match": false,
+        "similarity_score": 0.0,
+        "value_match_rate": 0.0,
+        "expected_annotation": "",
+        "predicted_annotation": "",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "3002",
+      "report_type": "Visit note",
+      "prompt_type": "tumordepth-msci",
+      "annotation_text": "",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 3002.",
+      "evaluation_result": {
+        "match_type": "both_empty",
+        "overall_match": true,
+        "exact_match": false,
+        "similarity_score": 0.0,
+        "value_match_rate": 0.0,
+        "expected_annotation": "",
+        "predicted_annotation": "",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "3003",
+      "report_type": "Visit note",
+      "prompt_type": "tumordepth-msci",
+      "annotation_text": "",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 3003.",
+      "evaluation_result": {
+        "match_type": "both_empty",
+        "overall_match": true,
+        "exact_match": false,
+        "similarity_score": 0.0,
+        "value_match_rate": 0.0,
+        "expected_annotation": "",
+        "predicted_annotation": "",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "3004",
+      "report_type": "Visit note",
+      "prompt_type": "tumordepth-msci",
+      "annotation_text": "",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 3004.",
+      "evaluation_result": {
+        "match_type": "both_empty",
+        "overall_match": true,
+        "exact_match": false,
+        "similarity_score": 0.0,
+        "value_match_rate": 0.0,
+        "expected_annotation": "",
+        "predicted_annotation": "",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "3005",
+      "report_type": "Visit note",
+      "prompt_type": "tumordepth-msci",
+      "annotation_text": "",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 3005.",
+      "evaluation_result": {
+        "match_type": "both_empty",
+        "overall_match": true,
+        "exact_match": false,
+        "similarity_score": 0.0,
+        "value_match_rate": 0.0,
+        "expected_annotation": "",
+        "predicted_annotation": "",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "3006",
+      "report_type": "Visit note",
+      "prompt_type": "tumordepth-msci",
+      "annotation_text": "",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 3006.",
+      "evaluation_result": {
+        "match_type": "both_empty",
+        "overall_match": true,
+        "exact_match": false,
+        "similarity_score": 0.0,
+        "value_match_rate": 0.0,
+        "expected_annotation": "",
+        "predicted_annotation": "",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "3007",
+      "report_type": "Visit note",
+      "prompt_type": "tumordepth-msci",
+      "annotation_text": "",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 3007.",
+      "evaluation_result": {
+        "match_type": "both_empty",
+        "overall_match": true,
+        "exact_match": false,
+        "similarity_score": 0.0,
+        "value_match_rate": 0.0,
+        "expected_annotation": "",
+        "predicted_annotation": "",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "3008",
+      "report_type": "Visit note",
+      "prompt_type": "tumordepth-msci",
+      "annotation_text": "",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 3008.",
+      "evaluation_result": {
+        "match_type": "both_empty",
+        "overall_match": true,
+        "exact_match": false,
+        "similarity_score": 0.0,
+        "value_match_rate": 0.0,
+        "expected_annotation": "",
+        "predicted_annotation": "",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "3009",
+      "report_type": "Visit note",
+      "prompt_type": "tumordepth-msci",
+      "annotation_text": "Tumor depth: deep",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 3009.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Tumor depth: deep",
+        "predicted_annotation": "Tumor depth: deep",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "3010",
+      "report_type": "Visit note",
+      "prompt_type": "tumordepth-msci",
+      "annotation_text": "",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 3010.",
+      "evaluation_result": {
+        "match_type": "both_empty",
+        "overall_match": true,
+        "exact_match": false,
+        "similarity_score": 0.0,
+        "value_match_rate": 0.0,
+        "expected_annotation": "",
+        "predicted_annotation": "",
+        "field_results": []
+      }
+    },
+
+    {
+      "note_id": "4001",
+      "report_type": "Pathology",
+      "prompt_type": "histological-msci",
+      "annotation_text": "Histological type: Liposarcoma",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 4001.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Histological type: Liposarcoma",
+        "predicted_annotation": "Histological type: Liposarcoma",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "4002",
+      "report_type": "Pathology",
+      "prompt_type": "histological-msci",
+      "annotation_text": "Histological type: Angiosarcoma",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 4002.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Histological type: Angiosarcoma",
+        "predicted_annotation": "Histological type: Angiosarcoma",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "4003",
+      "report_type": "Pathology",
+      "prompt_type": "histological-msci",
+      "annotation_text": "Histological type: Liposarcoma",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 4003.",
+      "evaluation_result": {
+        "match_type": "match",
+        "overall_match": true,
+        "exact_match": true,
+        "similarity_score": 1.0,
+        "value_match_rate": 1.0,
+        "expected_annotation": "Histological type: Liposarcoma",
+        "predicted_annotation": "Histological type: Liposarcoma",
+        "field_results": []
+      }
+    },
+    {
+      "note_id": "4004",
+      "report_type": "Pathology",
+      "prompt_type": "histological-msci",
+      "annotation_text": "Histological type: Angiosarcoma",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 4004.",
+      "evaluation_result": {
+        "match_type": "mismatch",
+        "overall_match": false,
+        "exact_match": false,
+        "similarity_score": 0.5,
+        "value_match_rate": 0.0,
+        "expected_annotation": "Histological type: Liposarcoma",
+        "predicted_annotation": "Histological type: Angiosarcoma",
+        "field_results": []
+      }
+    },
+
+    {
+      "note_id": "5001",
+      "report_type": "Visit note",
+      "prompt_type": "gender-msci",
+      "annotation_text": "Patient's gender female.",
+      "note_original_text": "SENSITIVE_NOTE_TEXT_DO_NOT_LEAK note body for 5001.",
+      "evaluation_result": null
+    }
+  ]
+}

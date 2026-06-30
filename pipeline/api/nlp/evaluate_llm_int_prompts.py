@@ -1664,7 +1664,17 @@ def main(
     step_start = time.time()
     print("\n[STEP 4] Initializing LLM model...")
     print(f"  Model path: {model_path}")
-    if not model_path.exists():
+    # Skip local-file existence check when VLLM is configured: model_path is
+    # then a server-side model tag (e.g. a HuggingFace repo name), not a file.
+    _vllm_cfg_path = script_dir / "vllm_config.json"
+    _use_vllm = False
+    if _vllm_cfg_path.exists():
+        try:
+            with open(_vllm_cfg_path) as _f:
+                _use_vllm = bool(json.load(_f).get("use_vllm"))
+        except Exception:
+            _use_vllm = False
+    if not _use_vllm and not model_path.exists():
         print(f"[ERROR] Model file not found: {model_path}")
         sys.exit(1)
     

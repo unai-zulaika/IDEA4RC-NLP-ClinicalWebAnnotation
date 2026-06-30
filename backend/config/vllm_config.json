@@ -1,11 +1,11 @@
 {
   "use_vllm": true,
   "vllm_endpoint": "http://localhost:8000/v1",
-  "model_name": "unaizulaika/medgemma-1.5-4b-it-W4A16-G128",
+  "model_name": "unaizulaika/medgemma-27b-text-it-W4A16-G128",
   "batch_size": 8,
   "timeout": 150,
-  "max_tokens": 32768,
-  "context_window": 32768,
+  "max_tokens": 16384,
+  "context_window": 16384,
   "max_new_tokens_standard": 2048,
   "max_new_tokens_fast": 512,
   "structured_output": {
@@ -14,7 +14,7 @@
   },
   "sanitize_fewshots": true,
   "history_splitting": {
-    "enabled": true,
+    "enabled": false,
     "detection_thresholds": {
       "min_date_count": 3,
       "min_event_markers": 3,

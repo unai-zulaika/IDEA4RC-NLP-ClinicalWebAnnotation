@@ -12,10 +12,10 @@ from typing import Dict, Any
 _GUIDED_JSON_INSTRUCTIONS = """
 # Output Format
 Respond with a JSON object containing:
-- "reasoning": Clinical validation and inference explaining the logic used to derive the annotation. Reference the specific phrases from the note that support the conclusion
-- "final_output": Annotation following the template format exactly. If information is unavailable, use "Not applicable"
-- "is_negated": true if negation/absence, false otherwise
-- "date": {"date_value": "DD/MM/YYYY", "source": "extracted_from_text"} or {"date_value": "DD/MM/YYYY", "source": "derived_from_csv", "csv_date": "DD/MM/YYYY"} or null
+- "reasoning": Clinical validation and inference explaining the logic used to derive the annotation. Reference the specific phrases from the note that support the conclusion.
+- "final_output": Annotation following the template format exactly. final_output MUST be consistent with the reasoning above: if your reasoning identifies a specific value from the prompt's controlled list (e.g. "female", "2", "stable disease", a date, a drug name), final_output must commit to that value. Only output "Not applicable" when your reasoning explicitly concludes that the relevant information is not stated anywhere in the note. Do NOT use "Not applicable" as a hedge when the answer is identifiable.
+- "is_negated": true if negation/absence, false otherwise.
+- "date": {"date_value": "DD/MM/YYYY", "source": "extracted_from_text"} or {"date_value": "DD/MM/YYYY", "source": "derived_from_csv", "csv_date": "DD/MM/YYYY"} or null.
 """
 
 
@@ -114,27 +114,24 @@ You MUST output a JSON object with the following structure:
 
 # Field Guidelines:
 - **reasoning**: Explain your clinical validation and inference logic. Reference the exact phrases from the note that support the annotation. Include: (1) whether finding is current/PMH/suspicion, (2) inference steps used to map natural language to the standard value.
-- **final_output**: Must match the template format exactly as specified in the prompt.
+- **final_output**: Must match the template format exactly. **final_output MUST be consistent with your reasoning** — if your reasoning identifies a specific value from the prompt's controlled list (e.g. "female", "grade 2", "stable disease", a date, a drug), final_output must commit to that value. Do not hedge with a generic phrase when the answer is identifiable from the note.
 
-  **CRITICAL - Handling Missing Information**: If the required information is NOT available in the note (e.g., surgery hasn't occurred yet, information is not mentioned, or cannot be determined), you MUST follow this standardized format:
-
+  **Handling Missing Information (legitimate abstention)**: Only when your reasoning explicitly concludes that the relevant information is NOT stated anywhere in the note (e.g., a surgery prompt on a note that doesn't mention surgery; a chemotherapy prompt on a pathology report), use the standardized abstention phrase:
   * For structured annotations with a label (e.g., "Tumor depth: [value]"), output: "[Label]: Not applicable"
   * For annotations without a label, output: "Not applicable"
-  * Alternative standardized phrases (use consistently): "Not applicable", "Not available", "Not specified", "Unknown", or "Information not available"
+  * Use "Not applicable" consistently — do NOT mix with "Not specified", "Unknown", "Not available", etc.
+  * Do NOT leave bracketed placeholders like "[select result]", "[put date]" in the output. Either fill them with the actual value from the note or abstain entirely.
 
-  **IMPORTANT**: Always use the SAME standardized phrase throughout. Do NOT mix different absence indicators. Do NOT fill in placeholder values like "[select result]", "[put date]", etc. when information is truly unavailable - instead use "Not applicable".
+  **Do NOT use "Not applicable" as a hedge** when your reasoning has already concluded a specific value. Examples of incorrect hedging that you must avoid:
+  * reasoning: "the patient is female" → final_output must be "Patient's gender female", not "Not applicable".
+  * reasoning: "grade 2 sec. FNCLCC" → final_output must be "Biopsy grading (FNCLCC): 2", not "1" or "Not applicable".
+  * reasoning: "stable disease on therapeutic chemotherapy" → final_output must be the corresponding template, not "Not applicable".
 - **is_negated**: Set to true if the annotation indicates absence, negation, or negative finding (e.g., 'no evidence', 'absence of', 'ruled out', 'no', 'not', 'negative', 'none', 'without', 'excluded').
 - **date**: ALWAYS provide date information. First, try to extract the date from the note text. If found, use {"date_value": "DD/MM/YYYY", "source": "extracted_from_text"}. If no date is found in the note text, you MUST use the CSV date provided: {"date_value": "DD/MM/YYYY", "source": "derived_from_csv", "csv_date": "DD/MM/YYYY"}. Never set date to null - always use either the extracted date or the CSV date.
 
 IMPORTANT:
 - Output ONLY valid JSON. Do not include any explanatory text before or after the JSON object.
-- CRITICAL: If the required information is NOT available in the note (e.g., surgery hasn't occurred, information is not mentioned, or cannot be determined), you MUST:
-  * Set `final_output` to a STANDARDIZED absence format:
-    - For annotations with labels (e.g., "Tumor depth: [value]"), use: "[Label]: Not applicable"
-    - For annotations without labels, use: "Not applicable"
-    - ALWAYS use "Not applicable" consistently (do NOT mix with "Not specified", "Unknown", etc.)
-  * In `reasoning`, clearly state that the information is not available (e.g., "The note does not state...", "Information is not available...", "Cannot be determined from the note...")
-  * Do NOT guess or fill in placeholder values like "[select result]", "[put date]" when information is truly unavailable - use "Not applicable" instead.
+- Commit to the value your reasoning identifies. Reserve "Not applicable" for cases where the note genuinely does not contain the requested information.
 """
     
     # Add CSV date to prompt if provided
