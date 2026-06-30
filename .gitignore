@@ -111,3 +111,43 @@ synthetic_idea4rc_csv.csv
 IDEA4RC_DM_V2 (2).xlsx
 docs/RUNAI_DEPLOYMENT.md
 docs/RUNAI_DEPLOYMENT.pdf
+
+# ───────────────────────────────────────────────────────────────
+# Clinical data & model outputs — NEVER commit (contains PHI)
+# ───────────────────────────────────────────────────────────────
+
+# Patient notes, annotations & few-shot pools
+pipeline/api/nlp/annotated_patient_notes*.json
+pipeline/api/nlp/annotated_msci_notes*.json
+pipeline/api/nlp/first_patient_notes*.csv
+pipeline/api/nlp/msci_first_patient_notes.csv
+pipeline/api/nlp/*fewshots_pool*.csv
+
+# Model predictions & LLM evaluation outputs
+pipeline/api/nlp/backend_predictions*.json
+pipeline/api/nlp/llm_evaluation_*.csv
+pipeline/api/nlp/llm_evaluation_*.html
+pipeline/api/nlp/llm_evaluation_*.json
+
+# Generated evaluation/clinician reports (embed verbatim note text)
+/report_*.md
+
+# Model run logs & backup files
+*.out
+*.bak
+
+# Raw exports & external datasets
+/FBK_MSCI/
+/texts/
+
+# Experiment outputs / runs
+/exp_out/
+/experiments/results/
+pipeline/api/nlp/experiments/
+experiments/fbk_reproduction/*.json
+experiments/fbk_reproduction/full25/
+experiments/fbk_reproduction/splits/
+
+# FAISS stores (embed note text)
+backend/data/faiss_store__original_backup/
+pipeline/api/nlp/faiss_store/
