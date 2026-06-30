@@ -34,24 +34,22 @@ export default function AnnotationViewer({
   const [isEditing, setIsEditing] = useState(false)
   const [showDetailView, setShowDetailView] = useState(false)
 
-  // For split multi-value annotations, render one editable field per event from
-  // values[] (annotation_text is a comma-joined summary that would collapse them).
-  // Otherwise, fall back to annotation_text plus any extra values that differ from it.
-  const computeFormValues = (): FormValues => ({
-    values:
-      annotation.multi_value_info?.was_split && annotation.values && annotation.values.length > 1
-        ? annotation.values.map((v) => ({ value: v.value }))
-        : annotation.annotation_text
-        ? [
-            { value: annotation.annotation_text },
-            ...(annotation.values || [])
-              .filter((v) => v.value && v.value !== annotation.annotation_text)
-              .map((v) => ({ value: v.value })),
-          ]
-        : annotation.values && annotation.values.length > 0
-        ? annotation.values.map((v) => ({ value: v.value }))
-        : [{ value: '' }],
-  })
+  // `values[]` is the source of truth for the structured form (one editable
+  // row per extracted value). `annotation_text` is the joined/displayed form
+  // and is used only as a fallback when there are no structured values yet,
+  // never as an extra row alongside them. The earlier
+  // `[annotation_text, ...values]` shape produced a phantom duplicate row
+  // (3 inputs for a 2-event annotation) and is intentionally removed.
+  const computeFormValues = (): FormValues => {
+    const valuesArr = annotation.values || []
+    if (valuesArr.length > 0) {
+      return { values: valuesArr.map((v) => ({ value: v.value ?? '' })) }
+    }
+    if (annotation.annotation_text) {
+      return { values: [{ value: annotation.annotation_text }] }
+    }
+    return { values: [{ value: '' }] }
+  }
 
   const { register, control, handleSubmit, watch, reset } = useForm<FormValues>({
     defaultValues: computeFormValues(),
