@@ -131,6 +131,10 @@ pipeline/api/nlp/llm_evaluation_*.json
 
 # Generated evaluation/clinician reports (embed verbatim note text)
 /report_*.md
+/report_*.pdf
+
+# Prior-session handoff notes (local working doc)
+/CONTEXT.md
 
 # Model run logs & backup files
 *.out
