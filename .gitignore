@@ -151,3 +151,4 @@ experiments/fbk_reproduction/splits/
 # FAISS stores (embed note text)
 backend/data/faiss_store__original_backup/
 pipeline/api/nlp/faiss_store/
+.claude/settings.json
