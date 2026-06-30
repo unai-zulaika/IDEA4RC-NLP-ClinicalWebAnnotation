@@ -152,3 +152,8 @@ experiments/fbk_reproduction/splits/
 backend/data/faiss_store__original_backup/
 pipeline/api/nlp/faiss_store/
 .claude/settings.json
+
+# Pipeline/eval test outputs & history-splitting eval (contain note text)
+backend/evaluation_results/
+pipeline/api/nlp/pipeline_test_results/
+pipeline/api/nlp/test_results_small/
