@@ -1,0 +1,35 @@
+[
+  {
+    "dict_id": 199,
+    "node_id": 56,
+    "node_sentence": "Patient's gender [pick gender]",
+    "parameters": [{"param_code": "GND", "param_name": "gender"}]
+  },
+  {
+    "dict_id": 199,
+    "node_id": 89,
+    "node_sentence": "Tumor longest diameter: [put value]mm (at initial imaging on [put date])",
+    "parameters": [
+      {"param_code": "DIA", "param_name": "value"},
+      {"param_code": "DAT", "param_name": "date"}
+    ]
+  },
+  {
+    "dict_id": 199,
+    "node_id": 70,
+    "node_sentence": "No previous cancer treatments",
+    "parameters": []
+  },
+  {
+    "dict_id": 199,
+    "node_id": 102,
+    "node_sentence": "Histological type: Myxoid liposarcoma ([select ICD-O-3 code])",
+    "parameters": [{"param_code": "ICD", "param_name": "code"}]
+  },
+  {
+    "dict_id": 110,
+    "node_id": 35,
+    "node_sentence": "Rozpoznanie histologiczne [dodaj typ histologiczny]",
+    "parameters": [{"param_code": "TYP", "param_name": "typ"}]
+  }
+]

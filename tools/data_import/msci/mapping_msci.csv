@@ -1,0 +1,128 @@
+node_id,node_sentence,suggested_prompt_type,confidence,notes
+58,Charlson Comorbidity index [put value] points (evaluated at [put date]),,none,no keyword match
+59,Charlson Comorbidity index has not been evaluated,,none,no keyword match
+233,Degree of cytologic Atypia in [select material type] specimen: [select from list],,none,no keyword match
+239,Gene expression [select material type] specimen: [select from list],,none,no keyword match
+212,Other systemic therapy was applied [select where]: [please specify],,none,no keyword match
+256,Other systemic therapy was applied [select where]: [please specify],,none,no keyword match
+63,Patient with genetic syndromes: [select],,none,no keyword match
+64,Patient without genetic syndromes,,none,no keyword match
+234,Pattern of growth in [select material type] specimen: [please specify],,none,no keyword match
+72,Baseline/primary tumor [pick biopsy type] biopsy has been performed on [put date] in [select place],tumorbiopsytype,high,manual fix: was biopsymitoticcount (keyword tie on 'biopsy')
+73,Lack of information about biopsy,tumorbiopsytype,high,manual fix: was biopsymitoticcount (keyword tie on 'biopsy')
+236,Necrosis in [select material type] specimen (type of): [please specify],necrosis_in_surgical,medium,keywords: necrosis; tied with: necrosis_in_biopsy
+224,Patient has been lost to follow-up,patient-status,medium,keywords: follow-up; tied with: last_contact_date
+76,Radiotherapy induced sarcoma after RT performed on [put date],radiotherapy_start,medium,keywords: radiotherapy; tied with: radiotherapy_end
+217,Radiotherapy was applied to: [select site] [provide list of sites if metastasis],tumorsite,medium,"keywords: site; tied with: radiotherapy_start, radiotherapy_end"
+261,Radiotherapy was applied to: [select site] [provide list of sites if metastasis],tumorsite,medium,"keywords: site; tied with: radiotherapy_start, radiotherapy_end"
+215,Radiotherapy was not performed,radiotherapy_start,medium,keywords: radiotherapy; tied with: radiotherapy_end
+219,Regional deep hyperthermia [select combination] using [list drugs] started [select where] on [put start date] and ended on [put end date],chemotherapy_start,medium,"keywords: start, started; tied with: chemotherapy_end, radiotherapy_start, radiotherapy_end"
+210,Response to [select type] chemotherapy was: [select response type],chemotherapy_start,medium,keywords: chemotherapy; tied with: chemotherapy_end
+255,Response to [select type] chemotherapy was: [select response type],chemotherapy_start,medium,keywords: chemotherapy; tied with: chemotherapy_end
+218,Response to [select type] radiotherapy was: [select response type],radiotherapy_start,medium,keywords: radiotherapy; tied with: radiotherapy_end
+240,Second primary cancer diagnosed on [put date] in [provide site information] with histology: [provide information about histology],previous_cancer_treatment,medium,"keywords: cancer; tied with: occurrence_cancer, tumorsite, histological"
+244,Surgery was performed on [provide date] and was macroscopically [select result],surgerytype,medium,"keywords: surgery; tied with: necrosis_in_surgical, surgerymargins"
+204,Surgical specimen grading (FNCLCC): [select grade],biopsygrading,medium,keywords: grading; tied with: necrosis_in_surgical
+202,Surgical specimen mitotic count: [mitoses count]/[area]mm2,biopsymitoticcount,medium,keywords: mitotic; tied with: necrosis_in_surgical
+201,Surgical specimen mitotic count: [mitoses count]/[number of HPFs]HPF,biopsymitoticcount,medium,keywords: mitotic; tied with: necrosis_in_surgical
+243,There was no progression/recurrence,recurrencetype,medium,"keywords: recurrence, progression; tied with: recur_or_prog"
+90,Tumor longest diameter unknown,tumordiameter,high,manual fix: was tumorsite (keyword tie on 'tumor')
+89,Tumor longest diameter: [put value]mm (at initial imaging on [put date]),tumordiameter,high,manual fix: was tumorsite (keyword tie on 'tumor')
+242,Type of recurrence/progression: [select type] [select site if metastatic],recurrencetype,medium,"keywords: recurrence, progression; tied with: recur_or_prog"
+77,Unknown if radiotherapy induced sarcoma,radiotherapy_start,medium,keywords: radiotherapy; tied with: radiotherapy_end
+216,Unknown if radiotherapy was applied,radiotherapy_start,medium,keywords: radiotherapy; tied with: radiotherapy_end
+232,Unknown patient status at last follow-up,patient-status,medium,"keywords: status, follow-up; tied with: last_contact_date"
+197,Unknown surgical margins,necrosis_in_surgical,medium,keywords: surgical; tied with: surgerymargins
+203,Unknown surgical specimen mitotic count,biopsymitoticcount,medium,keywords: mitotic; tied with: necrosis_in_surgical
+98,Unknown tumor histology,tumorsite,medium,keywords: tumor; tied with: histological
+193,[select surgery type] was performed on [provide date] and was macroscopically [select result],surgerytype,medium,"keywords: surgery; tied with: necrosis_in_surgical, surgerymargins"
+74,Age at diagnosis [put age] years,ageatdiagnosis,high,"keywords: diagnosis, age"
+190,Biopsy grading (FNCLCC): [select grade],biopsygrading,high,"keywords: grading, biopsy"
+192,Biopsy grading not applicable,biopsygrading,high,"keywords: grading, biopsy"
+188,Biopsy mitotic count: [mitoses count]/[area]mm2,biopsymitoticcount,high,"keywords: mitotic, biopsy"
+187,Biopsy mitotic count: [mitoses count]/[number of HPFs]HPF,biopsymitoticcount,high,"keywords: mitotic, biopsy"
+140,Histological type: Alveolar rhabdomyosarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+155,Histological type: Alveolar soft part sarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+167,Histological type: Angiomatoid fibrous histiocytoma,histological,high,keywords: histological
+149,Histological type: Angiomatoid fibrous histiocytoma ([select ICD-O-3 code]),histological,high,keywords: histological
+124,Histological type: Angiosarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+100,"Histological type: Atypical lipomatous tumour/ Liposarcoma, well-differentiated, NOS ([select ICD-O-3 code])",histological,high,keywords: histological
+185,Histological type: Biphenotypic sinonasal sarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+171,Histological type: CIC-rearranged sarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+128,Histological type: Composite haemangioendothelioma ([select ICD-O-3 code]),histological,high,keywords: histological
+101,Histological type: Dedifferentiated liposarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+109,Histological type: Dermatofibrosarcoma protuberans NOS ([select ICD-O-3 code]),histological,high,keywords: histological
+154,Histological type: Epithelioid sarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+169,Histological type: Ewing sarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+157,Histological type: Extra-skeletal myxoid chondrosarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+143,Histological type: Extraskeletal osteosarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+135,Histological type: Leiomyosarcoma NOS ([select ICD-O-3 code]),histological,high,keywords: histological
+118,Histological type: Low-grade fibromyxoid sarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+144,Histological type: Malignant peripheral nerve sheath tumour NOS ([select ICD-O-3 code]),histological,high,keywords: histological
+117,Histological type: Myxofibrosarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+137,Histological type: Myxoid leiomyosarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+102,Histological type: Myxoid liposarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+104,Histological type: Myxoid pleomorphic liposarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+114,Histological type: Myxoinflammatory fibroblastic sarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+103,Histological type: Pleomorphic liposarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+141,Histological type: Pleomorphic rhabdomyosarcoma NOS ([select ICD-O-3 code]),histological,high,keywords: histological
+129,Histological type: Pseudomyogenic (epithelioid sarcoma–like) haemangioendothelioma ([select ICD-O-3 code]),histological,high,keywords: histological
+170,Histological type: Round cell sarcoma with EWSR1–non-ETS fusions ([select ICD-O-3 code]),histological,high,keywords: histological
+110,"Histological type: Solitary fibrous tumour, benign; NOS; malignant ([select ICD-O-3 code])",histological,high,keywords: histological
+142,Histological type: Spindle cell / sclerosing rhabdomyosarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+153,Histological type: Synovial sarcoma NOS ([select ICD-O-3 code]),histological,high,keywords: histological
+162,Histological type: Undifferentiated sarcoma ([select ICD-O-3 code]),histological,high,keywords: histological
+223,Last contact date with the patient: [put date],last_contact_date,high,"keywords: last, contact"
+196,Margins after surgery: [select value],surgerymargins,high,"keywords: margins, surgery"
+247,Margins after surgery: [select value],surgerymargins,high,"keywords: margins, surgery"
+68,No information about occurrence of other cancers,occurrence_cancer,high,keywords: occurrence
+71,No information about previous cancer treatments,previous_cancer_treatment,high,"keywords: previous, cancer"
+70,No previous cancer treatments,previous_cancer_treatment,high,"keywords: previous, cancer"
+67,No previous or concurrent cancers,previous_cancer_treatment,high,keywords: previous
+66,Occurrence of other cancer [please provide details],occurrence_cancer,high,"keywords: occurrence, cancer"
+60,Patient's BMI [put value] (evaluated on [put date]),patient-bmi,high,keywords: bmi
+62,Patient's BMI/weight/height is unknown,patient-weightheight,high,"keywords: height, weight"
+56,Patient's gender [pick gender],gender,high,keywords: gender
+61,Patient's weight [put weight]kg and height[put height]cm (evaluated on [put date]),patient-weightheight,high,"keywords: height, weight"
+69,Previous cancer treatment: [select from list],previous_cancer_treatment,high,"keywords: treatment, previous, cancer"
+265,Stage at diagnosis ([select type]): distant metastases ([select organs]),stage_at_diagnosis,high,"keywords: diagnosis, stage"
+263,Stage at diagnosis ([select type]): localized,stage_at_diagnosis,high,"keywords: diagnosis, stage"
+266,Stage at diagnosis ([select type]): metastatic (regional nodal metastases),stage_at_diagnosis,high,"keywords: diagnosis, stage"
+94,Stage at diagnosis: distant metastases ([select organs]),stage_at_diagnosis,high,"keywords: diagnosis, stage"
+91,Stage at diagnosis: localized,stage_at_diagnosis,high,"keywords: diagnosis, stage"
+92,Stage at diagnosis: loco-regional ([select type]),stage_at_diagnosis,high,"keywords: diagnosis, stage"
+93,Stage at diagnosis: metastatic (regional nodal metastases),stage_at_diagnosis,high,"keywords: diagnosis, stage"
+229,Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor,patient-status,high,"keywords: status, follow-up, alive"
+231,Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites]),patient-status,high,"keywords: status, follow-up, alive"
+230,Status of the patient at last follow-up: Alive With Disease (AWD) - regional lymph nodes involvement,patient-status,high,"keywords: status, follow-up, alive"
+228,"Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)",patient-status,high,"keywords: status, follow-up, alive"
+225,Status of the patient at last follow-up: Dead of Disease (DOD),patient-status,high,"keywords: status, dead, follow-up"
+226,Status of the patient at last follow-up: Dead of Other Cause (DOC),patient-status,high,"keywords: status, dead, follow-up"
+227,Status of the patient at last follow-up: Dead of Unknown Cause (DUC),patient-status,high,"keywords: status, dead, follow-up"
+241,There was a [select event type] on [put date],recur_or_prog,high,keywords: event
+97,Tumor depth unknown,tumorsite,high,keywords: tumor
+96,Tumor depth: [select value],tumorsite,high,keywords: tumor
+199,Tumor did not rupture,tumorsite,high,keywords: tumor
+250,Tumor did not rupture,tumorsite,high,keywords: tumor
+249,Tumor ruptured,tumorsite,high,keywords: tumor
+82,Tumor site (Genito urinary): [select site],tumorsite,high,"keywords: tumor, site"
+80,Tumor site (Intra abdominal): [select site],tumorsite,high,"keywords: tumor, site"
+85,Tumor site (Other): [please specify],tumorsite,high,"keywords: tumor, site"
+79,Tumor site (Trunk wall): [select site],tumorsite,high,"keywords: tumor, site"
+78,Tumor site (Upper and Lower limbs): [select site],tumorsite,high,"keywords: tumor, site"
+84,Tumor site: breast,tumorsite,high,"keywords: tumor, site"
+83,Tumor site: head and neck,tumorsite,high,"keywords: tumor, site"
+267,Unknown [select type] stage at diagnosis,stage_at_diagnosis,high,"keywords: diagnosis, stage"
+75,Unknown age at the diagnosis,ageatdiagnosis,high,"keywords: diagnosis, age"
+191,Unknown biopsy grading,biopsygrading,high,"keywords: grading, biopsy"
+189,Unknown biopsy mitotic count,biopsymitoticcount,high,"keywords: mitotic, biopsy"
+65,Unknown patient's genetic syndrome status,patient-status,high,keywords: status
+95,Unknown stage at diagnosis,stage_at_diagnosis,high,"keywords: diagnosis, stage"
+209,[select type] chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason],chemotherapy_end,high,"keywords: chemotherapy, ended"
+254,[select type] chemotherapy ended on [provide date] after [provide number] of cycles because of [select reason],chemotherapy_end,high,"keywords: chemotherapy, ended"
+207,[select type] chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen,chemotherapy_start,high,"keywords: regimen, chemotherapy, intent, started"
+252,[select type] chemotherapy with [select intent] started on [provide date] and utilized [select regimen] regimen,chemotherapy_start,high,"keywords: regimen, chemotherapy, intent, started"
+213,[select type] radiotherapy ([select method]) with [select intention] intention started [please select where] on [put date],radiotherapy_start,high,"keywords: radiotherapy, started"
+257,[select type] radiotherapy ([select method]) with [select intention] intention started [please select where] on [put date],radiotherapy_start,high,"keywords: radiotherapy, started"
+214,[select type] radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason],radiotherapy_end,high,"keywords: radiotherapy, ended"
+258,[select type] radiotherapy in total of [put total dose]Gy in [put number of] fractions ended on [put date] because of [select reason],radiotherapy_end,high,"keywords: radiotherapy, ended"

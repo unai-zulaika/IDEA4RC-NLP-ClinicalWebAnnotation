@@ -1,0 +1,56 @@
+[
+  {
+    "pid": "P001",
+    "internal_note_id": "1001",
+    "sentence_id": 10001,
+    "dict_id": 199,
+    "node_id": 56,
+    "text_content": "Patient's gender female.\n",
+    "params": "female"
+  },
+  {
+    "pid": "P001",
+    "internal_note_id": "1001",
+    "sentence_id": 10002,
+    "dict_id": 199,
+    "node_id": 70,
+    "text_content": "No previous cancer treatments",
+    "params": ""
+  },
+  {
+    "pid": "P002",
+    "internal_note_id": "1002",
+    "sentence_id": 10003,
+    "dict_id": 199,
+    "node_id": 89,
+    "text_content": "Tumor longest diameter: 45mm (at initial imaging on 2024-03-01)",
+    "params": "45, 2024-03-01"
+  },
+  {
+    "pid": "P002",
+    "internal_note_id": "1002",
+    "sentence_id": 10004,
+    "dict_id": 199,
+    "node_id": 89,
+    "text_content": "Tumor longest diameter: [put value]mm (at initial imaging on 2024-03-01)",
+    "params": ""
+  },
+  {
+    "pid": "P003",
+    "internal_note_id": "1003",
+    "sentence_id": 10005,
+    "dict_id": 110,
+    "node_id": 35,
+    "text_content": "Rozpoznanie histologiczne mięsak",
+    "params": "mięsak"
+  },
+  {
+    "pid": "P999",
+    "internal_note_id": "9999",
+    "sentence_id": 10006,
+    "dict_id": 199,
+    "node_id": 56,
+    "text_content": "Patient's gender male.",
+    "params": "male"
+  }
+]

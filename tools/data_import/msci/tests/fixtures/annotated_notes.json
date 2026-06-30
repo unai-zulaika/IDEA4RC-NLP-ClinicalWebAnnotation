@@ -1,0 +1,34 @@
+[
+  {
+    "pid": "P001",
+    "note_name": "Visit note",
+    "note_date": "2024-03-15T10:30:00.000Z",
+    "note_text": "Note one text with extra; semicolons and \"quotes\".",
+    "note_original_text": "Note one text with extra; semicolons and \"quotes\".\nSecond line.",
+    "internal_note_id": "1001"
+  },
+  {
+    "pid": "P002",
+    "note_name": "Pathology",
+    "note_date": "2024-04-20T08:00:00.000Z",
+    "note_text": "Patient with pleomorphic tumor.",
+    "note_original_text": "Patient with pleomorphic tumor.",
+    "internal_note_id": "1002"
+  },
+  {
+    "pid": "P003",
+    "note_name": "Notatka lekarska",
+    "note_date": "2024-05-01T14:15:00.000Z",
+    "note_text": "Polish-only note.",
+    "note_original_text": "Polish-only note.",
+    "internal_note_id": "1003"
+  },
+  {
+    "pid": "P004",
+    "note_name": "Visit note",
+    "note_date": "2024-06-10T09:00:00.000Z",
+    "note_text": "Unannotated note.",
+    "note_original_text": "Unannotated note.",
+    "internal_note_id": "1004"
+  }
+]
