@@ -1166,11 +1166,14 @@ export const sessionsApi = {
 
   exportLabels: async (
     session_id: string,
-    options: { force?: boolean } = {},
+    options: { force?: boolean; study_id?: string } = {},
   ): Promise<{ blob: Blob; excludedRows: ExcludedRow[]; diagnosisWarnings: DiagnosisWarning[] }> => {
+    const params: Record<string, string | boolean> = {}
+    if (options.force) params.force = true
+    if (options.study_id) params.study_id = options.study_id
     const response = await api.get(`/api/sessions/${session_id}/export`, {
       responseType: 'blob',
-      params: options.force ? { force: true } : undefined,
+      params: Object.keys(params).length ? params : undefined,
     })
     const headerRows = parseExcludedRowsHeader(response.headers['x-excluded-rows'])
     const meta = await loadExportMetadata(session_id, headerRows)
@@ -1179,11 +1182,14 @@ export const sessionsApi = {
 
   exportCodes: async (
     session_id: string,
-    options: { force?: boolean } = {},
+    options: { force?: boolean; study_id?: string } = {},
   ): Promise<{ blob: Blob; excludedRows: ExcludedRow[]; diagnosisWarnings: DiagnosisWarning[] }> => {
+    const params: Record<string, string | boolean> = {}
+    if (options.force) params.force = true
+    if (options.study_id) params.study_id = options.study_id
     const response = await api.get(`/api/sessions/${session_id}/export/codes`, {
       responseType: 'blob',
-      params: options.force ? { force: true } : undefined,
+      params: Object.keys(params).length ? params : undefined,
     })
     const headerRows = parseExcludedRowsHeader(response.headers['x-excluded-rows'])
     const meta = await loadExportMetadata(session_id, headerRows)
@@ -1230,6 +1236,293 @@ export const sessionsApi = {
 
   resolveAllDiagnoses: async (session_id: string): Promise<DiagnosisValidationReport> => {
     const response = await api.post(`/api/sessions/${session_id}/diagnoses/resolve-all`)
+    return response.data
+  },
+}
+
+// ---------------------------------------------------------------------------
+// Study review (patient-level validation of a fixed study variable set)
+// ---------------------------------------------------------------------------
+
+export interface StudyInfo {
+  id: string
+  name: string
+  description: string
+  center?: string
+  variable_count: number
+}
+
+export interface StudyVariableCandidate {
+  value: string
+  note_id: string
+  prompt_type: string
+  report_type: string
+  date?: string
+  date_from?: 'event' | 'note' | 'none'
+  is_negated?: boolean
+  has_flags: boolean
+  reasoning?: string | null
+  annotation_text?: string | null
+  evidence_spans?: EvidenceSpan[]
+}
+
+export interface StudyVariableReview {
+  key: string
+  label: string
+  source: 'annotation' | 'diagnosis'
+  proposed_value?: string | null
+  value?: string | null
+  status: 'auto' | 'needs_review' | 'confirmed' | 'rejected'
+  conflict: boolean
+  candidates: StudyVariableCandidate[]
+  source_note_ids: string[]
+  source_prompt_type?: string | null
+  evidence_snippet?: string | null
+  reasoning?: string | null
+  auto_resolved: boolean
+  resolution_rule?: string | null
+  review_reasons: string[]
+  reviewed_by?: string | null
+  reviewed_at?: string | null
+  note?: string | null
+  // diagnosis-part code correction
+  llm_label?: string | null       // the descriptive text the LLM extracted (trusted)
+  llm_code?: string | null        // the LLM's code (often hallucinated — not trusted)
+  selected_code?: string | null   // the reviewer-selected real code
+  combination_valid?: boolean | null  // combination: is the pair a catalogued diagnosis code
+}
+
+export interface CodeSearchResult {
+  code: string
+  label: string
+  score: number
+  source: string
+}
+
+export interface CohortEligibility {
+  decision: 'included' | 'excluded' | 'needs_review'
+  auto_decision: 'included' | 'excluded' | 'needs_review'
+  confirmed: boolean
+  reasons: string[]
+  criteria: Record<string, boolean | null>
+  decided_by?: string | null
+  decided_at?: string | null
+}
+
+export interface StudyTimelineEvent {
+  date?: string | null
+  date_from: 'event' | 'note' | 'none'
+  category: 'diagnosis' | 'status' | 'metastasis' | 'treatment'
+  label: string
+  detail?: string | null
+  confirmed: boolean
+  reviewed_by?: string | null
+  variable_key: string
+}
+
+export interface StudyEpisodeEvent {
+  key: string
+  disease_status: 'recurrence' | 'progression'
+  date?: string | null
+  date_from: 'event' | 'note' | 'none'
+  sites: string[]
+  source_note_ids: string[]
+  origin: 'llm' | 'manual'
+  status: 'proposed' | 'confirmed' | 'dropped'
+  edited: boolean
+  evidence_changed: boolean
+  before_diagnosis?: boolean
+  reviewed_by?: string | null
+  review_action?: 'accept' | 'edit' | 'reject' | 'missed' | null
+  evidence: StudyVariableCandidate[]
+}
+
+export interface StudyPatientReview {
+  patient_id: string
+  eligibility: CohortEligibility
+  variables: Record<string, StudyVariableReview>
+  events: StudyEpisodeEvent[]
+  timeline: StudyTimelineEvent[]
+  overall_status: 'pending' | 'in_progress' | 'completed' | 'excluded'
+}
+
+export interface StudyEventActionRequest {
+  action: 'confirm_all' | 'confirm' | 'drop' | 'restore' | 'edit' | 'add'
+  key?: string
+  date?: string | null
+  disease_status?: 'recurrence' | 'progression'
+  sites?: string[]
+  reviewer?: string
+}
+
+export interface ConflictVariableConfig {
+  strategy: 'none' | 'report_type_ranking' | 'date'
+  ranking: string[]
+  date_pref: 'earliest' | 'latest'
+}
+
+export interface ConflictConfig {
+  enabled: boolean
+  per_variable: Record<string, ConflictVariableConfig>
+}
+
+export interface StudyVariableDef {
+  key: string
+  label: string
+  source: 'annotation' | 'diagnosis' | 'presence' | 'event_any'
+  type?: string
+  part?: string | null            // diagnosis part: 'histology' | 'topography' | 'combination'
+  requires?: string[]             // variable keys that must be confirmed before this one
+  group?: string                  // UI section: Clinical | Diagnosis | Pathology | Treatment | Outcome
+}
+
+export interface InclusionCodeRef {
+  code: string
+  label: string
+}
+
+export interface StudyInclusionCriteria {
+  histology_label: string
+  histology: InclusionCodeRef[]
+  topography_label: string
+  topography: InclusionCodeRef[]
+}
+
+export interface StudyReviewReport {
+  study_id: string
+  study_name: string
+  condition_family?: string | null
+  inclusion_criteria: StudyInclusionCriteria
+  variables: StudyVariableDef[]
+  report_types: string[]
+  conflict_config: ConflictConfig
+  patients: StudyPatientReview[]
+  total_patients: number
+  included: number
+  excluded: number
+  needs_review: number
+}
+
+export interface StudyEvaluationStat {
+  key: string
+  label: string
+  prompt_type?: string | null
+  group: string
+  accept: number
+  edit: number
+  reject: number
+  missed: number
+  reviewed: number
+  accept_rate: number
+  edit_rate: number
+  reject_rate: number
+  missed_rate: number
+}
+
+export interface StudyEvaluationReport {
+  study_id: string
+  study_name: string
+  overall: StudyEvaluationStat
+  per_variable: StudyEvaluationStat[]
+  reviewed_patients: number
+  total_patients: number
+}
+
+export const studiesApi = {
+  list: async (): Promise<StudyInfo[]> => {
+    const response = await api.get('/api/studies')
+    return response.data.studies
+  },
+
+  getEvaluation: async (session_id: string, study_id: string): Promise<StudyEvaluationReport> => {
+    const response = await api.get(`/api/sessions/${session_id}/studies/${study_id}/evaluation`)
+    return response.data
+  },
+
+  getReview: async (session_id: string, study_id: string): Promise<StudyReviewReport> => {
+    const response = await api.get(
+      `/api/sessions/${session_id}/studies/${study_id}/review`,
+    )
+    return response.data
+  },
+
+  confirmVariable: async (
+    session_id: string,
+    study_id: string,
+    patient_id: string,
+    var_key: string,
+    body: { value?: string | null; action?: 'confirm' | 'reject'; reviewer?: string; note?: string },
+  ): Promise<StudyPatientReview> => {
+    const response = await api.post(
+      `/api/sessions/${session_id}/studies/${study_id}/patients/${encodeURIComponent(patient_id)}/variables/${encodeURIComponent(var_key)}/confirm`,
+      body,
+    )
+    return response.data
+  },
+
+  setEligibility: async (
+    session_id: string,
+    study_id: string,
+    patient_id: string,
+    decision: 'included' | 'excluded',
+    reviewer?: string,
+  ): Promise<StudyPatientReview> => {
+    const response = await api.post(
+      `/api/sessions/${session_id}/studies/${study_id}/patients/${encodeURIComponent(patient_id)}/eligibility`,
+      { decision, reviewer },
+    )
+    return response.data
+  },
+
+  editEvents: async (
+    session_id: string,
+    study_id: string,
+    patient_id: string,
+    req: StudyEventActionRequest,
+  ): Promise<StudyPatientReview> => {
+    const response = await api.post(
+      `/api/sessions/${session_id}/studies/${study_id}/patients/${encodeURIComponent(patient_id)}/events`,
+      req,
+    )
+    return response.data
+  },
+
+  setConflictConfig: async (
+    session_id: string,
+    study_id: string,
+    config: ConflictConfig,
+  ): Promise<StudyReviewReport> => {
+    const response = await api.put(
+      `/api/sessions/${session_id}/studies/${study_id}/conflict-config`,
+      { config },
+    )
+    return response.data
+  },
+
+  searchMorphology: async (q: string, family?: string, limit = 10): Promise<CodeSearchResult[]> => {
+    const params: Record<string, string | number> = { q, limit }
+    if (family) params.family = family
+    const response = await api.get('/api/icdo3/morphology/search', { params })
+    return response.data.results
+  },
+
+  searchTopography: async (q: string, family?: string, limit = 10): Promise<CodeSearchResult[]> => {
+    const params: Record<string, string | number> = { q, limit }
+    if (family) params.family = family
+    const response = await api.get('/api/icdo3/topography/search', { params })
+    return response.data.results
+  },
+
+  setDiagnosisPart: async (
+    session_id: string,
+    study_id: string,
+    patient_id: string,
+    body: { part: 'histology' | 'topography'; action?: 'select' | 'reject'; code?: string; label?: string; reviewer?: string },
+  ): Promise<StudyPatientReview> => {
+    const response = await api.post(
+      `/api/sessions/${session_id}/studies/${study_id}/patients/${encodeURIComponent(patient_id)}/diagnosis-part`,
+      body,
+    )
     return response.data
   },
 }

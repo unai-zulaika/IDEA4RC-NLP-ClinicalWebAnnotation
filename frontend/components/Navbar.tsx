@@ -35,10 +35,10 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+        <div className="flex justify-between h-16 gap-3">
+          <div className="flex min-w-0">
+            <div className="flex min-w-0 items-center">
+              <h1 className="truncate text-base font-bold text-gray-900 dark:text-gray-100 sm:text-xl">
                 Clinical Data Curation
               </h1>
             </div>
@@ -58,14 +58,14 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
             {centers.length > 0 && (
               <div className="flex items-center">
-                <label className="text-sm text-gray-500 dark:text-gray-400 mr-2">Center:</label>
+                <label className="mr-2 hidden text-sm text-gray-500 dark:text-gray-400 sm:inline">Center:</label>
                 <select
                   value={center}
                   onChange={(e) => setCenter(e.target.value)}
-                  className="px-2 py-1 border border-gray-300 rounded-md text-sm bg-white dark:border-gray-600 dark:text-gray-100 dark:bg-gray-800"
+                  className="max-w-[40vw] rounded-md border border-gray-300 px-2 py-1 text-sm bg-white dark:border-gray-600 dark:text-gray-100 dark:bg-gray-800 sm:max-w-none"
                 >
                   {centers.map((c) => (
                     <option key={c} value={c}>{c}</option>

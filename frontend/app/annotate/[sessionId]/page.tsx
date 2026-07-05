@@ -937,6 +937,14 @@ export default function AnnotatePage() {
               >
                 Manage
               </button>
+              <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
+              <a
+                href={`/review/${sessionId}`}
+                className="text-sm text-primary-600 hover:text-primary-800 font-medium dark:text-primary-300 dark:hover:text-primary-200"
+                title="Patient-level study variable review & cohort export"
+              >
+                Study Review →
+              </a>
               {session.evaluation_mode === 'evaluation' && (
                 <div className="flex items-center gap-2">
                   <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800 font-medium dark:bg-blue-900/40 dark:text-blue-200">

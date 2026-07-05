@@ -193,6 +193,14 @@ export default function Dashboard() {
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(session.updated_at).toLocaleDateString()}
                     </div>
+                    <Link
+                      href={`/review/${session.session_id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-primary-600 hover:text-primary-800 text-sm font-medium dark:text-primary-300 dark:hover:text-primary-200"
+                      title="Study review"
+                    >
+                      Review
+                    </Link>
                     <button
                       onClick={(e) => handleDeleteSession(session.session_id, e)}
                       disabled={deletingSessionId === session.session_id}
