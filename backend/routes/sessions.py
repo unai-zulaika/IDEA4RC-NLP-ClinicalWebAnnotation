@@ -12,6 +12,7 @@ import re
 from datetime import datetime
 
 import pandas as pd
+from datetime import timezone
 
 from models.schemas import (
     SessionCreate, SessionInfo, SessionData, SessionUpdate,
@@ -393,9 +394,17 @@ async def list_sessions():
         except Exception as e:
             print(f"[WARN] Failed to load session {session_file}: {e}")
     
-    # Sort by updated_at descending
-    sessions.sort(key=lambda s: s.updated_at, reverse=True)
-    
+    # Sort by updated_at descending. Sessions can have a mix of timezone-aware
+    # and naive timestamps (imports vs. local saves), which are not directly
+    # comparable — normalize aware values to naive-UTC for a robust sort key.
+    def _sort_key(s):
+        dt = s.updated_at
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt
+
+    sessions.sort(key=_sort_key, reverse=True)
+
     return sessions
 
 
@@ -660,6 +669,8 @@ def _extract_value_from_annotation(annotation_text: str, prompt_type: str) -> st
         r'^Tumor site.*?:\s*(.+?)\.?$',
         # "Age at diagnosis: [value]" or similar
         r'^Age at diagnosis:\s*(.+?)\.?$',
+        # "Age at diagnosis 62 years." (no colon) -> 62 (integer for the export column)
+        r'^Age at diagnosis\s+(\d+)\s+years?\b',
         # "Margins after surgery: [value]"
         r'^Margins after surgery:\s*(.+?)\.?$',
         # "[Something]: [value]." - generic colon-separated
@@ -741,25 +752,61 @@ def _clean_value_by_data_type(value: str, data_type: str) -> str:
         return v
 
     if data_type == 'Integer':
-        int_match = re.search(r'\b(\d+)\b', v)
+        # no trailing \b: capture a number glued to a unit ("70mm" -> 70) instead
+        # of skipping to a later boundary-terminated number (e.g. a date's "12").
+        int_match = re.search(r'\b(\d+)', v)
         if int_match:
             return int_match.group(1)
         return v
 
     if data_type == 'float':
-        float_match = re.search(r'\b(\d+(?:\.\d+)?)\b', v)
+        float_match = re.search(r'\b(\d+(?:\.\d+)?)', v)
         if float_match:
             return float_match.group(1)
         return v
 
+    if data_type == 'boolean':
+        # Normalize to True/False so boolean-typed fields (e.g. Surgery.tumorRupture)
+        # match the True/False that CodeableConcept booleans (ClinicalStage.*,
+        # DiseaseExtent.*) resolve to — one consistent serialization in the CSV.
+        return 'True' if v.strip().lower() in ('true', 'yes', '1', 'present') else 'False'
+
     return v
 
 
+# Absence indicators that must be dropped from the normalized-table export so
+# that abstentions never leak in as data. Keep these to UNAMBIGUOUS
+# "not stated / not documented / not evaluable" phrasings (English + Italian).
+# Do NOT add real clinical negatives that are legitimate values for some
+# fields (e.g. "nessun residuo"/"R0" for margins, or "assente" for a necrosis
+# field) beyond the pre-existing bare "absent"/"none" patterns below.
 _ABSENCE_PATTERNS = [
-    re.compile(r'\bnot\s+(specified|available|applicable|mentioned|present|found)\b', re.IGNORECASE),
+    # English "not <X>" absence phrasings
+    re.compile(
+        r'\bnot\s+(specified|available|applicable|mentioned|present|found|'
+        r'stated|provided|documented|reported|indicated|evaluable|assessable|'
+        r'determinable|determined|identified|known)\b',
+        re.IGNORECASE,
+    ),
     re.compile(r'^unknown\b', re.IGNORECASE),
+    # "<label> unknown." abstention forms (e.g. "Tumor longest diameter unknown.",
+    # "Tumor category unknown.") — trailing 'unknown' only, so "carcinoma of
+    # unknown primary" (a real unknown-primary finding) is preserved.
+    re.compile(r'\bunknown\.?\s*$', re.IGNORECASE),
     re.compile(r'\bno\s+(information|data|result|finding|value)\b', re.IGNORECASE),
     re.compile(r'\binformation\s+not\s+available\b', re.IGNORECASE),
+    # Italian "non <X>" absence phrasings (not documented / available / evaluable / known / reported)
+    re.compile(
+        r'\bnon\s+(specificat[oa]|disponibile|menzionat[oa]|riportat[oa]|'
+        r'riferit[oa]|indicat[oa]|valutabile|not[oa]|determinat[oa]|'
+        r'documentat[oa]|applicabile|definit[oa])\b',
+        re.IGNORECASE,
+    ),
+    # n/a and the Italian "non disponibile" abbreviation n.d. (n/a, n.a., na, nd, n.d, n/d)
+    re.compile(r'^n\s*[./]?\s*[ad]\.?$', re.IGNORECASE),
+    # bare Italian "unknown" as the WHOLE value — anchored so a phrase like
+    # "sede primitiva sconosciuta" (a real unknown-primary finding) is preserved.
+    re.compile(r'^(sconosciut[oa]|ignot[oa])\.?$', re.IGNORECASE),
     re.compile(r'^\[.*\]$'),
     re.compile(r'^absent\.?$', re.IGNORECASE),
     re.compile(r'^none\.?$', re.IGNORECASE),
@@ -777,6 +824,26 @@ def _classify_absence(value: str) -> str:
             matched = m.group(0).strip()
             return f"Absence indicator detected: \"{matched}\""
     return ""
+
+
+_PROMPT_EM_CACHE: Optional[Dict[str, Dict]] = None
+
+
+def _prompt_entity_mappings() -> Dict[str, Dict]:
+    """Lazy {suffixed_prompt_type: entity_mapping} from prompts.json (cached)."""
+    global _PROMPT_EM_CACHE
+    if _PROMPT_EM_CACHE is None:
+        _PROMPT_EM_CACHE = {}
+        try:
+            from routes.prompts import load_prompts_json
+            for _center, _cps in load_prompts_json().items():
+                if isinstance(_cps, dict):
+                    for _pt, _pd in _cps.items():
+                        if isinstance(_pd, dict) and _pd.get('entity_mapping'):
+                            _PROMPT_EM_CACHE[_pt] = _pd['entity_mapping']
+        except Exception as e:  # pragma: no cover
+            print(f"[WARN] Failed to load entity mappings: {e}")
+    return _PROMPT_EM_CACHE
 
 
 def _build_export_rows(session: Dict) -> Tuple[List[Dict], List[Dict]]:
@@ -910,57 +977,109 @@ def _build_export_rows(session: Dict) -> Tuple[List[Dict], List[Dict]]:
                         'event_index': _val_idx,
                     })
             else:
-                # Standard single-value export (unchanged)
-                # Use derived_field_values if available for this field (set by output_word_mappings at annotation time)
-                _field_name = core_variable.split('.')[-1] if '.' in core_variable else ''
-                if _field_name and _field_name in derived_field_values:
-                    extracted_value = derived_field_values[_field_name]
-                else:
-                    extracted_value = _extract_value_from_annotation(annotation_text, prompt_type)
-                entity = _extract_entity_from_core_variable(core_variable)
+                # --- Per-field emission: one normalized row per IDEA4RC field ---
+                # A prompt's entity_mapping may declare several fields (e.g.
+                # Radiotherapy intent/hospital/startDate/setting). Each coded
+                # field is captured at annotation time in derived_field_values
+                # (via output_word_mappings). Emit one row per such field; rows
+                # of the same prompt share record_id automatically (same
+                # patient/entity/date_ref). Single-field prompts keep their
+                # exact prior behavior (one row, derived-or-extracted value).
+                em = _prompt_entity_mappings().get(prompt_type) or {}
+                fmaps = em.get('field_mappings', [])
+                # Per-field emission targets fields that can produce a value:
+                # coded fields (value_code_mappings) and/or owm-driven fields
+                # (output_word_mappings, incl. capture-group numeric/date
+                # extraction). Values come from derived_field_values (computed
+                # at annotation time). Fields flagged multi_value emit one row
+                # per distinct matched value (e.g. previous cancer treatments).
+                _emit_fields = [
+                    fm for fm in fmaps
+                    if fm.get('field_name') and fm.get('entity_type')
+                    and (fm.get('value_code_mappings') or fm.get('output_word_mappings'))
+                ]
+
+                pairs = []  # list of (core_variable, value)
+                _seen = set()
+                _mv_cvars = set()   # core_variables that are intentionally multi-valued
+                for fm in _emit_fields:
+                    fn = fm['field_name']
+                    if fn in _seen:
+                        continue
+                    cv = f"{fm['entity_type']}.{fn}"
+                    if fm.get('multi_value') and fm.get('output_word_mappings'):
+                        _vals = []
+                        for _owm in fm['output_word_mappings']:
+                            _pat = _owm.get('pattern', '')
+                            try:
+                                if _pat and re.search(_pat, annotation_text, re.IGNORECASE):
+                                    _v = _owm.get('value', '')
+                                    if _v and _v not in _vals:
+                                        _vals.append(_v)
+                            except re.error:
+                                continue
+                        for _v in _vals:
+                            pairs.append((cv, _v))
+                        if _vals:
+                            _mv_cvars.add(cv)
+                        _seen.add(fn)
+                    elif fn in derived_field_values:
+                        pairs.append((cv, derived_field_values[fn]))
+                        _seen.add(fn)
+                if not pairs:
+                    # single-field prompt, or no coded field derived: legacy
+                    # single value for the prompt's primary variable.
+                    _fn = core_variable.split('.')[-1] if '.' in core_variable else ''
+                    if _fn and _fn in derived_field_values:
+                        _val = derived_field_values[_fn]
+                    else:
+                        _val = _extract_value_from_annotation(annotation_text, prompt_type)
+                    pairs = [(core_variable, _val)]
 
                 if extracted_date:
                     date_ref = _normalize_date(extracted_date)
                 else:
                     date_ref = note_date
 
-                # Filter out absence/not-applicable values
-                absence_reason = _classify_absence(extracted_value)
-                if absence_reason:
-                    excluded_rows.append({
+                for cv, extracted_value in pairs:
+                    entity = _extract_entity_from_core_variable(cv)
+
+                    absence_reason = _classify_absence(extracted_value)
+                    if absence_reason:
+                        excluded_rows.append({
+                            'patient_id': patient_id,
+                            'core_variable': cv,
+                            'prompt_type': prompt_type,
+                            'note_id': note_id,
+                            'original_value': extracted_value or annotation_text,
+                            'reason': absence_reason,
+                        })
+                        continue
+
+                    data_type = _get_data_type_for_variable(cv)
+
+                    record_key = (patient_id, entity, date_ref)
+                    if record_key not in record_id_tracker:
+                        current_record_id += 1
+                        record_id_tracker[record_key] = current_record_id
+                    record_id = record_id_tracker[record_key]
+
+                    rows.append({
+                        '_note_id': note_id,
+                        '_prompt_type': prompt_type,
                         'patient_id': patient_id,
-                        'core_variable': core_variable,
-                        'prompt_type': prompt_type,
-                        'note_id': note_id,
-                        'original_value': extracted_value or annotation_text,
-                        'reason': absence_reason,
+                        'original_source': 'NLP_LLM',
+                        'core_variable': cv,
+                        'date_ref': date_ref,
+                        'value': extracted_value,
+                        'record_id': record_id,
+                        'linked_to': '',
+                        'quality': '',
+                        'types': data_type,
+                        'icdo3_code': icdo3_code,
+                        'entity': entity,
+                        '_multi_value': cv in _mv_cvars,
                     })
-                    continue
-
-                data_type = _get_data_type_for_variable(core_variable)
-
-                record_key = (patient_id, entity, date_ref)
-                if record_key not in record_id_tracker:
-                    current_record_id += 1
-                    record_id_tracker[record_key] = current_record_id
-
-                record_id = record_id_tracker[record_key]
-
-                rows.append({
-                    '_note_id': note_id,
-                    '_prompt_type': prompt_type,
-                    'patient_id': patient_id,
-                    'original_source': 'NLP_LLM',
-                    'core_variable': core_variable,
-                    'date_ref': date_ref,
-                    'value': extracted_value,
-                    'record_id': record_id,
-                    'linked_to': '',
-                    'quality': '',
-                    'types': data_type,
-                    'icdo3_code': icdo3_code,
-                    'entity': entity
-                })
 
     return rows, excluded_rows
 
@@ -1016,6 +1135,9 @@ def _validate_and_deduplicate_rows(
     rep_sources: Dict[tuple, List[ConflictSource]] = defaultdict(list)
 
     for row in deduped:
+        if row.get('_multi_value'):
+            continue  # intentionally multi-valued variable (e.g. previous cancer
+                      # treatments) — multiple values are expected, not a conflict
         entity = row['entity']
         card = cardinality.get(entity)  # None if entity unknown → treat as repeatable
         src = ConflictSource(
@@ -1152,6 +1274,190 @@ def _merge_diagnosis_rows(
     return merged
 
 
+def _apply_study_scope(
+    session: Dict, rows: List[Dict], study_id: str
+) -> Tuple[List[Dict], set]:
+    """Restrict export rows to a study cohort and overlay human-confirmed values.
+
+    For ``?study_id=`` exports:
+      * keep only patients whose study eligibility decision == 'included'
+      * keep only rows whose prompt belongs to the study's variable set
+        (diagnosis prompts are kept so they can be merged downstream)
+      * overlay each annotation variable's human-confirmed value (collapsing
+        per-note conflicts to a single agreed value), and synthesize a row for
+        confirmed variables that had no surviving annotation row
+
+    Returns (scoped_rows, included_patient_ids).
+    """
+    from lib import study_config
+    from services.study_resolver import _pt_matches
+
+    study = study_config.get_study(study_id)
+    if study is None:
+        raise HTTPException(status_code=404, detail=f"Study '{study_id}' not found")
+
+    store = session.get('study_reviews', {}).get(study_id, {})
+    patients = store.get('patients', {})
+    # Distinguish "not reviewed yet" (no patients computed) from "reviewed, zero
+    # included" — the former is a usage error, not a legitimately empty cohort.
+    if not patients:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Study '{study_id}' has not been reviewed for this session yet. "
+                f"Compute the review (GET .../studies/{study_id}/review) before exporting."
+            ),
+        )
+
+    # Only patients a human has CONFIRMED as included form the cohort — an
+    # auto-proposed 'included' is a suggestion, not a sign-off.
+    def _included(p):
+        e = p.get('eligibility') or {}
+        return e.get('decision') == 'included' and e.get('confirmed')
+    included = {pid for pid, p in patients.items() if _included(p)}
+
+    variables = study_config.active_variables(study)
+    # Only single-value 'annotation' variables overlay into the normalized export;
+    # 'presence'/'event_any' (derived booleans) are review-only for now.
+    ann_vars = [v for v in variables if v.get('source') == 'annotation']
+    diag_vars = [v for v in variables if v.get('source') == 'diagnosis']
+
+    def _bases(v):
+        return v.get('prompt_types') or ([v['prompt_type']] if v.get('prompt_type') else [])
+
+    diag_bases = [b for v in diag_vars for b in _bases(v)]
+    ann_base_to_key = {b: v['key'] for v in ann_vars for b in _bases(v)}
+    study_bases = list(ann_base_to_key) + diag_bases
+
+    def _in_study(pt: str) -> bool:
+        return any(_pt_matches(pt, b) for b in study_bases)
+
+    def _ann_key_for(pt: str):
+        for b, k in ann_base_to_key.items():
+            if _pt_matches(pt, b):
+                return k
+        return None
+
+    prompt_mapping = _build_prompt_to_core_variable_mapping()
+    cardinality = _load_entity_cardinality()
+
+    # Patients whose diagnosis variable the reviewer rejected — their diagnosis
+    # code must not be exported (the annotation path already honors 'rejected').
+    diag_keys = {v['key'] for v in diag_vars}
+    diag_rejected = {
+        pid for pid, p in patients.items() if pid in included
+        and any(((p.get('variables') or {}).get(k) or {}).get('status') == 'rejected'
+                for k in diag_keys)
+    }
+
+    # confirmed annotation values, keyed by (pid, variable key)
+    confirmed: Dict[tuple, tuple] = {}
+    for pid, p in patients.items():
+        if pid not in included:
+            continue
+        for v in ann_vars:
+            vr = (p.get('variables') or {}).get(v['key'], {})
+            if vr.get('status') == 'rejected':
+                continue
+            val = vr.get('value') if vr.get('value') is not None else vr.get('proposed_value')
+            if val is None or not str(val).strip():
+                continue
+            # Never overlay an abstention into the normalized table, even one a
+            # human typed in the review — mirror the _build_export_rows guarantee.
+            if _classify_absence(str(val)):
+                continue
+            confirmed[(pid, v['key'])] = (str(val), vr.get('source_prompt_type') or _bases(v)[0], _bases(v)[0])
+
+    scoped: List[Dict] = []
+    emitted_ann: set = set()   # (pid, variable key) collapsed rows already emitted
+    for r in rows:
+        pid = r.get('patient_id', '')
+        pt = r.get('_prompt_type', '')
+        if pid not in included or not _in_study(pt):
+            continue
+        vkey = _ann_key_for(pt)
+        if vkey is None:
+            # diagnosis prompt row — kept so _merge_diagnosis_rows can collapse it,
+            # unless the reviewer rejected the diagnosis variable for this patient.
+            if pid not in diag_rejected:
+                scoped.append(r)
+            continue
+        # Repeatable variable (cardinality 0, e.g. history-split events): preserve
+        # every dated record rather than collapsing to one value.
+        if cardinality.get(r.get('entity', '')) != 1:
+            scoped.append(r)
+            continue
+        # Non-repeatable: emit ONE representative row per patient with the confirmed
+        # value; drop the rest (collapses per-note disagreement / multi-prompt).
+        key = (pid, vkey)
+        if key in emitted_ann or key not in confirmed:
+            continue
+        emitted_ann.add(key)
+        scoped.append({**r, 'value': confirmed[key][0]})
+
+    # synthesize rows for confirmed (non-repeatable) variables with no surviving row
+    for (pid, vkey), (val, session_pt, base) in confirmed.items():
+        if (pid, vkey) in emitted_ann:
+            continue
+        core_variable = prompt_mapping.get(session_pt) or prompt_mapping.get(base) or base
+        entity = _extract_entity_from_core_variable(core_variable)
+        if cardinality.get(entity) != 1:
+            continue   # repeatable — don't synthesize a collapsed row
+        scoped.append({
+            '_note_id': '', '_prompt_type': session_pt, 'patient_id': pid,
+            'original_source': 'NLP_LLM', 'core_variable': core_variable,
+            'date_ref': '', 'value': val, 'record_id': 0, 'linked_to': '',
+            'quality': '', 'types': _get_data_type_for_variable(core_variable),
+            'icdo3_code': '', 'entity': entity,
+        })
+
+    # --- full outcome-event sequence (EpisodeEvent + linked DiseaseExtent) ---
+    # The event_any outcome variables (recurrence/metastasis) are NOT collapsed:
+    # emit one EpisodeEvent (+ linked DiseaseExtent sites) per curated, non-dropped
+    # event, so the survival analysis gets the whole longitudinal sequence.
+    status_var = next((v for v in variables if (v.get('timeline') or {}).get('category') == 'status'), None)
+    met_var = next((v for v in variables if (v.get('timeline') or {}).get('category') == 'metastasis'), None)
+
+    def _session_pt_for(base):
+        if not base:
+            return ''
+        for anns in session.get('annotations', {}).values():
+            for pt in (anns or {}):
+                if _pt_matches(pt, base):
+                    return pt
+        return base
+
+    recur_pt = _session_pt_for((status_var or {}).get('prompt_type'))
+    met_pt = _session_pt_for((met_var or {}).get('prompt_type'))
+
+    def _ev_row(pid, pt, cv, value, date_ref, record_id, linked_to):
+        return {
+            '_note_id': '', '_prompt_type': pt, 'patient_id': pid,
+            'original_source': 'NLP_LLM', 'core_variable': cv,
+            'date_ref': date_ref or '', 'value': value, 'record_id': record_id,
+            'linked_to': linked_to, 'quality': '', 'types': _get_data_type_for_variable(cv),
+            'icdo3_code': '', 'entity': _extract_entity_from_core_variable(cv),
+        }
+
+    for pid, p in patients.items():
+        if pid not in included:
+            continue
+        for i, ev in enumerate(p.get('events') or []):
+            if ev.get('status') == 'dropped':
+                continue
+            date = ev.get('date') or ''
+            rid = f"{pid}-EE-{i + 1}"
+            scoped.append(_ev_row(pid, recur_pt, 'EpisodeEvent.diseaseStatus',
+                                  ev.get('disease_status', 'recurrence'), date, rid, ''))
+            if date:
+                scoped.append(_ev_row(pid, recur_pt, 'EpisodeEvent.dateOfEpisode', date, date, rid, ''))
+            for site in ev.get('sites') or []:
+                scoped.append(_ev_row(pid, met_pt, f'DiseaseExtent.{site}', 'true', date,
+                                      f"{rid}-DE", rid))
+
+    return scoped, included
+
+
 @router.get("/{session_id}/export/metadata", response_model=ExportMetadataResponse)
 async def get_export_metadata(session_id: str):
     """Return excluded rows and diagnosis warnings for the next export.
@@ -1281,6 +1587,14 @@ async def export_session_for_pipeline(
             "downstream consumers are responsible for resolving them."
         ),
     ),
+    study_id: Optional[str] = Query(
+        None,
+        description=(
+            "If set, restrict the export to the named study's confirmed cohort "
+            "(included patients only), using human-confirmed variable values and "
+            "the study's variable set. Omit for the full, unchanged export."
+        ),
+    ),
 ):
     """Export validated annotations in pipeline-compatible CSV format (labels).
 
@@ -1296,9 +1610,14 @@ async def export_session_for_pipeline(
 
     rows, excluded = _build_export_rows(session)
 
+    # Optional study scope: restrict to confirmed cohort + overlay confirmed values
+    patient_diagnoses = session.get('patient_diagnoses', {})
+    if study_id:
+        rows, included_pids = _apply_study_scope(session, rows, study_id)
+        patient_diagnoses = {pid: d for pid, d in patient_diagnoses.items() if pid in included_pids}
+
     # Patient-level diagnosis merging: replace individual histology/topography rows
     # with a merged Diagnosis.diagnosisCode row using query_code format
-    patient_diagnoses = session.get('patient_diagnoses', {})
     rows = _merge_diagnosis_rows(rows, patient_diagnoses, value_field='query_code')
 
     # Validate cardinality constraints and deduplicate
@@ -1332,11 +1651,12 @@ async def export_session_for_pipeline(
     # Excluded rows and diagnosis warnings are exposed via the dedicated
     # `/export/metadata` endpoint so they don't bloat response headers
     # past reverse-proxy buffer limits on large sessions.
+    _suffix = f"_{study_id}" if study_id else "_validated"
     return StreamingResponse(
         iter([csv_buffer.getvalue()]),
         media_type="text/csv",
         headers={
-            "Content-Disposition": f"attachment; filename={session_id}_validated.csv",
+            "Content-Disposition": f"attachment; filename={session_id}{_suffix}.csv",
         },
     )
 
@@ -1350,6 +1670,14 @@ async def export_session_coded(
             "If true, bypass the cardinality conflict gate. Conflicting rows "
             "still pass through deduplication and end up in the CSV; "
             "downstream consumers are responsible for resolving them."
+        ),
+    ),
+    study_id: Optional[str] = Query(
+        None,
+        description=(
+            "If set, restrict the export to the named study's confirmed cohort "
+            "(included patients only), using human-confirmed variable values and "
+            "the study's variable set. Omit for the full, unchanged export."
         ),
     ),
 ):
@@ -1370,8 +1698,13 @@ async def export_session_coded(
     from lib.code_resolver import CodeResolver
     resolver = CodeResolver()
 
-    # Build prompt_type -> value_code_mappings lookup from prompts.json
+    # Build value_code_mappings lookups from prompts.json.
+    #   value_code_lookup:  prompt_type -> first field's vcm  (legacy fallback)
+    #   value_code_by_cv:   (prompt_type, core_variable) -> that field's vcm
+    # Per-field emission means each row must resolve against ITS OWN field's vcm,
+    # not just the prompt's first one.
     value_code_lookup: Dict[str, Dict[str, str]] = {}
+    value_code_by_cv: Dict[tuple, Dict[str, str]] = {}
     try:
         from routes.prompts import load_prompts_json
         prompts_data = load_prompts_json()
@@ -1385,16 +1718,22 @@ async def export_session_coded(
                         for fm in em.get('field_mappings', []):
                             vcm = fm.get('value_code_mappings')
                             if vcm and isinstance(vcm, dict):
-                                value_code_lookup[pt] = vcm
-                                break  # use first field mapping with value_code_mappings
+                                cv = f"{fm.get('entity_type')}.{fm.get('field_name')}"
+                                value_code_by_cv[(pt, cv)] = vcm
+                                value_code_lookup.setdefault(pt, vcm)  # first = legacy
     except Exception as e:
         print(f"[WARN] Failed to load value_code_mappings from prompts.json: {e}")
 
     rows, excluded = _build_export_rows(session)
 
+    # Optional study scope: restrict to confirmed cohort + overlay confirmed values
+    patient_diagnoses = session.get('patient_diagnoses', {})
+    if study_id:
+        rows, included_pids = _apply_study_scope(session, rows, study_id)
+        patient_diagnoses = {pid: d for pid, d in patient_diagnoses.items() if pid in included_pids}
+
     # Patient-level diagnosis merging: replace individual histology/topography rows
     # with a merged Diagnosis.diagnosisCode row using csv_id (numeric ID)
-    patient_diagnoses = session.get('patient_diagnoses', {})
     rows = _merge_diagnosis_rows(rows, patient_diagnoses, value_field='csv_id')
 
     # Validate cardinality constraints and deduplicate
@@ -1439,7 +1778,9 @@ async def export_session_coded(
 
         # CodeableConcept rows: check value_code_mappings first, then resolve via CodeResolver
         pt = row.get('_prompt_type', '')
-        vcm = value_code_lookup.get(pt, {})
+        # Resolve against THIS field's vcm (per-field emission); fall back to the
+        # prompt's first-field vcm for legacy single-field rows.
+        vcm = value_code_by_cv.get((pt, cv)) or value_code_lookup.get(pt, {})
         raw_value = row['value']
 
         if vcm and raw_value in vcm:
@@ -1465,11 +1806,12 @@ async def export_session_coded(
     # Excluded rows and diagnosis warnings are exposed via the dedicated
     # `/export/metadata` endpoint so they don't bloat response headers
     # past reverse-proxy buffer limits on large sessions.
+    _suffix = f"_{study_id}_coded" if study_id else "_coded"
     return StreamingResponse(
         iter([csv_buffer.getvalue()]),
         media_type="text/csv",
         headers={
-            "Content-Disposition": f"attachment; filename={session_id}_coded.csv",
+            "Content-Disposition": f"attachment; filename={session_id}{_suffix}.csv",
         },
     )
 

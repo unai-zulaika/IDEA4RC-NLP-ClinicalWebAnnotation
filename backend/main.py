@@ -17,7 +17,7 @@ except ImportError:
 
 # No need to add parent directory - all modules are now local
 
-from routes import server, prompts, upload, annotate, sessions, presets
+from routes import server, prompts, upload, annotate, sessions, presets, study
 
 app = FastAPI(
     title="Clinical Data Curation API",
@@ -55,6 +55,7 @@ app.include_router(upload.router, prefix="/api/upload", tags=["upload"])
 app.include_router(annotate.router, prefix="/api/annotate", tags=["annotate"])
 app.include_router(sessions.router, prefix="/api/sessions", tags=["sessions"])
 app.include_router(presets.router, prefix="/api/presets", tags=["presets"])
+app.include_router(study.router, prefix="/api", tags=["studies"])
 
 
 # Prometheus metrics instrumentation

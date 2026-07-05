@@ -1,0 +1,136 @@
+{
+  "id": "liposarcoma_retroperitoneum",
+  "name": "Survival of surgically-treated retroperitoneal liposarcoma",
+  "description": "Patient-level review of the variables needed for a survival analysis of liposarcoma of the retroperitoneum, surgically treated only. Reviewers validate one value per variable per patient and confirm cohort eligibility before exporting the normalized table.",
+  "center": "INT-SARC",
+  "condition_family": "sarc",
+  "cohort": {
+    "histology": {
+      "label": "Liposarcoma",
+      "morphology_prefixes": ["8850", "8851", "8855", "8857", "8858"],
+      "review_prefixes": ["8852", "8853", "8854"],
+      "reference": [
+        {"code": "8850", "label": "Liposarcoma, NOS"},
+        {"code": "8851", "label": "Liposarcoma, well differentiated"},
+        {"code": "8855", "label": "Mixed liposarcoma"},
+        {"code": "8857", "label": "Fibroblastic liposarcoma"},
+        {"code": "8858", "label": "Dedifferentiated liposarcoma"}
+      ]
+    },
+    "topography": {
+      "label": "Retroperitoneum",
+      "codes": ["C48.0", "C48.1"],
+      "review_codes": ["C49.4", "C49.5"],
+      "reference": [
+        {"code": "C48.0", "label": "Retroperitoneum"},
+        {"code": "C48.1", "label": "Mesentery"},
+        {"code": "C49.4", "label": "Inferior vena cava"},
+        {"code": "C49.4", "label": "Aorta"},
+        {"code": "C49.4", "label": "Renal vessels"},
+        {"code": "C49.4", "label": "Mesenteric vessels"},
+        {"code": "C49.5", "label": "Iliac vessels"}
+      ]
+    },
+    "treatment": {
+      "label": "Surgically treated",
+      "prompt_type": "surgerytype"
+    }
+  },
+  "variables": [
+    {
+      "key": "sex", "label": "Sex", "group": "Clinical",
+      "source": "annotation", "prompt_type": "gender", "type": "categorical",
+      "default_conflict_strategy": "report_type_ranking"
+    },
+    {
+      "key": "age", "label": "Age at diagnosis", "group": "Clinical",
+      "source": "annotation", "prompt_type": "ageatdiagnosis", "type": "integer",
+      "default_conflict_strategy": "report_type_ranking"
+    },
+    {
+      "key": "histology", "label": "Histology (morphology)", "group": "Diagnosis",
+      "source": "diagnosis", "diagnosis_part": "histology",
+      "prompt_types": ["histological-tipo"], "default_conflict_strategy": "date"
+    },
+    {
+      "key": "topography", "label": "Topography (site)", "group": "Diagnosis",
+      "source": "diagnosis", "diagnosis_part": "topography",
+      "prompt_types": ["tumorsite"], "default_conflict_strategy": "date"
+    },
+    {
+      "key": "diagnosis_code", "label": "Diagnosis code (combination)", "group": "Diagnosis",
+      "source": "diagnosis", "diagnosis_part": "combination", "requires": ["histology", "topography"],
+      "timeline": {"category": "diagnosis", "label": "Diagnosis"}
+    },
+    {
+      "key": "stage", "label": "Stage at diagnosis", "group": "Diagnosis",
+      "source": "annotation", "prompt_type": "stage_at_diagnosis", "type": "categorical",
+      "default_conflict_strategy": "report_type_ranking"
+    },
+    {
+      "key": "grading", "label": "Grading (FNCLCC — WD vs dedifferentiated)", "group": "Pathology",
+      "source": "annotation", "prompt_types": ["surgical-specimen-grading", "biopsygrading"],
+      "type": "categorical", "default_conflict_strategy": "report_type_ranking"
+    },
+    {
+      "key": "tumor_size", "label": "Tumor size (mm)", "group": "Pathology",
+      "source": "annotation", "prompt_type": "tumordiameter", "type": "integer"
+    },
+    {
+      "key": "multifocality", "label": "Multifocality", "group": "Pathology",
+      "source": "annotation", "prompt_type": "multifocality", "type": "categorical"
+    },
+    {
+      "key": "surgery", "label": "Surgery", "group": "Treatment",
+      "source": "presence", "prompt_type": "surgerytype",
+      "timeline": {"category": "treatment"}
+    },
+    {
+      "key": "completeness", "label": "Completeness of resection (margins)", "group": "Treatment",
+      "source": "annotation", "prompt_type": "surgerymargins", "type": "categorical",
+      "default_conflict_strategy": "report_type_ranking"
+    },
+    {
+      "key": "chemotherapy", "label": "Chemotherapy at diagnosis", "group": "Treatment",
+      "source": "presence", "prompt_type": "chemotherapy_start", "timing": true,
+      "timeline": {"category": "treatment"}
+    },
+    {
+      "key": "radiotherapy", "label": "Radiotherapy at diagnosis", "group": "Treatment",
+      "source": "presence", "prompt_type": "radiotherapy_start", "timing": true,
+      "timeline": {"category": "treatment"}
+    },
+    {
+      "key": "recurrence", "label": "Recurrence / progression over time", "group": "Outcome",
+      "source": "event_any", "prompt_type": "recur_or_prog",
+      "positive_values": ["recurrence", "progression"],
+      "timeline": {"category": "status"}
+    },
+    {
+      "key": "metastasis", "label": "Metastatic site(s) over time", "group": "Outcome",
+      "source": "event_any", "prompt_type": "recurrencetype",
+      "positive_values": ["metastatic"],
+      "timeline": {"category": "metastasis"}
+    }
+  ],
+  "optional_variables": [
+    {
+      "key": "vital_status",
+      "label": "Vital status (survival endpoint)",
+      "source": "annotation",
+      "prompt_type": "patient-status",
+      "type": "categorical",
+      "enabled": false,
+      "note": "Time-to-event endpoint for the survival analysis. Enable to add to review + export."
+    },
+    {
+      "key": "date_of_surgery",
+      "label": "Date of surgery",
+      "source": "annotation",
+      "prompt_type": "surgerytype",
+      "type": "date",
+      "enabled": false,
+      "note": "Treatment date; enable if a treatment timeline is needed downstream."
+    }
+  ]
+}

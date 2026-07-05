@@ -426,6 +426,254 @@ class DiagnosisValidationReport(BaseModel):
     skipped: int
 
 
+# ---------------------------------------------------------------------------
+# Study review (patient-level validation of a fixed study variable set)
+# ---------------------------------------------------------------------------
+
+class StudyVariableCandidate(BaseModel):
+    """One value proposed by the LLM for a study variable, with its source.
+
+    Carries enough to let a reviewer compare candidates: the value, its source
+    note, the LLM reasoning, and the evidence spans to highlight in that note.
+    """
+    value: str
+    note_id: str
+    prompt_type: str = ""
+    report_type: str = ""
+    date: Optional[str] = None            # normalized date used for date-based resolution
+    date_from: str = "event"              # "event" (LLM extracted the date) | "note" (fell back to the note's date) | "none"
+    is_negated: Optional[bool] = None
+    has_flags: bool = False               # hallucination / low-confidence present
+    reasoning: Optional[str] = None       # LLM chain-of-thought for this value
+    annotation_text: Optional[str] = None  # the raw annotation string (short evidence)
+    evidence_spans: List[EvidenceSpan] = []  # spans into the source note for highlighting
+
+
+class StudyVariableReview(BaseModel):
+    """Per-patient validation state for a single study variable."""
+    key: str
+    label: str = ""
+    source: str = "annotation"            # "annotation" | "diagnosis"
+    proposed_value: Optional[str] = None  # value suggested by the resolver/rule
+    value: Optional[str] = None           # human-confirmed value (None until confirmed)
+    # auto         -> single unanimous value, no human action yet
+    # needs_review -> conflict the rules could not settle / missing value
+    # confirmed    -> a value is accepted (by a human, or auto-confirmed by a rule)
+    # rejected     -> reviewer marked this variable as not exportable
+    status: str = "needs_review"
+    conflict: bool = False
+    candidates: List[StudyVariableCandidate] = []
+    source_note_ids: List[str] = []
+    source_prompt_type: Optional[str] = None  # the session prompt_type key used
+    evidence_snippet: Optional[str] = None
+    reasoning: Optional[str] = None
+    # Diagnosis-part code correction (histology / topography): the LLM's label is
+    # trusted, its code is not — reviewers pick a real code from the condition file.
+    llm_label: Optional[str] = None       # the descriptive text the LLM extracted
+    llm_code: Optional[str] = None        # the (often hallucinated) code the LLM gave
+    selected_code: Optional[str] = None   # the reviewer-selected real code
+    combination_valid: Optional[bool] = None  # for the combination: is the pair in the diagnosis CSV
+    # LLM-vs-human evaluation: the LLM's original proposed value, captured once at
+    # resolve time and never overwritten, so accept-vs-edit stays recoverable after
+    # a human confirms; review_action = the human's decision relative to it.
+    llm_value: Optional[str] = None
+    review_action: Optional[str] = None   # "accept" | "edit" | "reject" | None (not human-reviewed)
+    # Auto conflict-resolution provenance
+    auto_resolved: bool = False           # True when a rule (not a human) set the value
+    resolution_rule: Optional[str] = None  # e.g. "report_type_ranking", "date_earliest"
+    review_reasons: List[str] = []
+    # Audit
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+    note: Optional[str] = None
+
+
+class CohortEligibility(BaseModel):
+    """Auto-proposed + human-confirmed study-cohort membership for a patient."""
+    decision: str = "needs_review"        # "included" | "excluded" | "needs_review"
+    auto_decision: str = "needs_review"   # what the rule proposed
+    confirmed: bool = False               # True once a reviewer confirms
+    reasons: List[str] = []
+    criteria: Dict[str, Any] = {}         # {histology: true/false/None, topography: ..., treatment: ...}
+    decided_by: Optional[str] = None
+    decided_at: Optional[datetime] = None
+
+
+class StudyTimelineEvent(BaseModel):
+    """One dated point on a patient's clinical timeline (diagnosis anchor,
+    disease-status change, metastasis, or treatment), assembled from the
+    resolved study variables. Kept deliberately minimal (date + label only)."""
+    date: Optional[str] = None            # DD/MM/YYYY (may be a note-date fallback — see date_from)
+    date_from: str = "event"              # "event" | "note" | "none" (note = date is the note's date, not an extracted event date)
+    category: str                         # "diagnosis" | "status" | "metastasis" | "treatment"
+    label: str                            # short label, e.g. "Diagnosis", "Recurrence", "Metastasis", "Surgery"
+    detail: Optional[str] = None          # optional short detail, e.g. metastatic sites or diagnosis code
+    confirmed: bool = False               # True when the underlying study variable was human-confirmed (not LLM/auto)
+    reviewed_by: Optional[str] = None     # who confirmed it (when confirmed)
+    variable_key: str = ""                # study variable this event came from (for linking back)
+
+
+class StudyEpisodeEvent(BaseModel):
+    """One reviewer-curated outcome event (EpisodeEvent + linked DiseaseExtent):
+    a recurrence/progression with its date and metastatic sites. Assembled from
+    the LLM annotations, then confirmed / edited / dropped / added by the reviewer."""
+    key: str                              # stable id for matching across recomputes
+    disease_status: str                   # "recurrence" | "progression"
+    date: Optional[str] = None            # DD/MM/YYYY (may be a note-date fallback)
+    date_from: str = "event"              # "event" | "note" | "none"
+    sites: List[str] = []                 # DiseaseExtent field names that are true (distant sites / localised)
+    source_note_ids: List[str] = []
+    origin: str = "llm"                   # "llm" (assembled) | "manual" (reviewer-added; an LLM miss)
+    status: str = "proposed"              # "proposed" | "confirmed" | "dropped"
+    edited: bool = False                  # a human changed the date/sites/status from the LLM assembly
+    evidence_changed: bool = False        # confirmed event whose underlying annotation moved on re-run
+    before_diagnosis: bool = False        # event date precedes the diagnosis — anomalous, verify (over-derived or historical)
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+    review_action: Optional[str] = None   # "accept" | "edit" | "reject" | "missed" | None
+    evidence: List[StudyVariableCandidate] = []  # source note(s) + LLM output that produced this event
+
+
+class StudyPatientReview(BaseModel):
+    """All study-review state for one patient."""
+    patient_id: str
+    eligibility: CohortEligibility = CohortEligibility()
+    variables: Dict[str, StudyVariableReview] = {}
+    events: List[StudyEpisodeEvent] = []     # curated longitudinal outcome events
+    timeline: List[StudyTimelineEvent] = []  # chronological clinical timeline (diagnosis -> status/metastasis/treatments)
+    # pending -> nothing confirmed; in_progress -> some confirmed; completed -> all confirmed
+    overall_status: str = "pending"
+
+
+class ConflictVariableConfig(BaseModel):
+    """Per-variable automatic conflict-resolution strategy."""
+    # "none"               -> conflicts always go to manual review (default)
+    # "report_type_ranking"-> pick value from the highest-ranked report type present
+    # "date"               -> pick value by date (earliest by default)
+    strategy: str = "none"
+    ranking: List[str] = []               # ordered report_type names (highest priority first)
+    date_pref: str = "earliest"           # "earliest" | "latest"
+
+
+class ConflictConfig(BaseModel):
+    """Session-scoped automatic conflict-resolution settings for a study."""
+    enabled: bool = False                 # master toggle (opt-in)
+    per_variable: Dict[str, ConflictVariableConfig] = {}
+
+
+class InclusionCodeRef(BaseModel):
+    """One ICD-O code that is part of the study's cohort inclusion criteria."""
+    code: str
+    label: str = ""
+
+
+class StudyInclusionCriteria(BaseModel):
+    """The cohort inclusion ICD-O codes, surfaced so reviewers can see them while
+    accepting/rejecting diagnosis codes in the review view."""
+    histology_label: str = ""
+    histology: List[InclusionCodeRef] = []       # morphology prefixes (e.g. 8850 Liposarcoma)
+    topography_label: str = ""
+    topography: List[InclusionCodeRef] = []       # topography codes (e.g. C48.0 Retroperitoneum)
+
+
+class StudyReviewReport(BaseModel):
+    """Study-review status across all patients in a session."""
+    study_id: str
+    study_name: str = ""
+    condition_family: Optional[str] = None  # condition-file family for code search (e.g. 'sarc')
+    inclusion_criteria: StudyInclusionCriteria = StudyInclusionCriteria()
+    variables: List[Dict[str, Any]] = []  # variable definitions (key, label, source, type)
+    report_types: List[str] = []          # report types present in the session
+    conflict_config: ConflictConfig = ConflictConfig()
+    patients: List[StudyPatientReview] = []
+    total_patients: int = 0
+    included: int = 0
+    excluded: int = 0
+    needs_review: int = 0
+
+
+class StudyEvaluationStat(BaseModel):
+    """Human-review outcome counts for the LLM's proposals on one variable (or
+    the overall total). accept ~ LLM value kept as-is; edit ~ human corrected the
+    value; reject ~ LLM value judged not usable (a false positive)."""
+    key: str
+    label: str = ""
+    prompt_type: Optional[str] = None
+    group: str = ""
+    accept: int = 0
+    edit: int = 0
+    reject: int = 0
+    missed: int = 0                        # LLM proposed nothing, human supplied it (false negative)
+    reviewed: int = 0                      # accept + edit + reject + missed (human decisions counted)
+    accept_rate: float = 0.0
+    edit_rate: float = 0.0
+    reject_rate: float = 0.0
+    missed_rate: float = 0.0
+
+
+class StudyEvaluationReport(BaseModel):
+    """LLM-vs-human evaluation for a session's study review: how often reviewers
+    accept / edit / reject the model's proposed values, overall and per variable."""
+    study_id: str
+    study_name: str = ""
+    overall: StudyEvaluationStat = StudyEvaluationStat(key="__overall__", label="All variables")
+    per_variable: List[StudyEvaluationStat] = []
+    reviewed_patients: int = 0            # patients with at least one human decision
+    total_patients: int = 0
+
+
+class StudyVariableConfirmRequest(BaseModel):
+    """Confirm / edit / reject a single study variable for a patient."""
+    value: Optional[str] = None
+    action: str = "confirm"               # "confirm" | "reject"
+    reviewer: Optional[str] = None
+    note: Optional[str] = None
+
+
+class StudyEligibilityRequest(BaseModel):
+    """Confirm cohort eligibility for a patient."""
+    decision: str                         # "included" | "excluded"
+    reviewer: Optional[str] = None
+
+
+class StudyEventActionRequest(BaseModel):
+    """Curate a patient's outcome-event list from the interactive timeline."""
+    action: str                           # confirm_all | confirm | drop | restore | edit | add
+    key: Optional[str] = None             # target event (confirm/drop/restore/edit)
+    date: Optional[str] = None            # DD/MM/YYYY (edit/add)
+    disease_status: Optional[str] = None  # recurrence | progression (edit/add)
+    sites: Optional[List[str]] = None     # DiseaseExtent field names (edit/add)
+    reviewer: Optional[str] = None
+
+
+class StudyConflictConfigRequest(BaseModel):
+    """Update the session-scoped conflict-resolution config for a study."""
+    config: ConflictConfig
+
+
+class CodeSearchResult(BaseModel):
+    """A ranked morphology/topography code candidate from a condition file."""
+    code: str
+    label: str
+    score: float
+    source: str = ""
+
+
+class CodeSearchResponse(BaseModel):
+    results: List[CodeSearchResult] = []
+    query: str = ""
+
+
+class SetDiagnosisPartRequest(BaseModel):
+    """Set the reviewer-chosen real code for one diagnosis part (histology or
+    topography). When both parts are set the combination is validated + assembled."""
+    part: str                              # "histology" | "topography"
+    action: str = "select"                 # "select" | "reject"
+    code: Optional[str] = None
+    label: Optional[str] = None
+    reviewer: Optional[str] = None
+
+
 # Annotation Preset Schemas
 class AnnotationPresetCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)

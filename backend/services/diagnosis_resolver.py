@@ -181,10 +181,11 @@ class DiagnosisResolver:
 
         results: Dict[str, Dict[str, Any]] = {}
         for pid, p_notes in patient_notes.items():
-            # Preserve manually resolved entries
+            # Preserve manually resolved entries, and any entry the reviewer has
+            # started correcting (user-selected morphology/topography codes).
             if preserve_manual and pid in existing:
                 ex = existing[pid]
-                if isinstance(ex, dict) and ex.get('status') == 'manually_resolved':
+                if isinstance(ex, dict) and (ex.get('status') == 'manually_resolved' or ex.get('user_diagnosis')):
                     results[pid] = ex
                     continue
 
