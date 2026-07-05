@@ -520,15 +520,26 @@ def _get_fewshot_builder():
 
 _KNOWN_CENTER_SUFFIXES = ("-int-sarc", "-int-hnc", "-msci", "-vgr", "-int")
 
+# 'response-to' was split into single-entity response-to-chemo / response-to-rt;
+# both reuse the original 'response-to' few-shot store/FAISS index (keyed
+# 'response-to-int'), so retrieval still finds examples instead of going zero-shot.
+_FEWSHOT_BASE_ALIAS = {
+    'response-to-chemo': 'response-to',
+    'response-to-rt': 'response-to',
+}
+
+
 def _strip_center_suffix(key: str) -> str:
     """Strip known center suffix from a fewshot/prompt key to get the base name.
     E.g., 'ageatdiagnosis-int-sarc' → 'ageatdiagnosis',
           'ageatdiagnosis-int' → 'ageatdiagnosis'
     """
+    base = key
     for suffix in _KNOWN_CENTER_SUFFIXES:
         if key.endswith(suffix):
-            return key[:-len(suffix)]
-    return key
+            base = key[:-len(suffix)]
+            break
+    return _FEWSHOT_BASE_ALIAS.get(base, base)
 
 
 def _get_fewshot_examples(prompt_type: str, note_text: str, k: int = 5) -> List[Tuple[str, str]]:
