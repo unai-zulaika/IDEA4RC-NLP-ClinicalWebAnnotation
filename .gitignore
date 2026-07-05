@@ -102,6 +102,10 @@ standalone_linking_tool/
 *.jpg
 *.jpeg
 
+# Local UI walkthrough recordings (may contain PHI from real sessions)
+walkthrough/
+*.webm
+
 # Keep directory structures
 !**/.gitkeep
 CLAUDE.md

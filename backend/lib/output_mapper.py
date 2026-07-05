@@ -54,8 +54,23 @@ def resolve_output_word_mappings(final_output: str, entity_mapping: Dict[str, An
                 re_flags |= re.MULTILINE
 
             try:
-                if re.search(pattern, final_output, re_flags):
-                    derived[field_name] = value
+                m = re.search(pattern, final_output, re_flags)
+                if m:
+                    # Support capture-group substitution: a value of "$1" (or
+                    # "$1 x $2") is filled from the regex groups, so owm can
+                    # EXTRACT a number/date/etc. rather than only map to a
+                    # constant. Missing groups collapse to empty.
+                    if "$" in value:
+                        def _grp(mo, _m=m):
+                            i = int(mo.group(1))
+                            try:
+                                return _m.group(i) or ""
+                            except (IndexError, re.error):
+                                return ""
+                        out = re.sub(r"\$(\d)", _grp, value).strip()
+                    else:
+                        out = value
+                    derived[field_name] = out
                     break  # first match wins for this field
             except re.error:
                 # Invalid regex — skip this mapping

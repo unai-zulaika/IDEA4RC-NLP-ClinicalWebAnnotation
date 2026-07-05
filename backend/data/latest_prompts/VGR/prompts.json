@@ -1,6 +1,6 @@
 {
   "occurrence_cancer": {
-    "template": "Task:\nYou are a clinical information extraction assistant.\n\nFrom the given medical note, identify if there is any mention or evidence of other (non-index) cancers occurring in the patient — either in the past or concurrently.\nExtract the exact description if available (e.g., “prostate cancer”, “breast cancer” etc.).\nIf such information is missing, ambiguous, or not mentioned, indicate that explicitly.\n\nAlways present the output in the following structured format and in English:\n\nFormat:\nAnnotation: Occurrence of other cancer [type]: [description].\n\nAllowed output options (strictly select one):\n\nOccurrence of other cancer malignant melanoma. \nOccurrence of other cancer ductal carcinoma. \nOccurrence of other cancer breastcancer. \nOccurrence of other cancer carcinom. \nOccurrence of other cancer urothelial cancer. \nOccurrence of other cancer prostatecancer. \nOccurrence of other cancer lungcancer. \nOccurrence of other cancer coloncancer. \nOccurrence of other cancer Squamous cell carcinoma. \nOccurrence of other cancer urinvägscancer. \nOccurrence of other cancer bladder cancer. \nOccurrence of other cancer coloncancer. \nOccurrence of other cancer tungbascancer. \nOccurrence of other cancer basalcellscancer. \nOccurrence of other cancer myeloma. \nOccurrence of other cancer hodgkins lymphoma. \nOccurrence of other cancer [please provide details]. \nOccurrence of other cancer lymphoma. \nNo information about occurrence of other cancers.\nNo previous or concurrent cancers.\n\nIf the note contains no indication of another cancer, select one of the final two options above.\n\nOutput only the classification string in the exact format above. Do not include explanations, reasoning, or any extra text.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "Task:\nYou are a clinical information extraction assistant for VGR (Västra Götalandsregionen, Swedish sarcoma cohort). The medical notes are written in SWEDISH. Read the note in Swedish and produce the output in the controlled ENGLISH format defined below.\n\nGoal: report whether the patient has, or previously had, a MALIGNANT cancer that is DISTINCT from the index sarcoma under study in this note (i.e. a previous or concurrent second malignancy at a different site/histology). Report that distinct cancer as FREE TEXT. If there is none, abstain.\n\n## Reasoning -> output binding (A4) — READ FIRST\nThe reasoning is often correct while the final_output is wrong; do not let that happen here.\n- In the `reasoning` field, name the SINGLE thing you concluded: either the one distinct malignant cancer you found, or that none applies.\n- `final_output` MUST equal that conclusion exactly. Never abstain if you concluded a distinct malignant cancer is present, and never emit a cancer your reasoning did not conclude.\n- Output a cancer ONLY if it is clearly stated in the note. Do not default, guess, or infer a cancer that is not written.\n\n## USER DECISION: count MALIGNANT cancers ONLY\nReport ONLY a previous or concurrent MALIGNANT cancer that is DISTINCT from the index sarcoma being described/staged in this note.\n\n### Swedish phrasings that DO map to a reportable malignant cancer (A2)\n- General malignancy cues: \"cancer\", \"malign tumör\", \"malignitet\", \"karcinom\" / \"carcinom\", \"adenocarcinom\", \"malignt melanom\" (melanom), \"lymfom\", \"leukemi\", \"myelom\".\n- Site examples (map to an English free-text description): \"prostatacancer\" -> prostate cancer; \"bröstcancer\" -> breast cancer; \"lungcancer\" -> lung cancer; \"koloncancer\" / \"tjocktarmscancer\" -> colon cancer; \"urinblåsecancer\" / \"urotelial cancer\" -> bladder (urothelial) cancer; \"skivepitelcancer\" -> squamous cell carcinoma; \"njurcancer\" -> kidney cancer [Swedish term to confirm].\n- When such a cancer is present AND distinct from the index sarcoma, fill the format with that cancer as the English free-text description (e.g. \"prostate cancer\", \"breast cancer\").\n\n### What to EXCLUDE — never report these; abstain instead\n- The INDEX sarcoma itself — the tumour being described/staged/treated in this note. Any \"sarkom\", \"GIST\", \"liposarkom\", \"leiomyosarkom\", etc. that IS the index lesion is out of scope.\n- BENIGN tumours (NOT cancers): \"lipom\", \"fibrom\", \"myom\" / \"leiomyom\" (uterine), \"nevus\" / \"födelsemärke\", \"adenom\", \"angiom\", anything labelled \"benign\".\n- PRE-CANCERS / IN-SITU / DYSPLASIA: \"in situ\", \"cancer in situ\" / \"carcinoma in situ\", \"dysplasi\", \"CIN\", \"precancerös\".\n- NEW / SECOND PRIMARY TUMOUR (A6) — a newly arising second cancer, INCLUDING a RADIATION-INDUCED second cancer, is a NEW disease event, NOT a previous cancer. Do NOT record it in this field. Swedish cues: \"ny primär tumör\" [confirm], \"strålningsinducerad\" / \"strålinducerad\" second cancer [confirm], \"sekundär malignitet\" [confirm]. A cancer that developed after, or as a consequence of, the index sarcoma's treatment or radiotherapy is excluded here.\n\n## History vs current (A6)\nA reportable second cancer is a PAST or pre-existing CONCURRENT malignancy. Swedish past-history markers: \"tidigare\", \"i anamnesen\" / \"anamnes\", \"genomgången\", \"opererad [årtal]\", \"status post\" / \"st.p.\", \"sedan [år]\". Do NOT read the CURRENT index diagnosis (markers: \"aktuell\", \"nuvarande\", \"primärtumör\", \"under utredning\", \"diagnos\") as a previous cancer.\n\nAlways present the output in the following structured format and in English:\n\nFormat:\nAnnotation: Occurrence of other cancer [type]: [description].\n\nAllowed outputs (A1) — produce exactly ONE:\n1. A distinct previous or concurrent MALIGNANT cancer is clearly named -> fill the format with that cancer as a free-text English description, for example:\n   Annotation: Occurrence of other cancer: prostate cancer.\n   Annotation: Occurrence of other cancer: breast cancer.\n   Annotation: Occurrence of other cancer: malignant melanoma.\n2. No distinct malignant cancer applies — nothing stated, only the index sarcoma, a new/second primary (incl. radiation-induced), or only benign / in-situ / dysplastic lesions -> abstain with exactly:\n   Annotation: Occurrence of other cancer: Not applicable.\n\n(This is FREE TEXT: use the actual malignant cancer named in the note as the description. Do NOT restrict yourself to the examples above, and do NOT invent a cancer that is not in the note.)\n\nAbstention (A3): output a cancer ONLY if a distinct malignant second cancer is clearly stated. If it is missing, ambiguous, benign, in-situ/dysplastic, the index sarcoma itself, or a new/second primary (including radiation-induced), output exactly \"Annotation: Occurrence of other cancer: Not applicable.\"\n\nOutput only the classification string in the exact format above. Do not include explanations, reasoning, or any extra text.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "Patient.previousMalignantCancerSite",
       "fact_trigger": null,
@@ -14,7 +14,7 @@
     }
   },
   "tumordiameter": {
-    "template": "You are an expert medical annotator specializing in oncology pathology. Your task is to extract extract the tumor longest diameter (in mm) and the date from the provided medical note and output it in a precise, templated format.\n\nFormats:\nTumor longest diameter: [value]mm (at initial imaging on [date]).\nTumor longest diameter unknown.\n\nIf the date is missing, output [put date].\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "You are an expert medical annotator specializing in oncology pathology. The clinical notes are written in SWEDISH; you read the Swedish note and produce the controlled output in ENGLISH using the exact templated format below. Your task is to extract the tumor longest diameter (in mm) and the date from the provided medical note and output it in a precise, templated format.\n\n## Allowed outputs (use EXACTLY one of the two forms below)\nFormats:\nTumor longest diameter: [value]mm (at initial imaging on [date]).\nTumor longest diameter unknown.\n\nIf the date is missing, output [put date].\n\n- Use `Tumor longest diameter: [value]mm (at initial imaging on [date]).` only when a primary-tumour size is clearly stated. Replace [value] with the number in millimetres and [date] with the date; if no date is stated, leave [put date] in place of [date].\n- Use `Tumor longest diameter unknown.` to abstain whenever no primary-tumour size is clearly stated.\n\n## Reasoning -> output binding (READ FIRST — this is the most important rule)\nThe clinician stressed that the reasoning is often correct but the OUTPUT is wrong. To prevent this:\n- In your reasoning, state the SINGLE numeric value in millimetres you concluded, and quote the exact Swedish phrase it came from.\n- `final_output` MUST contain exactly that value — the same number your reasoning concluded. Never round it, never alter it, never substitute a different number.\n- Never default to a value and never emit a size your reasoning did not explicitly conclude.\n- If your reasoning does not arrive at a clearly-stated primary-tumour size, the output MUST be exactly `Tumor longest diameter unknown.` — do not guess.\n\n## Numeric anchoring\n- TARGET QUANTITY: the LONGEST diameter of the tumour, expressed in MILLIMETRES (mm).\n- UNIT CONVERSION (cm -> mm): if the size is given in centimetres, multiply by 10. Worked examples: 7 cm -> 70 mm; 7.5 cm -> 75 mm. If the size is already in mm, use it as-is.\n- MULTIPLE DIMENSIONS: if several dimensions are given (e.g. \"7 x 5 x 3 cm\"), take the LARGEST one and report only that single value (7 x 5 x 3 cm -> 70 mm).\n- NEGATIVE LIST — never read the size from any of these: a radiotherapy or drug dose (e.g. Gy, mg), a percentage (%), a count (e.g. number of tumours, nodes, or fragments), or a date/year. A number attached to Gy, mg, or %, or that is a calendar year, is NOT a tumour size.\n\n## Scope (primary/index tumour only)\n- Report the PRIMARY / index tumour under study ONLY. Do NOT use the size of a metastasis, a lymph node, or a recurrence.\n- A new or second primary tumour is not the index tumour; do not report its size here.\n- If only a metastasis or lymph-node size is stated and no primary-tumour size is given, abstain with `Tumor longest diameter unknown.`\n\n## Swedish size cues (local vocabulary)\n- Typical Swedish cues for tumour size are \"storlek\" (size), \"diameter\", and \"mätt\"/\"mäter\" (measured/measures), usually followed by a value in cm or mm. [Swedish term to confirm]\n- Only extract a value that clearly refers to the primary tumour's size; if the cue is ambiguous or refers to something other than the index tumour, abstain.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "Diagnosis.tumorSize",
       "fact_trigger": null,
@@ -33,7 +33,7 @@
     }
   },
   "biopsygrading": {
-    "template": "Task: You are a medical text annotation assistant.\nYour task is to read a given medical note and identify the biopsy grading (FNCLCC) mentioned in the note.\n\nOutput strictly in the following format:\nBiopsy grading (FNCLCC): [value].\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "Task: You are a medical text annotation assistant.\nYour task is to read a given Swedish sarcoma medical note and identify the biopsy grading (FNCLCC) of the sarcoma described in the note. The note is written in Swedish; your OUTPUT must use the controlled English format below (read the Swedish note, decide the value, then emit the English token).\n\nOutput strictly in the following format:\nBiopsy grading (FNCLCC): [value].\n\n## Allowed values for [value] (A1 — the complete option set)\n[value] is EXACTLY ONE of these controlled tokens:\n- 1     — FNCLCC histological grade 1\n- 2     — FNCLCC histological grade 2\n- 3     — FNCLCC histological grade 3\n- high  — sarcoma stated as high grade without a numeric FNCLCC\n- low   — sarcoma stated as low grade without a numeric FNCLCC\nDo NOT invent any other token. If no sarcoma FNCLCC grade is stated in the note and none can be derived, output the export-safe abstention EXACTLY:\nBiopsy grading (FNCLCC): Not applicable.\n\n## Reasoning -> output binding (A4 — DO THIS FIRST; it is the most common failure)\nThe reasoning is frequently correct while the final output is wrong. Bind them tightly:\n1. In `reasoning`, state the single value you concluded, verbatim, as: \"Concluded FNCLCC grade: <1|2|3|high|low>\" — or \"Concluded FNCLCC grade: none stated/derivable\".\n2. `final_output` MUST equal that concluded value exactly.\n3. NEVER default to 1. NEVER down-grade. NEVER emit a value your reasoning did not conclude. If your reasoning concluded 3, the output is \"Biopsy grading (FNCLCC): 3.\" — not 1, not 2. If your reasoning concluded no grade, output the \"Not applicable.\" abstention, never a guessed number.\n\n## The grade is NOT a sub-score (A5 — sub-score guard)\nThe FNCLCC grade is the OVERALL histological grade. It is NOT any single component sub-score:\n- NOT the tumour-differentiation score (D1 / D2 / D3, \"differentiering 1-3\") — never report D3 (or any Dx) as the grade.\n- NOT the mitotic-count score, and NOT the necrosis score.\nFNCLCC = the SUM of the three sub-scores (differentiation + mitosis + necrosis). Only when the note gives all three sub-scores may you derive the grade — and you then report the SUMMED grade (1/2/3), never a sub-score.\n\n## The grade is NOT any other number (A5 — numeric guard)\nDo not read the grade off any other figure in the note. The grade is NOT:\n- a mitotic count (e.g. \"N mitoser/10 HPF\"),\n- a Ki-67 index or any percentage,\n- a tumour size in cm or mm,\n- a TNM / pTNM value,\n- a specimen, block, or accession number.\n\n## Scope (A6 — grade only the sarcoma)\n- Grade ONLY the sarcoma (the primary/index tumour under study).\n- NEVER report a grade from another tumour type or grading system: no prostate Gleason score, no breast Nottingham/Elston grade. If the note contains only such a non-sarcoma grade, abstain with \"Not applicable.\"\n\n## Swedish note vocabulary (A2)\nNotes are Swedish; map to the English output only where the meaning is clear:\n- \"hoggradig\" / \"lag differentiering\" (poorly / low differentiation) -> high\n- \"laggradig\" / \"val differentierad\" (well differentiated) -> low\nIf a Swedish phrase's grade meaning is unclear, mark it \"[Swedish term to confirm]\" in the reasoning instead of inventing a mapping; if it cannot be resolved to 1/2/3/high/low, abstain.\n\n## Abstention (A3)\nOutput a value ONLY if the sarcoma's FNCLCC grade (or an explicit high/low grade) is clearly stated or fully derivable. Otherwise output exactly:\nBiopsy grading (FNCLCC): Not applicable.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "Diagnosis.biopsyGrading",
       "fact_trigger": null,
@@ -64,12 +64,109 @@
         {
           "template_placeholder": "[provide date]",
           "entity_type": "SystemicTreatment",
-          "field_name": "reasonForEndOfTreatment"
+          "field_name": "reasonForEndOfTreatment",
+          "output_word_mappings": [
+            {
+              "pattern": "patient intolerance",
+              "value": "patient intolerance",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "intolleranza",
+              "value": "patient intolerance",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "intolerance",
+              "value": "patient intolerance",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "comorbidity",
+              "value": "comorbidity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "comorbidit",
+              "value": "comorbidity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "toxicity",
+              "value": "toxicity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "tossicit",
+              "value": "toxicity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "completion",
+              "value": "completion",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "completat",
+              "value": "completion",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "completament",
+              "value": "completion",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "discontinued",
+              "value": "discontinued",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "patients decision",
+              "value": "discontinued",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "decisione del paziente",
+              "value": "discontinued",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "death",
+              "value": "death",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "decesso",
+              "value": "death",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "morte",
+              "value": "death",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "completion": "44788181",
+            "toxicity": "4162594",
+            "comorbidity": "2000100030",
+            "patient intolerance": "4240582",
+            "discontinued": "37017062",
+            "death": "4306655"
+          }
         },
         {
           "template_placeholder": "[provide number]",
           "entity_type": "SystemicTreatment",
-          "field_name": "numberOfCycles/Administrations"
+          "field_name": "numberOfCycles/Administrations",
+          "output_word_mappings": [
+            {
+              "pattern": "(\\d+)\\s*(?:cicli|cycle|somministrazion|administration)",
+              "value": "$1",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[select reason]",
@@ -82,20 +179,117 @@
             "patient intolerance": "4240582",
             "discontinued": "37017062",
             "death": "4306655"
-          }
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "patient intolerance",
+              "value": "patient intolerance",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "intolleranza",
+              "value": "patient intolerance",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "intolerance",
+              "value": "patient intolerance",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "comorbidity",
+              "value": "comorbidity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "comorbidit",
+              "value": "comorbidity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "toxicity",
+              "value": "toxicity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "tossicit",
+              "value": "toxicity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "completion",
+              "value": "completion",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "completat",
+              "value": "completion",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "completament",
+              "value": "completion",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "discontinued",
+              "value": "discontinued",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "patients decision",
+              "value": "discontinued",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "decisione del paziente",
+              "value": "discontinued",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "death",
+              "value": "death",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "decesso",
+              "value": "death",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "morte",
+              "value": "death",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[FULL_ANNOTATION]",
           "entity_type": "SystemicTreatment",
-          "field_name": "setting",
+          "field_name": "chemotherapyInfo",
           "value_code_mappings": {
-            "pre-operative concomitant to systemic treatment": "2000100031",
-            "post-operative concomitant to systemic treatment": "2000100032",
-            "definitive concomitant to systemic treatment": "2000100034",
-            "pre-operative": "4059384",
-            "post-operative": "4058775",
-            "definitive": "2000100033"
-          }
+            "pre-operative": "4119031",
+            "post-operative": "4118656",
+            "hyperthermic intraperitoneal": "3184898",
+            "therapeutic (without surgery)": "4133895"
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "hyperthermic",
+              "value": "hyperthermic intraperitoneal",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "post-operative",
+              "value": "post-operative",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "pre-operative",
+              "value": "pre-operative",
+              "flags": "IGNORECASE"
+            }
+          ]
         }
       ]
     }
@@ -113,12 +307,31 @@
           "value_code_mappings": {
             "curative": "4162591",
             "palliative": "4179711"
-          }
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "palliative",
+              "value": "palliative",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "curative",
+              "value": "curative",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[provide date]",
           "entity_type": "SystemicTreatment",
-          "field_name": "startDateSystemicTreatment"
+          "field_name": "startDateSystemicTreatment",
+          "output_word_mappings": [
+            {
+              "pattern": "(\\d{1,2}[/-]\\d{1,2}[/-]\\d{4})",
+              "value": "$1",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[select regimen]",
@@ -151,26 +364,173 @@
             "pazopanib": "35805690",
             "regorafenib": "35804569",
             "HD Ifosfamide": "2000100070"
-          }
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "Vincristine \\+ Ifosfamide \\+ Doxorubicin \\+ Etoposide",
+              "value": "Vincristine + Ifosfamide + Doxorubicin + Etoposide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Vincristine \\+ Doxorubicin \\+ Cyclophosphamide",
+              "value": "Vincristine + Doxorubicin + Cyclophosphamide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Vincristine \\+ Actinomycin D \\+ Ifosfamide",
+              "value": "Vincristine + Actinomycin D + Ifosfamide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Methotrexate \\+ Doxorubicin \\+ Ifosfamide",
+              "value": "Methotrexate + Doxorubicin + Ifosfamide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Vincristine \\+ Doxorubicin \\+ Ifosfamide",
+              "value": "Vincristine + Doxorubicin + Ifosfamide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Methotrexate \\+ Doxorubicin \\+ Cisplatin",
+              "value": "Methotrexate + Doxorubicin + Cisplatin",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Doxorubicin \\+ Ifosfamide \\+ Dacarbazine",
+              "value": "Doxorubicin + Ifosfamide + Dacarbazine",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Doxorubicin \\+ Cisplatin \\+ Ifosfamide",
+              "value": "Doxorubicin + Cisplatin + Ifosfamide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Cyclophosphamide \\+ Vinorelbine",
+              "value": "Cyclophosphamide + Vinorelbine",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Cyclophosphamide \\+ Etoposide",
+              "value": "Cyclophosphamide + Etoposide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Cyclophosphamide \\+ Topotecan",
+              "value": "Cyclophosphamide + Topotecan",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Methotrexate \\+ Vinorelbine",
+              "value": "Methotrexate + Vinorelbine",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Doxorubicin \\+ Dacarbazine",
+              "value": "Doxorubicin + Dacarbazine",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Gemcitabine \\+ Dacarbazine",
+              "value": "Gemcitabine + Dacarbazine",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Irinotecan \\+ Temozolomide",
+              "value": "Irinotecan + Temozolomide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Doxorubicin \\+ Ifosfamide",
+              "value": "Doxorubicin + Ifosfamide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Irinotecan \\+ Vincristine",
+              "value": "Irinotecan + Vincristine",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Epirubicin \\+ Ifosfamide",
+              "value": "Epirubicin + Ifosfamide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Gemcitabine \\+ Docetaxel",
+              "value": "Gemcitabine + Docetaxel",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Doxorubicin \\+ Cisplatin",
+              "value": "Doxorubicin + Cisplatin",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Ifosfamide \\+ Etoposide",
+              "value": "Ifosfamide + Etoposide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Busulphan \\+ Melphalan",
+              "value": "Busulphan + Melphalan",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "TNF \\+ Melphalan",
+              "value": "TNF + Melphalan",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "HD Ifosfamide",
+              "value": "HD Ifosfamide",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "regorafenib",
+              "value": "regorafenib",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "pazopanib",
+              "value": "pazopanib",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[FULL_ANNOTATION]",
           "entity_type": "SystemicTreatment",
-          "field_name": "setting",
+          "field_name": "chemotherapyInfo",
           "value_code_mappings": {
-            "pre-operative concomitant to systemic treatment": "2000100031",
-            "post-operative concomitant to systemic treatment": "2000100032",
-            "definitive concomitant to systemic treatment": "2000100034",
-            "pre-operative": "4059384",
-            "post-operative": "4058775",
-            "definitive": "2000100033"
-          }
+            "pre-operative": "4119031",
+            "post-operative": "4118656",
+            "hyperthermic intraperitoneal": "3184898",
+            "therapeutic (without surgery)": "4133895"
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "hyperthermic",
+              "value": "hyperthermic intraperitoneal",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "post-operative",
+              "value": "post-operative",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "pre-operative",
+              "value": "pre-operative",
+              "flags": "IGNORECASE"
+            }
+          ]
         }
       ]
     }
   },
   "histological": {
-    "template": "Task: You are a clinical information extraction assistant.\nYour task is to carefully read the given medical note and identify the histological type of the tumor.\n\nAlways select only one histological type from the controlled list provided below.\n\nIf multiple histological types are mentioned, choose the most specific or final diagnosis.\n\nOutput strictly in the following format:\nAnnotation: Histological type: [selected type] ([ICD-O-3 morphology code in XXXX/X format, e.g. 8800/3]).\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "Task: You are a clinical information extraction assistant.\nYour task is to carefully read the given medical note and identify the histological type of the tumor.\n\nAlways select only one histological type from the controlled list provided below.\n\nIf multiple histological types are mentioned, choose the most specific or final diagnosis.\n\nOutput strictly in the following format:\nAnnotation: Histological type: [selected type] ([ICD-O-3 morphology code in XXXX/X format, e.g. 8800/3]).\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n\nIMPORTANT (code validation): prioritise the correct histological TYPE (the label). The ICD-O-3 morphology code you output is automatically checked against the reference catalogue downstream and corrected by a human reviewer, so if you are unsure of the exact code still provide the most precise histological type.  [STUDY-UPDATE]\n\n\nFor LIPOSARCOMA, use the tumour GRADE to choose the subtype:\n- Well-differentiated / low grade (FNCLCC G1) -> Liposarcoma, well-differentiated (8851/3)\n- Dedifferentiated / high grade (FNCLCC G2-3) -> Dedifferentiated liposarcoma (8858/3)\nOther liposarcoma types: Liposarcoma NOS (8850/3), Mixed liposarcoma (8855/3), Fibroblastic liposarcoma (8857/3).  [STUDY-UPDATE]\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "Diagnosis.histologySubgroup",
       "fact_trigger": null,
@@ -198,7 +558,7 @@
     }
   },
   "patient-status": {
-    "template": "Task: From the given medical note, extract the status of the patient at last follow-up.\n\nAlways output in exactly one of the following structured templates:\n\n1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)\n2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])\n3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor\n\nGuidelines:\nA. No Evidence of Disease (NED):\nUse template (1) if the note mentions remission, disease-free, “recidivfri”, “no evidence of recurrence”, or “no residual tumor/metastases”.\n\nB. AWD - Metastases:\nUse template (2) if metastases are reported. List all mentioned sites inside parentheses. e.g., metastases (bone, soft tissue), metastases (bone), metastases (liver, bone, soft tissue), metastases (lung, bone, soft tissue, other), metastases (lung, soft tissue, other), metastases (lung, soft tissue), metastases (lung), metastases (soft tissue, liver), metastases (soft tissue, other), metastases (soft tissue).\nIf site(s) are unclear or multiple, include all explicitly mentioned locations.\n\nC. AWD - Localised tumor:\nUse template (3) if a tumor or local recurrence is present but no metastases are described.\n\nD. Strict output format:\nDo not add explanations or free text. Only return the structured annotation.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "Task: From the given medical note, extract the status of the patient at last follow-up for the PRIMARY (index) sarcoma under study.\n\nThe clinical notes are written in SWEDISH. Read the Swedish note, but ALWAYS produce the controlled output in the exact ENGLISH template below.\n\n## Reasoning -> output binding (read first)\n- In your `reasoning`, state the SINGLE status value you concluded, written in the exact output wording.\n- `final_output` MUST equal that concluded value character-for-character (including the \"Status of the patient at last follow-up:\" prefix and, for metastases, the sites you listed).\n- Never default to a status, and never emit a value your reasoning did not conclude. If your reasoning does not settle on one of the values below, abstain (see Abstention).\n\n## Allowed outputs (choose exactly one)\nAlways output in exactly one of the following structured templates:\n\n1. Status of the patient at last follow-up: Alive, No Evidence of Disease (NED)\n2. Status of the patient at last follow-up: Alive With Disease (AWD) - metastases ([please select sites])\n3. Status of the patient at last follow-up: Alive With Disease (AWD) - localised tumor\n\n## How to choose (essential rule)\nA. NED — template (1): the note states no evidence of disease / remission / disease-free (patient is free of both local tumour and metastases).\nB. AWD - metastases — template (2): distant metastases are present. Replace [please select sites] with the metastatic site(s) actually mentioned in the note; if several are mentioned, list them all.\nC. AWD - localised tumor — template (3): local disease or a local recurrence is present but NO distant metastases are described.\n\nIf distant metastases are present, use template (2) even when a local tumour is also present.\n\n## Swedish -> output vocabulary (confident mappings; not exhaustive)\n- NED (1): \"recidivfri\", \"tumörfri\", \"sjukdomsfri\", \"ingen tecken på recidiv\", \"utan tecken på sjukdom\", \"komplett remission\".\n- AWD - metastases (2): \"metastaser\", \"fjärrmetastaser\", \"spridning\"; site words e.g. \"lunga\" = lung, \"lever\" = liver, \"skelett\" = bone, \"mjukdelar\" = soft tissue; use \"[Swedish term to confirm]\" for any site term you are unsure of rather than guessing.\n- AWD - localised (3): \"lokalrecidiv\", \"lokalt recidiv\", \"kvarvarande tumör\" / \"resttumör\", \"lokal tumör\".\nMap the Swedish note to the ENGLISH template value; do not output Swedish in `final_output`.\n\n## Abstention\nAssign a status only if it is clearly stated in the note. If the follow-up status is not documented, do not guess — output the abstention token exactly: Not applicable\n\n## Scope\nAssess only the PRIMARY (index) tumour under study. A NEW or SECOND primary tumour — including a radiation-induced second cancer — is NOT a recurrence or progression of the index tumour and must not be recorded as localised disease or as metastases. Distinguish current findings from past medical history: only the status at the LAST follow-up counts.\n\n## Strict output format\nDo not add explanations or free text in `final_output`. Return only one of the structured template values above, or the abstention token.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "PatientFollowUp.statusAtLastFollowUp",
       "fact_trigger": null,
@@ -210,15 +570,40 @@
           "value_code_mappings": {
             "Alive, No Evidence of Disease (NED)": "2000100071",
             "Alive With Disease (AWD) - metastases ([please select sites])": "2000100075",
-            "Alive With Disease (AWD) - localised tumor": "2000100075",
+            "Alive With Disease (AWD) - localised tumor.": "2000100075",
             "Alive With Disease (AWD) - metastases (lung).": "2000100075",
             "Alive With Disease (AWD) - metastases (lung. other).": "2000100075",
             "Alive With Disease (AWD) - metastases (lung. soft tissue. other).": "2000100075",
+            "Alive With Disease (AWD) - metastases (lung. soft tissue).": "2000100075",
+            "Alive With Disease (AWD) - metastases (lung. bone. soft tissue. other).": "2000100075",
+            "Alive With Disease (AWD) - metastases (bone).": "2000100075",
+            "Alive With Disease (AWD) - metastases (bone. soft tissue).": "2000100075",
+            "Alive With Disease (AWD) - metastases (liver. bone. soft tissue).": "2000100075",
+            "Alive With Disease (AWD) - metastases (soft tissue).": "2000100075",
+            "Alive With Disease (AWD) - metastases (soft tissue. liver).": "2000100075",
+            "Alive With Disease (AWD) - metastases (soft tissue. other).": "2000100075",
             "Dead of Disease (DOD)": "2000100072",
             "Dead of Other Cause (DOC)": "2000100073",
             "Dead of Unknown Cause (DUC)": "2000100074",
             "Alive": "4230556"
-          }
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "No Evidence of Disease",
+              "value": "Alive, No Evidence of Disease (NED)",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "metastases",
+              "value": "Alive With Disease (AWD) - metastases ([please select sites])",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "localised",
+              "value": "Alive With Disease (AWD) - localised tumor.",
+              "flags": "IGNORECASE"
+            }
+          ]
         }
       ]
     }
@@ -234,28 +619,40 @@
           "entity_type": "Patient",
           "field_name": "previousCancerTreatment",
           "value_code_mappings": {
-            "Previous cancer treatment: radiation, chemotherapy.": [
-              "4170755"
-            ],
-            "Previous cancer treatment: radiation, other.": [
-              "4170755"
-            ],
-            "Previous cancer treatment: radiation, surgery, other.": [
-              "4170755"
-            ],
-            "Previous cancer treatment: surgery, chemotherapy, radiation, other.": [
-              "4121697"
-            ],
-            "Previous cancer treatment: surgery, radiation, other.": [
-              "4121697"
-            ],
-            "Previous cancer treatment: surgery, radiation.": [
-              "4121697"
-            ],
-            "Previous cancer treatment: surgery.": [
-              "4121697"
-            ]
-          }
+            "chemotherapy": "4273629",
+            "radiotherapy": "4170755",
+            "radiation": "4170755",
+            "surgery": "4121697",
+            "immunotherapy": "4295112"
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "chemotherapy",
+              "value": "chemotherapy",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "radiotherapy",
+              "value": "radiotherapy",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "radiation",
+              "value": "radiation",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "immunotherapy",
+              "value": "immunotherapy",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "surgery",
+              "value": "surgery",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "multi_value": true
         }
       ]
     }
@@ -269,22 +666,44 @@
         {
           "template_placeholder": "[put total dose]",
           "entity_type": "Radiotherapy",
-          "field_name": "rtTreatmentCompletedAsPlanned"
-        },
-        {
-          "template_placeholder": "[put number of]",
-          "entity_type": "Radiotherapy",
-          "field_name": "numberOfFractions"
-        },
-        {
-          "template_placeholder": "[put date]",
-          "entity_type": "Radiotherapy",
-          "field_name": "endDate"
-        },
-        {
-          "template_placeholder": "[select reason]",
-          "entity_type": "Radiotherapy",
-          "field_name": "rtTreatmentCompletedAsPlanned?",
+          "field_name": "rtTreatmentCompletedAsPlanned",
+          "output_word_mappings": [
+            {
+              "pattern": "patient intolerance",
+              "value": "patient intolerance",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "patient decision",
+              "value": "discontinued",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "discontinued",
+              "value": "discontinued",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "comorbidity",
+              "value": "comorbidity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "toxicity",
+              "value": "toxicity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "completion",
+              "value": "completion",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "death",
+              "value": "death",
+              "flags": "IGNORECASE"
+            }
+          ],
           "value_code_mappings": {
             "completion": "44788181",
             "toxicity": "4161588",
@@ -293,6 +712,80 @@
             "discontinued": "37017062",
             "death": "4306655"
           }
+        },
+        {
+          "template_placeholder": "[put number of]",
+          "entity_type": "Radiotherapy",
+          "field_name": "numberOfFractions",
+          "output_word_mappings": [
+            {
+              "pattern": "(\\d+)\\s*(?:fraction|frazion|fx)",
+              "value": "$1",
+              "flags": "IGNORECASE"
+            }
+          ]
+        },
+        {
+          "template_placeholder": "[put date]",
+          "entity_type": "Radiotherapy",
+          "field_name": "endDate",
+          "output_word_mappings": [
+            {
+              "pattern": "(\\d{1,2}[/-]\\d{1,2}[/-]\\d{4})",
+              "value": "$1",
+              "flags": "IGNORECASE"
+            }
+          ]
+        },
+        {
+          "template_placeholder": "[select reason]",
+          "entity_type": "Radiotherapy",
+          "field_name": "rtTreatmentCompletedAsPlanned",
+          "value_code_mappings": {
+            "completion": "44788181",
+            "toxicity": "4161588",
+            "comorbidity": "2000100030",
+            "patient intolerance": "4105297",
+            "discontinued": "37017062",
+            "death": "4306655"
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "patient intolerance",
+              "value": "patient intolerance",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "patient decision",
+              "value": "discontinued",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "discontinued",
+              "value": "discontinued",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "comorbidity",
+              "value": "comorbidity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "toxicity",
+              "value": "toxicity",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "completion",
+              "value": "completion",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "death",
+              "value": "death",
+              "flags": "IGNORECASE"
+            }
+          ]
         }
       ]
     }
@@ -310,7 +803,19 @@
           "value_code_mappings": {
             "curative": "4162591",
             "palliative": "4179711"
-          }
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "palliativ",
+              "value": "palliative",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "curativ",
+              "value": "curative",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[please select where]",
@@ -333,13 +838,45 @@
             "pre-operative": "4059384",
             "post-operative": "4058775",
             "definitive": "2000100033"
-          }
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "pre-operative concomitant to systemic treatment",
+              "value": "pre-operative concomitant to systemic treatment",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "post-operative concomitant to systemic treatment",
+              "value": "post-operative concomitant to systemic treatment",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "definitive concomitant to systemic treatment",
+              "value": "definitive concomitant to systemic treatment",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "pre-operative",
+              "value": "pre-operative",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "post-operative",
+              "value": "post-operative",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "definitive",
+              "value": "definitive",
+              "flags": "IGNORECASE"
+            }
+          ]
         }
       ]
     }
   },
   "recur_or_prog": {
-    "template": "Task: You are a medical text annotation assistant. Your task is to determine if the note indicates progression, recurrence, no progression, or no recurrence of the disease. If progression or recurrence is mentioned, also extract the date if available.\n\nFollow these rules:\n\nIf the note clearly states no progression or no recurrence, output:\n\"There was no progression/recurrence.\"\n\nIf the note mentions recurrence, output:\n\"There was a recurrence on [date].\" (If a date is mentioned, include it. If no date is mentioned, keep [put date]).\n\nIf the note mentions progression, output:\n\"There was a progression on [date].\" (If a date is mentioned, include it. If no date is mentioned, keep [put date]).\n\nNever add extra explanation. Only output the standardized annotation.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "Task: You are a medical text annotation assistant for a Swedish sarcoma center (VGR). The clinical note is written in SWEDISH; your controlled output MUST be in ENGLISH, in exactly one of the standardized formats listed below. Your task is to determine whether the note indicates progression, recurrence, or no progression/recurrence of the PRIMARY (index) sarcoma under study, and, for a recurrence or progression, to extract the clinical event date.\n\n## Allowed outputs (choose exactly ONE)\n1. \"There was no progression/recurrence.\"\n2. \"There was a recurrence on [date].\"\n3. \"There was a progression on [date].\"\nAbstention output (use ONLY when the note is silent on disease status — see the Abstention rule): \"Disease status not stated.\"\n\n## Reasoning -> output binding (READ THIS FIRST — most common failure)\n- In your reasoning, state the SINGLE conclusion you reached: no progression/recurrence, recurrence, or progression — and quote the exact Swedish phrase that supports it.\n- `final_output` MUST be exactly the one allowed output that matches that conclusion — copied verbatim, including wording and punctuation.\n- Never emit a value your reasoning did not conclude. Do not default to an event, and do not default to no-event, when your reasoning is uncertain. If your reasoning concludes \"recurrence\", `final_output` must be the recurrence sentence; if it concludes \"no event\", `final_output` must be \"There was no progression/recurrence.\".\n\n## How to choose (with Swedish note cues)\n- Output \"There was a recurrence on [date].\" when the note documents that the index sarcoma has come back after treatment.\n  Swedish cues (confident): \"recidiv\", \"återuppkomst\".\n- Output \"There was a progression on [date].\" when the note documents that the index sarcoma has grown / advanced.\n  Swedish cues (confident): \"progress\", \"progression\", \"tillväxt\", \"storleksökning\".\n- Output \"There was no progression/recurrence.\" when the note clearly states the index sarcoma is stable / has not recurred.\n  Swedish cues (to confirm): \"stabil sjukdom\", \"ingen recidiv\", \"NED\" (no evidence of disease) [Swedish term to confirm].\n\n\n## Do NOT INFER an event — require an explicit statement (CRITICAL)\nAn event exists ONLY if the note EXPLICITLY names it (recidiva / ripresa di malattia / nuova localizzazione di malattia for recurrence; progressione / PD / peggioramento radiologico for progression). NEVER DERIVE a recurrence or progression from indirect cues:\n- The mere presence or physical description of a lesion, mass, nodule or swelling (lesione, massa, nodulo, tumefazione, neoformazione, e.g. \"duro-lignea\") is NOT a recurrence or progression. A lesion may be the primary tumour itself, a known/stable lesion, a benign finding, or the initial presentation.\n- The visit type or context is NOT evidence of an event: a follow-up / outpatient visit (e.g. \"AMB_TRD_Visita\", \"controllo\", \"visita di controllo\") or an examination section (\"esame obiettivo\", \"EO\", \"EI\") does NOT imply the disease recurred or progressed.\n- Do NOT reason \"there was a previous diagnosis, therefore this finding is a recurrence.\" A prior tumour plus a current lesion does NOT make the lesion a recurrence unless the note says so.\n- A physical-exam finding of a mass, with no explicit recidiva/ripresa/progressione wording, is NOT an event: output \"There was no progression/recurrence.\" only if the note frames the finding as stable/known, otherwise abstain with \"Not applicable.\"\nIf your reasoning uses words like \"suggests\", \"consistent with\", \"implied\", \"in this context\", or \"likely a recurrence\" — STOP: that is inference, not an explicit statement. Abstain with \"Not applicable.\" instead.\n\n## Scope + NEW/SECOND primary exclusion\n- Judge ONLY the primary (index) sarcoma under study.\n- A NEW or SECOND primary tumour — INCLUDING a RADIATION-INDUCED second cancer — is NOT a recurrence or progression of the index sarcoma, and is NOT a previous cancer of it. For such a case, output \"There was no progression/recurrence.\" — do NOT score it as an event.\n- Distinguish current disease status from past medical history: a previously-treated, non-active prior finding is not a current recurrence/progression.\n\n## Date rule (clinical EVENT date, not treatment date)\n- The [date] in a recurrence/progression output is the CLINICAL event date: the date the recurrence/progression was FIRST DOCUMENTED (e.g., the imaging or clinical note that first records it).\n- Do NOT read the date from a treatment-start date (surgery, chemotherapy, or radiotherapy start), a radiotherapy dose (Gy), a drug dose (mg), a percentage, or an unrelated report/scan date.\n- If an explicit clinical event date is present, replace [date] with it in DD/MM/YYYY form.\n- If a recurrence/progression is confirmed but NO explicit event date is documented, do NOT leave a raw \"[put date]\" or an unfilled \"[date]\" placeholder, and do NOT invent or infer a date — abstain on the date by writing \"date not stated\" in place of [date] (e.g., \"There was a recurrence on date not stated.\").\n\n## Abstention rule\n- Output a disease-status value only if it is clearly supported by the note.\n- If the note does not address the index sarcoma's recurrence/progression status at all, do not guess — output \"Disease status not stated.\". This is different from a clearly-negative note (which stays \"There was no progression/recurrence.\") and different from the new/second-primary case above (which also outputs \"There was no progression/recurrence.\").\n\nNever add extra explanation. Put your reasoning and evidence in their JSON fields, and set `final_output` to exactly one allowed output.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "EpisodeEvent",
       "fact_trigger": null,
@@ -350,8 +887,8 @@
           "field_name": "diseaseStatus",
           "output_word_mappings": [
             {
-              "pattern": "no progression|no recurrence",
-              "value": "no_change",
+              "pattern": "no progression/recurrence",
+              "value": "Not applicable",
               "flags": "IGNORECASE"
             },
             {
@@ -389,8 +926,15 @@
           "entity_type": "DiseaseExtent",
           "field_name": "localised",
           "value_code_mappings": {
-            "local": true
-          }
+            "true": true
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "local",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[selected type]",
@@ -417,13 +961,15 @@
           "entity_type": "DiseaseExtent",
           "field_name": "softTissue",
           "value_code_mappings": {
-            "metastatic bone, soft tissue": true,
-            "metastatic lung, bone, soft tissue": true,
-            "metastatic lung, soft tissue": true,
-            "metastatic other, soft tissue": true,
-            "metastatic soft tissue": true,
-            "metastatic soft tissue, lung, other": true
-          }
+            "true": true
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "soft tissue",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[selected type]",
@@ -435,32 +981,45 @@
           "entity_type": "DiseaseExtent",
           "field_name": "lung",
           "value_code_mappings": {
-            "metastatic liver, lung, bone": true,
-            "metastatic lung": true,
-            "metastatic lung, bone, soft tissue": true,
-            "metastatic lung, soft tissue": true,
-            "metastatic soft tissue, lung, other": true
-          }
+            "true": true
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "lung",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[selected type]",
           "entity_type": "DiseaseExtent",
           "field_name": "metastasisatbone",
           "value_code_mappings": {
-            "metastatic bone": true,
-            "metastatic bone, soft tissue": true,
-            "metastatic liver, lung, bone": true,
-            "metastatic lung, bone, soft tissue": true
-          }
+            "true": true
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "bone",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[selected type]",
           "entity_type": "DiseaseExtent",
           "field_name": "liver",
           "value_code_mappings": {
-            "metastatic liver": true,
-            "metastatic liver, lung, bone": true
-          }
+            "true": true
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "liver",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[selected type]",
@@ -477,18 +1036,30 @@
           "entity_type": "DiseaseExtent",
           "field_name": "brain",
           "value_code_mappings": {
-            "metastatic brain": true
-          }
+            "true": true
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "brain",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[selected type]",
           "entity_type": "DiseaseExtent",
           "field_name": "otherViscera",
           "value_code_mappings": {
-            "metastatic other": true,
-            "metastatic other, soft tissue": true,
-            "metastatic soft tissue, lung, other": true
-          }
+            "true": true
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "other",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[FULL_ANNOTATION]",
@@ -532,7 +1103,7 @@
     }
   },
   "stage_at_diagnosis": {
-    "template": "You are an expert medical annotator specializing in extracting structured clinical information from medical notes. Identify the stage at diagnosis from the provided medical note. \nThe response must be any one of the following answers: \n\nPossible Answers: \nStage at diagnosis: loco-regional (multifocal). \nStage at diagnosis: metastatic (regional nodal metastases). \nStage at diagnosis: localized. \nStage at diagnosis: loco-regional (In transit metastasis). \nStage at diagnosis: distant metastases (lung). \nStage at diagnosis: distant metastases (soft tissue). \nStage at diagnosis: distant metastases (bone). \nStage at diagnosis: distant metastases (brain). \nStage at diagnosis: distant metastases (lung, bone, soft tissue). \nStage at diagnosis: distant metastases (lung, soft tissue). \nUnknown stage at diagnosis. \n\nDo not include any explanations, reasoning, extra text, the medical note.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "You are an expert medical annotator specializing in extracting structured clinical information from medical notes. Identify the stage at diagnosis of the PRIMARY (index) sarcoma described in the provided medical note. The note is written in Swedish; your reasoning may reference the Swedish text, but the final output MUST be one of the controlled English answers listed below, exactly as written.\n\n## CRITICAL — Reasoning -> Output Binding (read this first)\n- In your `reasoning`, state the SINGLE stage you concluded, using the exact wording of one allowed answer below.\n- `final_output` MUST equal that single concluded answer, character for character. Never emit a value your reasoning did not conclude, and never default to a stage.\n- Do NOT add \"distant metastases\" of ANY site (lung, bone, brain, soft tissue, or any combination) UNLESS the note EXPLICITLY states distant or organ metastases. If your reasoning describes a localized or loco-regional tumour, you MUST NOT upgrade the output to a metastatic/distant answer.\n- Regional lymph-node involvement is NOT distant metastasis: map it to \"Stage at diagnosis: metastatic (regional nodal metastases).\" and NOT to any \"distant metastases (...)\" answer.\n\n## ABSTENTION — when staging is NOT documented (emphasized)\n- Output a stage ONLY if it is clearly stated or unambiguously documented in THIS note.\n- If the note does NOT stage the disease — no explicit stage and no described extent (localized / loco-regional / regional nodal / distant) that you can map with confidence — you MUST output exactly: Unknown stage at diagnosis.\n- Do NOT guess a stage. \"Unknown stage at diagnosis.\" is the required output whenever staging is not documented in this note. The mere absence of any mention of metastases is NOT evidence of metastases, and is NOT evidence of \"localized\" unless the note states the disease is localized/confined.\n\n## SCOPE — primary (index) tumour only\n- Stage ONLY the PRIMARY/index sarcoma under study. A NEW or SECOND primary tumour (including a RADIATION-INDUCED second cancer) is NOT part of this staging and is NOT a recurrence or progression of the index tumour.\n- Do not derive stage from past medical history, a prior/previous cancer, or a suspicion / \"cannot exclude\" statement; use only current, documented findings for the index tumour.\n\n## Swedish note vocabulary -> allowed English output (map, then bind final_output to it)\n- \"lokaliserad\", \"begränsad till\" / tumour confined to the primary site -> Stage at diagnosis: localized.\n- \"lokoregional\", \"multifokal\" / multiple foci in the same region -> Stage at diagnosis: loco-regional (multifocal).\n- \"in transit-metastas(er)\", \"intransitmetastas\" -> Stage at diagnosis: loco-regional (In transit metastasis).\n- \"regionala lymfkörtelmetastaser\", \"regionala lymfkörtlar\" / regional nodal spread only -> Stage at diagnosis: metastatic (regional nodal metastases).\n- \"fjärrmetastaser\" + \"lunga\" / \"lungmetastaser\" -> Stage at diagnosis: distant metastases (lung).\n- \"fjärrmetastaser\" + \"skelett\" / \"skelettmetastaser\" / \"benmetastaser\" -> Stage at diagnosis: distant metastases (bone).\n- \"fjärrmetastaser\" + \"hjärna\" / \"hjärnmetastaser\" -> Stage at diagnosis: distant metastases (brain).\n- \"fjärrmetastaser\" + \"mjukdelar\" / \"mjukdelsmetastaser\" -> Stage at diagnosis: distant metastases (soft tissue).\n- distant metastases documented in lung AND soft tissue -> Stage at diagnosis: distant metastases (lung, soft tissue).\n- distant metastases documented in lung AND bone AND soft tissue -> Stage at diagnosis: distant metastases (lung, bone, soft tissue).\n- staging not documented / unclear / an unrecognized \"[Swedish term to confirm]\" -> Unknown stage at diagnosis.\nOnly the exact answers enumerated below are valid outputs — do not invent site combinations that are not listed; if the documented extent does not match an enumerated answer, output \"Unknown stage at diagnosis.\"\n\nThe response must be any one of the following answers: \n\nPossible Answers: \nStage at diagnosis: loco-regional (multifocal). \nStage at diagnosis: metastatic (regional nodal metastases). \nStage at diagnosis: localized. \nStage at diagnosis: loco-regional (In transit metastasis). \nStage at diagnosis: distant metastases (lung). \nStage at diagnosis: distant metastases (soft tissue). \nStage at diagnosis: distant metastases (bone). \nStage at diagnosis: distant metastases (brain). \nStage at diagnosis: distant metastases (lung, bone, soft tissue). \nStage at diagnosis: distant metastases (lung, soft tissue). \nUnknown stage at diagnosis. \n\nDo not include any explanations, reasoning, extra text, the medical note.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "ClinicalStage",
       "fact_trigger": null,
@@ -541,48 +1112,210 @@
           "template_placeholder": "[FULL_ANNOTATION]",
           "entity_type": "ClinicalStage",
           "field_name": "localised",
+          "output_word_mappings": [
+            {
+              "pattern": "localized",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
           "value_code_mappings": {
-            "Stage at diagnosis: loco-regional (multifocal).": false,
-            "Stage at diagnosis: loco-regional (In transit metastasis).": false,
-            "Stage at diagnosis: metastatic (regional nodal metastases).": false,
-            "Stage at diagnosis: distant metastases (lung).": false,
-            "Stage at diagnosis: distant metastases (soft tissue).": false,
-            "Stage at diagnosis: distant metastases (bone).": false,
-            "Stage at diagnosis: distant metastases (brain).": false,
-            "Stage at diagnosis: distant metastases (lung, bone, soft tissue).": false,
-            "Stage at diagnosis: distant metastases (lung, soft tissue).": false
+            "true": true
           }
         },
         {
           "template_placeholder": "[FULL_ANNOTATION]",
           "entity_type": "ClinicalStage",
           "field_name": "locoRegional",
+          "output_word_mappings": [
+            {
+              "pattern": "loco-regional",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
           "value_code_mappings": {
-            "Stage at diagnosis: loco-regional (multifocal).": true,
-            "Stage at diagnosis: loco-regional (In transit metastasis).": true
+            "true": true
           }
         },
         {
           "template_placeholder": "[FULL_ANNOTATION]",
           "entity_type": "ClinicalStage",
           "field_name": "isTransitMetastasisWithClinicalConfirmation",
+          "output_word_mappings": [
+            {
+              "pattern": "in transit metastasis",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
           "value_code_mappings": {
-            "Stage at diagnosis: loco-regional (In transit metastasis).": true,
-            "Stage at diagnosis: metastatic (regional nodal metastases).": true,
-            "Stage at diagnosis: distant metastases (lung).": true,
-            "Stage at diagnosis: distant metastases (soft tissue).": true,
-            "Stage at diagnosis: distant metastases (bone).": true,
-            "Stage at diagnosis: distant metastases (brain).": true,
-            "Stage at diagnosis: distant metastases (lung, bone, soft tissue).": true,
-            "Stage at diagnosis: distant metastases (lung, soft tissue).": true
+            "true": true
           }
         },
         {
           "template_placeholder": "[FULL_ANNOTATION]",
           "entity_type": "ClinicalStage",
           "field_name": "isMultifocalTumor",
+          "output_word_mappings": [
+            {
+              "pattern": "multifocal",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
           "value_code_mappings": {
-            "Stage at diagnosis: loco-regional (multifocal).": true
+            "true": true
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "ClinicalStage",
+          "field_name": "regionalNodalMetastases",
+          "output_word_mappings": [
+            {
+              "pattern": "regional nodal metastases",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "true": true
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "ClinicalStage",
+          "field_name": "distantLymphNode",
+          "output_word_mappings": [
+            {
+              "pattern": "distant lymph node",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "true": true
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "ClinicalStage",
+          "field_name": "softTissue",
+          "output_word_mappings": [
+            {
+              "pattern": "[(,]\\s*soft tissue",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "true": true
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "ClinicalStage",
+          "field_name": "lung",
+          "output_word_mappings": [
+            {
+              "pattern": "[(,]\\s*lung",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "true": true
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "ClinicalStage",
+          "field_name": "metastasisatbone",
+          "output_word_mappings": [
+            {
+              "pattern": "[(,]\\s*bone",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "true": true
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "ClinicalStage",
+          "field_name": "liver",
+          "output_word_mappings": [
+            {
+              "pattern": "[(,]\\s*liver",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "true": true
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "ClinicalStage",
+          "field_name": "pleura",
+          "output_word_mappings": [
+            {
+              "pattern": "[(,]\\s*pleura",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "true": true
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "ClinicalStage",
+          "field_name": "peritoneum",
+          "output_word_mappings": [
+            {
+              "pattern": "[(,]\\s*peritoneum",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "true": true
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "ClinicalStage",
+          "field_name": "brain",
+          "output_word_mappings": [
+            {
+              "pattern": "[(,]\\s*brain",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "true": true
+          }
+        },
+        {
+          "template_placeholder": "[FULL_ANNOTATION]",
+          "entity_type": "ClinicalStage",
+          "field_name": "otherViscera",
+          "output_word_mappings": [
+            {
+              "pattern": "[(,]\\s*other",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ],
+          "value_code_mappings": {
+            "true": true
           }
         }
       ]
@@ -622,12 +1355,41 @@
             "Local excision": "4315400",
             "Amputation": "4217482",
             "Limb operation": "4181193"
-          }
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "Local excision",
+              "value": "Local excision",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Amputation",
+              "value": "Amputation",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Limb operation",
+              "value": "Limb operation",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "Surgical procedure",
+              "value": "Surgical procedure",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "DD/MM/YYYY",
           "entity_type": "Surgery",
-          "field_name": "dateOfSurgery"
+          "field_name": "dateOfSurgery",
+          "output_word_mappings": [
+            {
+              "pattern": "(\\d{1,2}[/-]\\d{1,2}[/-]\\d{4})",
+              "value": "$1",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[complete/incomplete]",
@@ -642,7 +1404,7 @@
     }
   },
   "surgical-specimen-grading": {
-    "template": "You are a clinical information extraction assistant specialized in oncology.  \nYour task: From the given medical note, extract the **Surgical specimen grading (FNCLCC)** information.\n\nGuidelines:\n1. Identify explicit FNCLCC grades ('1' or '2' or '3' or 'Other classification system high' or 'Other classification system low').\n2. If grading information is missing or uncertain, return nothing.\n3. The output must always follow this structured format:\n\nAnnotation: Surgical specimen grading (FNCLCC): [grade or description].\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "You are a clinical information extraction assistant specialized in oncology.\nYour task: from the given SWEDISH medical note, extract the SARCOMA **Surgical specimen grading (FNCLCC)** stated on the surgical/pathology specimen (operationspreparat / PAD). The note is written in Swedish; your controlled output must be in ENGLISH, using exactly one allowed value below.\n\nOutput strictly in the following format:\n\nAnnotation: Surgical specimen grading (FNCLCC): [grade or description].\n\nAllowed values — the output value must be exactly one of:\n- 1\n- 2\n- 3\n- Other classification system high\n- Other classification system low\n- Not applicable\n\nMOST IMPORTANT — reasoning must bind to output:\n- In the `reasoning` field, FIRST state the single grade you concluded (e.g. \"Concluded FNCLCC grade: 3\"). The `final_output` MUST use exactly that value. The clinician review found the grade reasoning is usually correct but the OUTPUT value comes out wrong — so never default to 1, never silently lower or change the grade, and never emit a value your reasoning did not conclude. If your reasoning concludes grade 3, the output must be 3.\n\nHow to read the grade (Swedish note → English output):\n1. The FNCLCC grade is one of 1, 2, or 3. Map grade notations: \"G1\" / \"grad 1\" → 1; \"G2\" / \"grad 2\" → 2; \"G3\" / \"grad 3\" → 3.\n2. If the note gives only a descriptive (non-numeric) grade, map the Swedish phrasing:\n   - \"höggradig\" / \"hög malignitetsgrad\" / \"lågt differentierad\" / \"dåligt differentierad\" / \"high grade\" → Other classification system high\n   - \"låggradig\" / \"låg malignitetsgrad\" / \"högt differentierad\" / \"low grade\" → Other classification system low\n   - If the descriptive wording is ambiguous, treat it as [Swedish term to confirm] and abstain rather than guess.\n3. If both an FNCLCC number and a descriptive grade appear, prefer the FNCLCC number.\n4. The grade is NOT any other number. Never confuse the FNCLCC grade with: the mitotic count / number of mitoses (antal mitoser, \"/10 HPF\"), the Ki-67 index (%), the tumour size (cm/mm), the TNM or pTNM stage, a radiotherapy dose (Gy), or a specimen/preparat number. The overall FNCLCC grade is also NOT any single FNCLCC sub-score: never report a differentiation score (differentiering, D1–D3), a mitotic-count score, or a necrosis score (e.g. \"D3\") as the grade.\n5. SCOPE — grade ONLY the primary/index sarcoma under study. Ignore any grade that belongs to a different or comorbid tumour, and remember that a NEW or SECOND primary tumour (including a radiation-induced second cancer) is NOT the index sarcoma: NEVER report a prostate Gleason score (e.g. \"Gleason 4+5\"), a breast Nottingham/Elston grade, or the grade of any previous or unrelated cancer as the sarcoma grade.\n\nAbstention:\n6. Output a grade ONLY if it is clearly stated on the surgical specimen, or clearly derivable via rules 1–2, for the sarcoma under study. If surgical-specimen grading is missing, uncertain, not stated, or belongs to another tumour, do NOT return nothing — output exactly this export-safe line:\n\n   Annotation: Surgical specimen grading (FNCLCC): Not applicable.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "Surgery.surgicalSpecimenGradingOnlyInUntreatedTumours",
       "fact_trigger": null,
@@ -681,7 +1443,39 @@
             "excisional": "4228202",
             "unplanned excision (tumor rupture)": "4279903",
             "unplanned excision (no tumor rupture)": "4279903"
-          }
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "no tumor rupture",
+              "value": "unplanned excision (no tumor rupture)",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "tumor rupture",
+              "value": "unplanned excision (tumor rupture)",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "core-trucut",
+              "value": "core-trucut",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "FNA",
+              "value": "FNA",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "incisional",
+              "value": "incisional",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "excisional",
+              "value": "excisional",
+              "flags": "IGNORECASE"
+            }
+          ]
         },
         {
           "template_placeholder": "[date]",
@@ -715,7 +1509,7 @@
     }
   },
   "tumorrupture": {
-    "template": "You are a clinical information extraction assistant.  \nYour task: From the given medical note, extract the information whether tumor ruptured or not\n\nAlways present the output in one of the following structured format:  \nAnnotation: \n1. Tumor did not rupture. \n2. Tumor ruptured.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "You are a clinical information extraction assistant working with SWEDISH sarcoma clinical notes.\nYour task: From the given medical note, determine whether the PRIMARY (index) tumour ruptured or not.\n\nThe note is written in Swedish; these instructions are in English and the OUTPUT MUST use the exact controlled English wording listed below. Map the Swedish note to the English output value; never output Swedish.\n\n## Reasoning -> Output binding (MOST IMPORTANT — read first)\nThe reasoning for this field is usually correct, but the final_output is often wrong (a format/binding slip). To prevent that:\n- In `reasoning`, explicitly state the rupture status you concluded, in this exact form: \"Rupture status = ruptured\" OR \"Rupture status = did not rupture\" OR \"Rupture status = not mentioned\".\n- `final_output` MUST be the single allowed-output line that matches that stated conclusion, copied VERBATIM from the list below.\n- Never default to a value, and never emit a value your reasoning did not conclude. If your reasoning says \"not mentioned\", the output MUST be the abstention line (option 3) — it MUST NOT be \"Tumor did not rupture.\"\n\n## Allowed outputs (choose EXACTLY ONE, verbatim)\nAlways present the output in one of the following structured format:  \nAnnotation: \n1. Tumor did not rupture. \n2. Tumor ruptured.\n3. Tumor rupture status unknown.\n\n- Option 1 and Option 2 are the CODED values — reproduce them exactly, character for character (these are what the downstream coder matches).\n- Option 3 is the export-safe ABSTENTION line, used only when the note does not address rupture. It is a distinct value; do not use it in place of a clearly stated rupture status.\n\n## Swedish vocabulary -> output mapping\n- Maps to \"Tumor ruptured.\": \"ruptur\", \"rupturerad\", \"rupturerade\", \"tumorruptur\", \"tumörruptur\" (the tumour is stated to have ruptured).\n- Maps to \"Tumor did not rupture.\": \"ingen ruptur\", \"ej rupturerad\", \"icke rupturerad\", \"intakt\" (rupture is explicitly excluded / tumour explicitly intact).\n- If a Swedish phrasing is present but you are not confident it asserts or excludes rupture, treat it as \"[Swedish term to confirm]\" and abstain rather than inventing a mapping.\n\n## Abstention rule (A3)\n- Output \"Tumor ruptured.\" or \"Tumor did not rupture.\" ONLY when the note CLEARLY states the rupture status of the primary tumour.\n- If rupture is NOT mentioned at all — or is mentioned only for a different lesion (see Scope) — output exactly: Tumor rupture status unknown.\n- Do NOT force \"Tumor did not rupture.\" when the note is silent about rupture. Silence means unknown, not intact.\n\n## Scope (A6)\n- Assess ONLY the primary/index tumour under study. A new or second primary tumour — including a radiation-induced second cancer — does NOT determine this field.\n- If rupture is described only for a non-index lesion, or the note discusses a different tumour, abstain with \"Tumor rupture status unknown.\" for the index tumour.\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "Surgery",
       "fact_trigger": null,
@@ -725,14 +1519,27 @@
           "entity_type": "Surgery",
           "field_name": "tumorRupture",
           "value_code_mappings": {
-            "Tumor ruptured.": true
-          }
+            "true": true,
+            "false": false
+          },
+          "output_word_mappings": [
+            {
+              "pattern": "did not rupture",
+              "value": "false",
+              "flags": "IGNORECASE"
+            },
+            {
+              "pattern": "ruptured",
+              "value": "true",
+              "flags": "IGNORECASE"
+            }
+          ]
         }
       ]
     }
   },
   "tumorsite": {
-    "template": "Task:\nYou are a clinical information extraction assistant.\nFrom the provided medical note, identify the tumor location category and the exact tumor site.\n\nInstructions:\n\n1. Read the note carefully and find the actual tumor site mentioned for the current case, not historical disease, treatment site, or previous surgery.\n\n2. Determine the broader anatomical category that best fits the tumor site (e.g., Upper and Lower limbs, Trunk wall, Intra abdominal, Genito urinary, Head and neck, Breast).\n\n3. Then specify the exact site (e.g., Upper leg, Groin, Thoracic wall, Paravertebral – thoracolumbar, skin of right breast, etc.).\n\n4. When both an organ and a surface or subregion are mentioned, prioritize the most specific surface or subregion (e.g., “skin of right breast” → not Breast).\n\n5. When terms describe a border region (e.g., axilla, groin, flank), assign to the anatomical category most topographically accurate:\n- Axilla / chest wall / scapular region → Trunk wall.\n- Groin / inguinal region → Upper and Lower limbs (if near thigh) or Intra abdominal (if pelvic/inguinal).\n- Jaw, maxilla, mandible, oral cavity → Head and neck.\n\n6. Ignore any mention of prior tumors, resections, or other organs unless explicitly linked to the current tumor.\n\n7. Always present the answer in this exact format:\n\nAnnotation: Tumor site ([select category]): [select site] (ICD-O-3: [Cxx.x]).\n\nIMPORTANT: Always include the ICD-O-3 topography code (format Cxx.x, e.g. C49.2) after the site name. Use the codes shown in the Possible Output Options below. If you cannot determine the exact code, still provide the site text.\n\n8. If the tumor category cannot be determined, output “Tumor category unknown.”\nIf the category is known but not the site, output only the category in the prescribed format.\n\n\nPossible Output Options:\nTumor site (Genito urinary): Prostate (ICD-O-3: C61.9).\nTumor site (Genito urinary): Utero (ICD-O-3: C55.9).\nTumor site (Genito urinary): Vulva (ICD-O-3: C51.0).\nTumor site (Intra abdominal): Mesentery (ICD-O-3: C48.1).\nTumor site (Intra abdominal): Pelvis (ICD-O-3: C49.4).\nTumor site (Intra abdominal): Retroperitoneum (ICD-O-3: C48.0).\nTumor site (Intra thoracic): [select site]. \nTumor site (Intra thoracic): Lung (ICD-O-3: C34.1).\nTumor site (Trunk wall): Abdominal Wall (ICD-O-3: C49.4).\nTumor site (Trunk wall): Paravertebral – thoracolumbar (ICD-O-3: C49.0).\nTumor site (Trunk wall): Thoracic Wall (ICD-O-3: C49.3).\nTumor site (Upper and Lower limbs): Ankle (ICD-O-3: C49.2).\nTumor site (Upper and Lower limbs): Axilla (ICD-O-3: C49.3).\nTumor site (Upper and Lower limbs): Buttock (ICD-O-3: C49.5).\nTumor site (Upper and Lower limbs): Deltoid (ICD-O-3: C49.1).\nTumor site (Upper and Lower limbs): Elbow/Antecubital fossa (ICD-O-3: C49.1).\nTumor site (Upper and Lower limbs): Foot (ICD-O-3: C49.2).\nTumor site (Upper and Lower limbs): Forearm (ICD-O-3: C49.1).\nTumor site (Upper and Lower limbs): Groin (ICD-O-3: C49.5).\nTumor site (Upper and Lower limbs): Hand (ICD-O-3: C49.1).\nTumor site (Upper and Lower limbs): Knee/popliteal fossa (ICD-O-3: C49.2).\nTumor site (Upper and Lower limbs): Leg (ICD-O-3: C49.2).\nTumor site (Upper and Lower limbs): Periscapular (ICD-O-3: C49.3).\nTumor site (Upper and Lower limbs): Supraclavicular (ICD-O-3: C49.0).\nTumor site (Upper and Lower limbs): Upper arm (ICD-O-3: C49.1).\nTumor site (Upper and Lower limbs): Upper leg (ICD-O-3: C49.2).\nTumor site (Upper and Lower limbs): Wrist (ICD-O-3: C49.1).\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
+    "template": "Task:\nYou are a clinical information extraction assistant.\nFrom the provided medical note, identify the tumor location category and the exact tumor site.\n\nInstructions:\n\n1. Read the note carefully and find the actual tumor site mentioned for the current case, not historical disease, treatment site, or previous surgery.\n\n2. Determine the broader anatomical category that best fits the tumor site (e.g., Upper and Lower limbs, Trunk wall, Intra abdominal, Genito urinary, Head and neck, Breast).\n\n3. Then specify the exact site (e.g., Upper leg, Groin, Thoracic wall, Paravertebral – thoracolumbar, skin of right breast, etc.).\n\n4. When both an organ and a surface or subregion are mentioned, prioritize the most specific surface or subregion (e.g., “skin of right breast” → not Breast).\n\n5. When terms describe a border region (e.g., axilla, groin, flank), assign to the anatomical category most topographically accurate:\n- Axilla / chest wall / scapular region → Trunk wall.\n- Groin / inguinal region → Upper and Lower limbs (if near thigh) or Intra abdominal (if pelvic/inguinal).\n- Jaw, maxilla, mandible, oral cavity → Head and neck.\n\n6. Ignore any mention of prior tumors, resections, or other organs unless explicitly linked to the current tumor.\n\n7. Always present the answer in this exact format:\n\nAnnotation: Tumor site ([select category]): [select site] (ICD-O-3: [Cxx.x]).\n\nIMPORTANT: Always include the ICD-O-3 topography code (format Cxx.x, e.g. C49.2) after the site name. Use the codes shown in the Possible Output Options below. If you cannot determine the exact code, still provide the site text.\n\n8. If the tumor category cannot be determined, output “Tumor category unknown.”\nIf the category is known but not the site, output only the category in the prescribed format.\n\n\nPossible Output Options:\nTumor site (Genito urinary): Prostate (ICD-O-3: C61.9).\nTumor site (Genito urinary): Utero (ICD-O-3: C55.9).\nTumor site (Genito urinary): Vulva (ICD-O-3: C51.0).\nTumor site (Intra abdominal): Mesentery (ICD-O-3: C48.1).\nTumor site (Intra abdominal): Pelvis (ICD-O-3: C49.4).\nTumor site (Intra abdominal): Retroperitoneum (ICD-O-3: C48.0).\nTumor site (Intra abdominal): Mesentery (ICD-O-3: C48.1).\nTumor site (Intra abdominal): Inferior vena cava (ICD-O-3: C49.4).\nTumor site (Intra abdominal): Aorta (ICD-O-3: C49.4).\nTumor site (Intra abdominal): Renal vessels (ICD-O-3: C49.4).\nTumor site (Intra abdominal): Mesenteric vessels (ICD-O-3: C49.4).\nTumor site (Intra abdominal): Iliac vessels (ICD-O-3: C49.5).  [STUDY-UPDATE]\nTumor site (Intra thoracic): [select site]. \nTumor site (Intra thoracic): Lung (ICD-O-3: C34.1).\nTumor site (Trunk wall): Abdominal Wall (ICD-O-3: C49.4).\nTumor site (Trunk wall): Paravertebral – thoracolumbar (ICD-O-3: C49.0).\nTumor site (Trunk wall): Thoracic Wall (ICD-O-3: C49.3).\nTumor site (Upper and Lower limbs): Ankle (ICD-O-3: C49.2).\nTumor site (Upper and Lower limbs): Axilla (ICD-O-3: C49.3).\nTumor site (Upper and Lower limbs): Buttock (ICD-O-3: C49.5).\nTumor site (Upper and Lower limbs): Deltoid (ICD-O-3: C49.1).\nTumor site (Upper and Lower limbs): Elbow/Antecubital fossa (ICD-O-3: C49.1).\nTumor site (Upper and Lower limbs): Foot (ICD-O-3: C49.2).\nTumor site (Upper and Lower limbs): Forearm (ICD-O-3: C49.1).\nTumor site (Upper and Lower limbs): Groin (ICD-O-3: C49.5).\nTumor site (Upper and Lower limbs): Hand (ICD-O-3: C49.1).\nTumor site (Upper and Lower limbs): Knee/popliteal fossa (ICD-O-3: C49.2).\nTumor site (Upper and Lower limbs): Leg (ICD-O-3: C49.2).\nTumor site (Upper and Lower limbs): Periscapular (ICD-O-3: C49.3).\nTumor site (Upper and Lower limbs): Supraclavicular (ICD-O-3: C49.0).\nTumor site (Upper and Lower limbs): Upper arm (ICD-O-3: C49.1).\nTumor site (Upper and Lower limbs): Upper leg (ICD-O-3: C49.2).\nTumor site (Upper and Lower limbs): Wrist (ICD-O-3: C49.1).\n# Reasoning Requirements (Traceability)\nFor every entity extracted, you MUST follow this internal logic:\n1. **Evidence**: Locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: Determine if the finding is current, a past medical history (PMH), or a suspicion.\n3. **Inference**: Explain the logic used to map the natural language to the standard value (e.g., mapping \"Ductal\" to \"Infiltrating duct carcinoma\").\nGenerate the response in a structured JSON format. Ensure the `reasoning` and `evidence` fields are populated BEFORE the final values.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}",
     "entity_mapping": {
       "entity_type": "Diagnosis.subsite",
       "fact_trigger": null,
@@ -741,6 +1548,22 @@
           "template_placeholder": "[value]",
           "entity_type": "Diagnosis",
           "field_name": "subsite"
+        }
+      ]
+    }
+  },
+  "multifocality": {
+    "template": "Task: You are a clinical information extraction assistant.\nDetermine whether the PRIMARY tumour AT DIAGNOSIS is UNIFOCAL (a single tumour focus/lesion) or MULTIFOCAL (two or more synchronous tumour foci/lesions at diagnosis).\n\nConsider only the tumour at diagnosis — ignore metastases, recurrences, and separate primary cancers.\nLocal-language cues suggesting MULTIFOCAL disease: multifokal, multipla tumörer, flera härdar, multipla lesioner, multipla förändringar.\nLocal-language cues suggesting UNIFOCAL disease: unifokal, solitär, enstaka tumör, en härd.\n\nOutput strictly in the following format:\nAnnotation: Multifocality: [unifocal / multifocal / unknown].\n\n# Reasoning Requirements (Traceability)\n1. **Evidence**: locate the exact literal phrase or sentence from the note.\n2. **Clinical Validation**: confirm it refers to the tumour at diagnosis (not metastases/recurrence).\n3. **Inference**: map the natural language to unifocal / multifocal / unknown. If not stated, output unknown.\n\n---\n\nHere are few examples for your understanding:\n{few_shot_examples}\n\n---\n\nNow process the following note in the same way:\n\n### Input:\n- Medical Note: \"{{note_original_text}}\"\n\n### Response (JSON only):\n{\n  \"reasoning\": \"brief clinical validation and inference logic (2-3 sentences max)\",\n  \"evidence\": \"exact literal quote from the note that supports this annotation\",\n  \"final_output\": \"annotation in the exact format specified above\",\n  \"is_negated\": false,\n  \"date\": {\"date_value\": \"DD/MM/YYYY\", \"source\": \"extracted_from_text or derived_from_csv\"}\n}\n",
+    "entity_mapping": {
+      "field_mappings": [
+        {
+          "entity_type": "Diagnosis",
+          "field_name": "isMultifocalTumor",
+          "value_code_mappings": {
+            "multifocal": true,
+            "unifocal": false,
+            "unknown": ""
+          }
         }
       ]
     }

@@ -113,12 +113,12 @@
 91,,,,,Epithelioid liposarcoma,Si,Malignant
 92,,,,,Postoperative spindle cell nodule,No,
 93,,,,,Fibroepithelial stromal polyp,No,
-,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Mixed liposarcoma (8855) ,/3,8855/3,Mixed liposarcoma,,
+,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Mixed liposarcoma (8855) ,/3,8855/3,Mixed liposarcoma,Si,
 ,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),/0,8857/0,Spindle cell lipoma,Si,Benigno
 ,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),/0,8857/0,Spindle cell / pleomorphic lipoma,Si,Benigno
 ,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),,,"    Intracranial mesenchymal tumour, FET::CREB fusion–positive (provisional entity)",Si,Boh!
 ,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),/0,8857/0,Atypical spindle cell / pleomorphic lipomatous tumour,Si,Benigno
-,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),/3,8857/3,Fibroblastic liposarcoma,,
+,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Fibroblastic liposarcoma (8857),/3,8857/3,Fibroblastic liposarcoma,Si,
 94,"Well-differentiated/dedifferentiated liposarcoma (8851, 8855, 8857-8858)",Dedifferentiated liposarcoma (8858),/3,8858/3,Dedifferentiated liposarcoma,Si,Malignant
 95,,,/3,8859/3,Myxoid pleomorphic liposarcoma,Si,Malignant
 96,"Leiomyosarcoma (8890,8891,8895-8896)","Leiomyosarcoma, NOS (8890)",/0,8890/0,Myolipoma,Si,Benign
