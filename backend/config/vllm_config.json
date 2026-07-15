@@ -1,7 +1,7 @@
 {
   "use_vllm": true,
   "vllm_endpoint": "http://localhost:8000/v1",
-  "model_name": "unaizulaika/medgemma-27b-text-it-W4A16-G128",
+  "model_name": "unaizulaika/medgemma-1.5-4b-it-W4A16-G128",
   "batch_size": 8,
   "timeout": 150,
   "max_tokens": 16384,
