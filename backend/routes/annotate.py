@@ -29,10 +29,20 @@ from typing import Tuple
 VLLM_CONCURRENCY = int(os.environ.get("VLLM_CONCURRENCY", "2"))
 _vllm_semaphore = asyncio.Semaphore(VLLM_CONCURRENCY)
 
+# Reason FAISS retrieval is unavailable, if it is. Kept so the degradation is
+# reportable (GET /api/server/status) instead of only a startup log line: without
+# FAISS the fallback returns the FIRST k examples rather than the nearest k,
+# which silently changes every result.
+_FEWSHOT_BUILDER_ERROR: Optional[str] = None
+
 try:
     from lib.fewshot_builder import FewshotBuilder, map_annotation_to_prompt
 except ImportError as e:
-    print(f"[WARN] Could not import fewshot_builder: {e}")
+    _FEWSHOT_BUILDER_ERROR = f"{type(e).__name__}: {e}"
+    print(
+        f"[ERROR] fewshot_builder unavailable — FAISS semantic retrieval is OFF and "
+        f"few-shot selection falls back to first-k, not nearest-k: {e}"
+    )
     FewshotBuilder = None
     map_annotation_to_prompt = None
 
@@ -205,8 +215,45 @@ def _get_applicable_prompts(
         filtered = [pt for pt in requested_prompt_types if pt in allowed]
         print(f"[INFO] Filtered prompts for report_type '{report_type}': {len(filtered)}/{len(requested_prompt_types)} prompts will be processed")
         return filtered
-    print(f"[INFO] No prompt types mapped for report_type '{report_type}', skipping all prompts")
+    # A report type left with an empty list means the note is processed with no
+    # prompts at all and produces no annotations. That is a silent no-op from the
+    # operator's point of view, so warn rather than info — and via logging, not
+    # print(), so it is not lost to stdout buffering.
+    import logging as _log
+    _log.getLogger(__name__).warning(
+        "Note %s: report_type %r has no prompt types mapped — this note is "
+        "SKIPPED and produces no annotations. Map at least one prompt to %r "
+        "on the upload screen.",
+        note_id, report_type, report_type,
+    )
     return []
+
+
+def _report_unpaired_prompts(
+    requested_prompt_types: List[str],
+    note_order: List[Tuple],
+) -> List[str]:
+    """Return the selected prompts that will not run on a single note.
+
+    A prompt paired with no report type is dropped for every note, silently: it
+    still appears selected on the session, but produces nothing anywhere. The
+    per-note filter cannot see this, because from any one note's perspective the
+    prompt simply isn't in that report type's list. Only a whole-batch view
+    catches it, which is why the check lives here.
+    """
+    ran = set()
+    for entry in note_order:
+        ran.update(entry[2] or [])
+    unpaired = [pt for pt in requested_prompt_types if pt not in ran]
+    if unpaired:
+        import logging as _log
+        _log.getLogger(__name__).warning(
+            "%d selected prompt(s) are not mapped to any report type in this "
+            "batch and will produce NO annotations: %s. Pair each with at least "
+            "one report type on the upload screen, or deselect it.",
+            len(unpaired), ", ".join(sorted(unpaired)),
+        )
+    return unpaired
 
 
 def _annotation_result_to_dict(result, note_id: str, prompt_type: str) -> dict:
@@ -231,6 +278,8 @@ def _annotation_result_to_dict(result, note_id: str, prompt_type: str) -> dict:
         "derived_field_values": getattr(result, 'derived_field_values', None),
         "hallucination_flags": [f.model_dump() for f in result.hallucination_flags] if result.hallucination_flags else None,
         "multi_value_info": result.multi_value_info if hasattr(result, 'multi_value_info') and result.multi_value_info else None,
+        "fewshot_source": getattr(result, 'fewshot_source', None),
+        "fewshot_count": getattr(result, 'fewshot_count', None),
     }
 
 
@@ -252,6 +301,32 @@ def _is_simple_prompt(template: str) -> bool:
         "reasoning" not in template.lower() and  # No reasoning field mentioned
         "### Input:" not in template and  # No structured input section
         "Now process" not in template.lower()  # No structured processing instructions
+    )
+
+
+def _json_str(value: str) -> str:
+    """Render a string as a JSON string literal, quotes included."""
+    import json as _json
+    return _json.dumps(value, ensure_ascii=False)
+
+
+def _get_prompt_template(prompt_type: str, fast_mode: bool = False) -> str:
+    """Return the raw template for a prompt type, from whichever store holds it.
+
+    A prompt can exist in only one of the two stores — e.g. a fast prompt whose
+    standard counterpart was renamed by a prompt split. Preferring the store for
+    the active mode and falling back to the other keeps a mode-only prompt from
+    raising KeyError mid-request.
+    """
+    stores = (_FAST_PROMPTS, _PROMPTS) if fast_mode else (_PROMPTS, _FAST_PROMPTS)
+    for store in stores:
+        entry = store.get(prompt_type)
+        if entry:
+            template = entry.get("template", "") if isinstance(entry, dict) else entry
+            if template:
+                return template
+    raise KeyError(
+        f"No prompt template for task '{prompt_type}' in standard or fast prompts."
     )
 
 
@@ -390,7 +465,10 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
                 for note, annotation in fewshots:
                     truncated = note[:MAX_FEWSHOT_NOTE_CHARS] + "..." if len(note) > MAX_FEWSHOT_NOTE_CHARS else note
                     fewshots_parts.append(
-                        f'Example:\n- Medical Note: {truncated}\n- Response: {{"final_output": "{annotation}"}}'
+                        # json.dumps so a quote or backslash in the annotation
+                        # can't produce a malformed JSON example in a prompt that
+                        # asks the model for valid JSON.
+                        f'Example:\n- Medical Note: {truncated}\n- Response: {{"final_output": {_json_str(annotation)}}}'
                     )
                 fewshots_text = "\n\n---\n\n".join(fewshots_parts)
             else:
@@ -419,7 +497,9 @@ def _get_prompt(task_key: str, fewshots: List[Tuple[str, str]], note_text: str, 
         for note, annotation in fewshots:
             truncated = note[:MAX_FEWSHOT_NOTE_CHARS] + "..." if len(note) > MAX_FEWSHOT_NOTE_CHARS else note
             fewshots_parts.append(
-                f'Example:\n- Medical Note: {truncated}\n- Response: {{"final_output": "{annotation}"}}'
+                # json.dumps so a quote or backslash in the annotation can't
+                # produce a malformed JSON example (see _json_str).
+                f'Example:\n- Medical Note: {truncated}\n- Response: {{"final_output": {_json_str(annotation)}}}'
             )
         fewshots_text = "\n\n---\n\n".join(fewshots_parts)
 
@@ -542,10 +622,16 @@ def _strip_center_suffix(key: str) -> str:
     return _FEWSHOT_BASE_ALIAS.get(base, base)
 
 
-def _get_fewshot_examples(prompt_type: str, note_text: str, k: int = 5) -> List[Tuple[str, str]]:
+def _get_fewshot_examples(prompt_type: str, note_text: str, k: int = 5) -> Tuple[List[Tuple[str, str]], str]:
     """
     Get few-shot examples using either FAISS builder or simple storage.
-    Returns empty list if none available (zero-shot mode).
+
+    Returns (examples, source) where source is one of:
+      "faiss"  — semantic nearest-neighbour retrieval (the intended path)
+      "static" — first-k from the flat store; FAISS was unavailable or empty.
+                 These are NOT the same examples FAISS would pick, so the source
+                 is propagated onto the result rather than being silently equivalent.
+      "none"   — no examples available (zero-shot)
     """
     # Try FAISS builder first (if available) — semantic similarity search
     builder = _get_fewshot_builder()
@@ -554,30 +640,76 @@ def _get_fewshot_examples(prompt_type: str, note_text: str, k: int = 5) -> List[
             # Try exact key first
             examples = builder.get_fewshot_examples(prompt_type, note_text, k=k)
             if examples:
-                return examples
+                return examples, "faiss"
             # Legacy fallback: try base name match against FAISS indexes
             base = _strip_center_suffix(prompt_type)
             for idx_key in list(builder.indexes.keys()):
                 if _strip_center_suffix(idx_key) == base:
                     examples = builder.get_fewshot_examples(idx_key, note_text, k=k)
                     if examples:
-                        return examples
+                        return examples, "faiss"
         except Exception as e:
             print(f"[WARN] FAISS few-shot retrieval failed: {e}, falling back to simple storage")
 
     # Exact match (new center-specific keys, e.g. "gender-int-sarc")
     if prompt_type in _simple_fewshots:
-        return _simple_fewshots[prompt_type][:k]
+        return _simple_fewshots[prompt_type][:k], "static"
 
     # Legacy fallback: match by base name for old "-int" suffixed keys
     # e.g., prompt_type="gender-int-sarc" → base="gender" → matches "gender-int"
     base = _strip_center_suffix(prompt_type)
     for fk in _simple_fewshots:
         if _strip_center_suffix(fk) == base:
-            return _simple_fewshots[fk][:k]
+            return _simple_fewshots[fk][:k], "static"
 
     # No few-shots available - zero-shot mode
-    return []
+    return [], "none"
+
+
+def get_fewshot_retrieval_status() -> Dict[str, Any]:
+    """Report whether few-shot retrieval is running semantically or degraded.
+
+    Consumed by GET /api/server/status so an operator can see that FAISS is off
+    without reading startup logs.
+
+    The mode comes from an actual retrieval probe, not from counting registered
+    indexes. Counting is not enough: the .index files can load while their
+    .parquet sidecars (which hold the example text) cannot — missing pyarrow does
+    exactly this — and retrieval then silently falls back to first-k while the
+    index count still looks healthy.
+    """
+    builder = _get_fewshot_builder()
+    index_count = len(getattr(builder, "indexes", {}) or {}) if builder is not None else 0
+
+    probe_key = next(iter(getattr(builder, "indexes", {}) or {}), None) if builder else None
+    probe_mode = None
+    if probe_key:
+        try:
+            _, probe_mode = _get_fewshot_examples(probe_key, "clinical note", k=1)
+        except Exception as e:  # pragma: no cover - defensive
+            probe_mode = None
+            print(f"[WARN] Few-shot retrieval probe failed: {e}")
+
+    if probe_mode == "faiss":
+        return {"mode": "faiss", "error": None, "indexes": index_count}
+
+    # Most specific cause first. Indexes being loaded proves the builder started,
+    # so a stale import error is not the explanation in that case.
+    if index_count:
+        reason = (
+            f"{index_count} FAISS indexes are loaded but a retrieval probe returned "
+            f"'{probe_mode}'. The .parquet sidecars holding the example text are "
+            f"unreadable — usually a missing 'pyarrow'. Few-shot selection is "
+            f"first-k, not nearest-k."
+        )
+    elif _FEWSHOT_BUILDER_ERROR:
+        reason = _FEWSHOT_BUILDER_ERROR
+    elif builder is None:
+        reason = "FewshotBuilder failed to initialise (see startup logs)."
+    else:
+        reason = "FewshotBuilder loaded but no FAISS indexes are present."
+    mode = "static" if _simple_fewshots else "none"
+    return {"mode": mode, "error": reason, "indexes": index_count}
 
 
 def _normalize_text(text: str) -> str:
@@ -591,6 +723,40 @@ def _normalize_text(text: str) -> str:
     # Normalize whitespace
     text = re.sub(r'\s+', ' ', text).strip()
     return text
+
+
+def _normalize_with_offsets(text: str) -> Tuple[str, List[int]]:
+    """Normalize `text` as _normalize_text does, tracking source positions.
+
+    Returns (normalized, offsets) where offsets[i] is the index in `text` of the
+    character that produced normalized[i]. Used to map a match found in
+    normalized space back to exact offsets in the original note.
+    """
+    import unicodedata
+    chars: List[str] = []
+    offsets: List[int] = []
+    in_space_run = False
+    for idx, ch in enumerate(text):
+        if ch.isspace():
+            # Collapse whitespace runs to one space, matching re.sub(r'\s+', ' ').
+            if not in_space_run:
+                chars.append(' ')
+                offsets.append(idx)
+                in_space_run = True
+            continue
+        in_space_run = False
+        for c in unicodedata.normalize('NFD', ch.lower()):
+            if unicodedata.category(c) == 'Mn':
+                continue
+            chars.append(c)
+            offsets.append(idx)
+    # Apply .strip()
+    start, end = 0, len(chars)
+    while start < end and chars[start] == ' ':
+        start += 1
+    while end > start and chars[end - 1] == ' ':
+        end -= 1
+    return ''.join(chars[start:end]), offsets[start:end]
 
 
 def _find_evidence_in_text(note_text: str, evidence_text: str) -> Optional[Tuple[int, int]]:
@@ -608,36 +774,20 @@ def _find_evidence_in_text(note_text: str, evidence_text: str) -> Optional[Tuple
     if start != -1:
         return (start, start + len(evidence_text))
     
-    # Try normalized match
+    # Try normalized match. Positions come from an offset map built during
+    # normalization, so they are exact. The previous approach re-normalized one
+    # character at a time to count backwards, which dropped every space (a lone
+    # space normalizes to "") while the normalized haystack it was counting into
+    # kept collapsed spaces — offsets drifted by one per whitespace run, and
+    # highlights landed off-target on any note needing accent normalization.
     evidence_norm = _normalize_text(evidence_text)
-    note_norm = _normalize_text(note_text)
+    note_norm, note_offsets = _normalize_with_offsets(note_text)
     start_norm = note_norm.find(evidence_norm)
-    if start_norm != -1:
-        # Map back to original positions (approximate)
-        # Count characters before match in normalized text
-        char_count = 0
-        orig_start = 0
-        for i, char in enumerate(note_text):
-            if char_count >= start_norm:
-                orig_start = i
-                break
-            char_norm = _normalize_text(char)
-            if char_norm:
-                char_count += 1
-        
-        # Find end position
-        orig_end = orig_start
-        char_count_end = 0
-        for i in range(orig_start, len(note_text)):
-            if char_count_end >= len(evidence_norm):
-                orig_end = i
-                break
-            char_norm = _normalize_text(note_text[i])
-            if char_norm:
-                char_count_end += 1
-        
+    if start_norm != -1 and evidence_norm:
+        orig_start = note_offsets[start_norm]
+        orig_end = note_offsets[start_norm + len(evidence_norm) - 1] + 1
         return (orig_start, orig_end)
-    
+
     # Try fuzzy matching: split evidence into words and find each word
     evidence_words = evidence_text.split()
     if len(evidence_words) > 0:
@@ -764,17 +914,12 @@ async def _process_single_prompt(
     try:
         # --- Fewshot retrieval ---
         with timer.measure("fewshot_retrieval"):
-            if fast_mode:
-                if request_use_fewshots:
-                    fewshot_examples = _get_fewshot_examples(prompt_type, note_text, k=request_fewshot_k)
-                else:
-                    fewshot_examples = []
-            elif request_use_fewshots:
-                fewshot_examples = _get_fewshot_examples(
+            if request_use_fewshots:
+                fewshot_examples, fewshot_source = _get_fewshot_examples(
                     prompt_type, note_text, k=request_fewshot_k
                 )
             else:
-                fewshot_examples = []
+                fewshot_examples, fewshot_source = [], "disabled"
 
             # --- Optional fewshot sanitization ---
             if fewshot_examples and vllm_client.config.get("sanitize_fewshots", False):
@@ -787,8 +932,18 @@ async def _process_single_prompt(
         _structured_output_cfg = vllm_client.config.get("structured_output", {})
         _use_guided_decoding = _structured_output_cfg.get("enabled", False)
 
+        # --- Prompt template (loop-invariant) ---
+        template = _get_prompt_template(prompt_type, fast_mode)
+        is_simple = _is_simple_prompt(template)
+
         # --- Token budget & chunking ---
-        fast_max_tokens = 256 if fast_mode else 512
+        # Reserve exactly the number of output tokens the request will ask for.
+        # These two used to disagree (512 reserved vs 2048 requested), so a note
+        # sized to fill the budget could overflow the context during generation.
+        max_new_tokens = (
+            vllm_client.config.get("max_new_tokens_fast", 512) if fast_mode
+            else vllm_client.config.get("max_new_tokens_standard", 2048)
+        )
         _chunker = NoteChunker.get_instance()
         _probe_prompt = _get_prompt(
             task_key=prompt_type,
@@ -799,7 +954,7 @@ async def _process_single_prompt(
             use_guided_decoding=_use_guided_decoding,
             clinical_context=clinical_context,
         )
-        _available_tokens = _chunker.calculate_available_tokens(_probe_prompt, fast_max_tokens)
+        _available_tokens = _chunker.calculate_available_tokens(_probe_prompt, max_new_tokens)
         _note_chunks = _chunker.chunk_note(note_text, _available_tokens)
         _needs_chunking = len(_note_chunks) > 1
         if _needs_chunking:
@@ -810,34 +965,7 @@ async def _process_single_prompt(
                 f"Splitting into {len(_note_chunks)} chunks."
             )
 
-        _last_result: Optional[AnnotationResult] = None
-        _is_repeatable = _is_repeatable_entity(prompt_type)
-        _all_chunk_results: List[AnnotationResult] = []  # For repeatable entities: collect all confident chunks
-        for _chunk_idx, _chunk_text in enumerate(_note_chunks):
-            # --- Prompt building ---
-            with timer.measure("prompt_building"):
-                prompt = _get_prompt(
-                    task_key=prompt_type,
-                    fewshots=fewshot_examples,
-                    note_text=_chunk_text,
-                    csv_date=csv_date,
-                    fast_mode=fast_mode,
-                    use_guided_decoding=_use_guided_decoding,
-                    clinical_context=clinical_context,
-                )
-                raw_prompt = prompt
-                template = _PROMPTS[prompt_type]["template"]
-                is_simple = _is_simple_prompt(template)
-
-        # --- vLLM inference (dominant cost) ---
-        # Token budgets: generous enough to accommodate thinking-model preamble
-        # (MedGemma emits <unused94>thought</unused94> blocks before the JSON answer;
-        # too-small budgets exhaust mid-thought leaving nothing to parse).
-        raw_response = None
-        fast_max_tokens = (
-            vllm_client.config.get("max_new_tokens_fast", 512) if fast_mode
-            else vllm_client.config.get("max_new_tokens_standard", 2048)
-        )
+        # --- Generation kwargs (loop-invariant) ---
         # Extra kwargs for fast mode: try to suppress thinking tokens at the API level.
         # vLLM forwards unknown extra_body keys to the backend; if the model/server
         # doesn't support it the parameter is silently ignored.
@@ -860,43 +988,65 @@ async def _process_single_prompt(
                 fast_mode=fast_mode,
             )
 
-        _actual_guided = False  # Track whether guided decoding was actually used
-        with timer.measure("vllm_inference"):
-            async with _vllm_semaphore:
-                if is_simple:
-                    output = await vllm_client.agenerate(
-                        prompt=prompt, max_new_tokens=fast_max_tokens,
-                        temperature=0.0, return_logprobs=False, **_fast_extra
-                    )
-                    raw_output = output.get("raw", output.get("normalized", ""))
-                    raw_response = raw_output
-                else:
-                    # Use guided decoding if enabled, with fallback on failure
-                    if _use_guided_decoding and not is_simple:
-                        try:
-                            output = await vllm_client.agenerate(
-                                prompt=prompt, max_new_tokens=fast_max_tokens,
-                                temperature=0.0, return_logprobs=False,
-                                response_format=_guided_response_format,
-                            )
-                            raw_output = output.get("raw", output.get("normalized", ""))
-                            raw_response = raw_output
-                            _actual_guided = True
-                        except Exception as e:
-                            import logging as _log
-                            _log.getLogger(__name__).warning(
-                                "Guided decoding failed (server may not support response_format), "
-                                "falling back to unstructured generation: %s", e
-                            )
-                            _actual_guided = False
+        _last_result: Optional[AnnotationResult] = None
+        _is_repeatable = _is_repeatable_entity(prompt_type)
+        _all_chunk_results: List[AnnotationResult] = []  # For repeatable entities: collect all confident chunks
+        for _chunk_idx, _chunk_text in enumerate(_note_chunks):
+            # --- Prompt building ---
+            with timer.measure("prompt_building"):
+                prompt = _get_prompt(
+                    task_key=prompt_type,
+                    fewshots=fewshot_examples,
+                    note_text=_chunk_text,
+                    csv_date=csv_date,
+                    fast_mode=fast_mode,
+                    use_guided_decoding=_use_guided_decoding,
+                    clinical_context=clinical_context,
+                )
+                raw_prompt = prompt
 
-                    if not _actual_guided:
+            # --- vLLM inference (dominant cost) ---
+            # Token budget is generous enough to accommodate thinking-model preamble
+            # (MedGemma emits <unused94>thought</unused94> blocks before the JSON answer;
+            # too-small budgets exhaust mid-thought leaving nothing to parse).
+            raw_response = None
+            _actual_guided = False  # Track whether guided decoding was actually used
+            with timer.measure("vllm_inference"):
+                async with _vllm_semaphore:
+                    if is_simple:
                         output = await vllm_client.agenerate(
-                            prompt=prompt, max_new_tokens=fast_max_tokens,
+                            prompt=prompt, max_new_tokens=max_new_tokens,
                             temperature=0.0, return_logprobs=False, **_fast_extra
                         )
                         raw_output = output.get("raw", output.get("normalized", ""))
                         raw_response = raw_output
+                    else:
+                        # Use guided decoding if enabled, with fallback on failure
+                        if _use_guided_decoding and not is_simple:
+                            try:
+                                output = await vllm_client.agenerate(
+                                    prompt=prompt, max_new_tokens=max_new_tokens,
+                                    temperature=0.0, return_logprobs=False,
+                                    response_format=_guided_response_format,
+                                )
+                                raw_output = output.get("raw", output.get("normalized", ""))
+                                raw_response = raw_output
+                                _actual_guided = True
+                            except Exception as e:
+                                import logging as _log
+                                _log.getLogger(__name__).warning(
+                                    "Guided decoding failed (server may not support response_format), "
+                                    "falling back to unstructured generation: %s", e
+                                )
+                                _actual_guided = False
+
+                        if not _actual_guided:
+                            output = await vllm_client.agenerate(
+                                prompt=prompt, max_new_tokens=max_new_tokens,
+                                temperature=0.0, return_logprobs=False, **_fast_extra
+                            )
+                            raw_output = output.get("raw", output.get("normalized", ""))
+                            raw_response = raw_output
 
             # --- Post-processing ---
             with timer.measure("post_processing"):
@@ -937,13 +1087,9 @@ async def _process_single_prompt(
 
                 # Re-wrap bare values (e.g., "deep" → "Tumor depth: deep.")
                 from lib.annotation_normalizer import re_wrap_bare_value
-                _raw_template = ""
-                if fast_mode and prompt_type in _FAST_PROMPTS:
-                    _raw_template = _FAST_PROMPTS[prompt_type].get("template", "")
-                elif prompt_type in _PROMPTS:
-                    _raw_template = _PROMPTS[prompt_type].get("template", "")
-                if _raw_template:
-                    annotation_text = re_wrap_bare_value(annotation_text, _raw_template)
+                # Same template the prompt was built from (see _get_prompt_template).
+                if template:
+                    annotation_text = re_wrap_bare_value(annotation_text, template)
 
                 reasoning = structured_ann.reasoning
                 evidence = ""  # Evidence field removed from LLM output; derive spans from reasoning
@@ -1167,6 +1313,8 @@ async def _process_single_prompt(
                 timing_breakdown=timer.to_dict(),
                 derived_field_values=_derived_field_values,
                 hallucination_flags=_hallucination_flags,
+                fewshot_source=fewshot_source,
+                fewshot_count=len(fewshot_examples),
             )
 
             # --- Early stop for chunked notes ---
@@ -1339,20 +1487,15 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
     report_type = None
     report_type_mapping = None
     try:
-        import importlib.util
-        sessions_path = Path(__file__).parent / "sessions.py"
-        spec = importlib.util.spec_from_file_location("sessions", sessions_path)
-        if spec and spec.loader:
-            sessions_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(sessions_module)
-            session_data = sessions_module._load_session(session_id)
-            evaluation_mode = session_data.get("evaluation_mode", "validation")
-            report_type_mapping = session_data.get("report_type_mapping")
-            for note in session_data.get("notes", []):
-                if note.get("note_id") == request.note_id:
-                    csv_date = note.get("date")
-                    report_type = note.get("report_type")
-                    break
+        from routes import sessions as sessions_module
+        session_data = sessions_module._load_session(session_id)
+        evaluation_mode = session_data.get("evaluation_mode", "validation")
+        report_type_mapping = session_data.get("report_type_mapping")
+        for note in session_data.get("notes", []):
+            if note.get("note_id") == request.note_id:
+                csv_date = note.get("date")
+                report_type = note.get("report_type")
+                break
     except Exception as e:
         print(f"[WARN] Could not load session: {e}")
 
@@ -1499,15 +1642,6 @@ async def process_note(request: ProcessNoteRequest, session_id: str, note_text: 
     )
 
 
-async def _tagged_process(
-    note_id: str,
-    prompt_type: str,
-    **kwargs,
-) -> Tuple[str, str, AnnotationResult]:
-    """Wrapper around _process_single_prompt that returns (note_id, prompt_type, result)."""
-    result = await _process_single_prompt(prompt_type=prompt_type, note_id=note_id, **kwargs)
-    return (note_id, prompt_type, result)
-
 
 @router.post("/batch", response_model=BatchProcessResponse)
 async def batch_process(request: BatchProcessRequest, session_id: str = Query(...)):
@@ -1517,13 +1651,7 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
     batch_timer.start_total()
 
     # Load session
-    import importlib.util
-    sessions_path = Path(__file__).parent / "sessions.py"
-    spec = importlib.util.spec_from_file_location("sessions", sessions_path)
-    if spec is None or spec.loader is None:
-        raise HTTPException(status_code=500, detail="Failed to load sessions module")
-    sessions_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(sessions_module)
+    from routes import sessions as sessions_module
 
     try:
         session = sessions_module._load_session(session_id)
@@ -1558,8 +1686,8 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
         use_structured = False
 
     # Collect all (note, prompt_type) pairs for parallel execution
-    all_tasks = []  # List of (note_id, note_text, prompt_type, csv_date)
     note_order = []  # Track which notes we're processing
+    total_prompts = 0
 
     for note_id in request.note_ids:
         note_data = None
@@ -1584,11 +1712,10 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
         )
 
         note_order.append((note_id, note_text, prompt_types_to_process, report_type))
-        for pt in prompt_types_to_process:
-            all_tasks.append((note_id, note_text, pt, csv_date))
+        total_prompts += len(prompt_types_to_process)
 
-    total_prompts = len(all_tasks)
     mode_label = "FAST" if request.fast_mode else "standard"
+    _unpaired = _report_unpaired_prompts(request.prompt_types, note_order)
     print(f"[INFO] Batch: {len(note_order)} notes, {total_prompts} total prompts, parallel mode={mode_label}")
 
     # --- Pre-split history notes (one LLM call per history note, shared across prompts) ---
@@ -1720,6 +1847,7 @@ async def batch_process(request: BatchProcessRequest, session_id: str = Query(..
         results=results,
         total_time_seconds=batch_time,
         timing_breakdown=batch_timing,
+        unpaired_prompt_types=_unpaired or None,
     )
 
 
@@ -1735,13 +1863,7 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
     batch_timer.start_total()
 
     # --- same setup as batch_process ---
-    import importlib.util
-    sessions_path = Path(__file__).parent / "sessions.py"
-    spec = importlib.util.spec_from_file_location("sessions", sessions_path)
-    if spec is None or spec.loader is None:
-        raise HTTPException(status_code=500, detail="Failed to load sessions module")
-    sessions_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(sessions_module)
+    from routes import sessions as sessions_module
 
     try:
         session = sessions_module._load_session(session_id)
@@ -1775,8 +1897,8 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
         use_structured = False
 
     # Build task list (same logic as batch_process)
-    all_tasks: List[Tuple[str, str, str, Optional[str]]] = []
-    note_order: List[Tuple[str, str, List[str]]] = []
+    total_prompts = 0
+    note_order: List[Tuple[str, str, List[str], Optional[str]]] = []
 
     for note_id in request.note_ids:
         note_data = None
@@ -1801,11 +1923,10 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
         )
 
         note_order.append((note_id, note_text, prompt_types_to_process, report_type))
-        for pt in prompt_types_to_process:
-            all_tasks.append((note_id, note_text, pt, csv_date))
+        total_prompts += len(prompt_types_to_process)
 
-    total_prompts = len(all_tasks)
     mode_label = "FAST" if request.fast_mode else "standard"
+    _unpaired = _report_unpaired_prompts(request.prompt_types, note_order)
     print(f"[INFO] Batch-stream: {len(note_order)} notes, {total_prompts} total prompts, sequential mode={mode_label}")
 
     async def _event_generator():
@@ -1820,6 +1941,12 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
 
         # Process notes and prompts sequentially, yielding progress after each
         results_by_note: Dict[str, List[AnnotationResult]] = {}
+        # Kept so the terminal `complete` event carries the same history/context
+        # payload as the non-streaming /batch endpoint. Previously these only
+        # rode along on the first progress event per note, so a client that read
+        # the final payload — or reconnected mid-stream — lost them.
+        detection_by_note: Dict[str, Optional[Dict[str, Any]]] = {}
+        context_by_note: Dict[str, Optional[Dict[str, Any]]] = {}
         completed = 0
 
         for nid, nt, prompt_types_to_process, _rtype in note_order:
@@ -1873,6 +2000,8 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
                         reasoning=f"Classification failed: {_ctx_err}", source="llm",
                     )
             _stream_clinical_context = _stream_context.clinical_context if _stream_context else "unknown"
+            detection_by_note[nid] = _stream_history_detection
+            context_by_note[nid] = _stream_context.to_dict() if _stream_context else None
 
             _first_prompt_for_note = True
             for pt in prompt_types_to_process:
@@ -1936,6 +2065,8 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
                 annotations=note_annotations,
                 processing_time_seconds=note_time,
                 timing_breakdown=note_timing,
+                history_detection=detection_by_note.get(nid),
+                clinical_context=context_by_note.get(nid),
             ))
 
         batch_time = batch_timer.get_total()
@@ -1949,6 +2080,7 @@ async def batch_process_stream(request: BatchProcessRequest, session_id: str = Q
             results=results,
             total_time_seconds=batch_time,
             timing_breakdown=batch_timing,
+            unpaired_prompt_types=_unpaired or None,
         )
 
         yield {
@@ -1982,13 +2114,7 @@ async def select_icdo3_candidate(
         Updated icdo3_code with new selection
     """
     # Load session
-    import importlib.util
-    sessions_path = Path(__file__).parent / "sessions.py"
-    spec = importlib.util.spec_from_file_location("sessions", sessions_path)
-    if spec is None or spec.loader is None:
-        raise HTTPException(status_code=500, detail="Failed to load sessions module")
-    sessions_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(sessions_module)
+    from routes import sessions as sessions_module
 
     try:
         session = sessions_module._load_session(session_id)
@@ -2043,8 +2169,9 @@ async def select_icdo3_candidate(
     annotation['icdo3_code'] = icdo3_code
     session['annotations'][note_id][prompt_type] = annotation
 
-    # Save session
-    sessions_module._save_session(session_id, session)
+    # Save session — merge just this annotation under the write lock rather than
+    # writing back the whole in-memory copy, so a concurrent edit isn't lost.
+    sessions_module.merge_note_annotations(session_id, note_id, {prompt_type: annotation})
 
     print(f"[INFO] Updated ICD-O-3 selection for note={note_id}, prompt={prompt_type}: candidate_index={candidate_index}, code={selected['query_code']}")
 
@@ -2184,13 +2311,7 @@ async def combine_icdo3_code(
         from datetime import datetime
 
         # Load session
-        import importlib.util
-        sessions_path = Path(__file__).parent / "sessions.py"
-        spec = importlib.util.spec_from_file_location("sessions", sessions_path)
-        if spec is None or spec.loader is None:
-            raise HTTPException(status_code=500, detail="Failed to load sessions module")
-        sessions_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(sessions_module)
+        from routes import sessions as sessions_module
 
         try:
             session = sessions_module._load_session(session_id)
@@ -2228,15 +2349,11 @@ async def combine_icdo3_code(
             created_at=datetime.utcnow()
         )
 
-        # Initialize unified_icdo3_codes if not present
-        if 'unified_icdo3_codes' not in session:
-            session['unified_icdo3_codes'] = {}
-
-        # Save the unified code for this note
-        session['unified_icdo3_codes'][note_id] = unified_code.dict()
-
-        # Save session
-        sessions_module._save_session(session_id, session)
+        # Save the unified code for this note, under the write lock and onto a
+        # freshly read copy so a concurrent edit elsewhere in the session survives.
+        with sessions_module.mutate_session(session_id) as stored_session:
+            stored_session.setdefault('unified_icdo3_codes', {})[note_id] = unified_code.dict()
+        session.setdefault('unified_icdo3_codes', {})[note_id] = unified_code.dict()
 
         print(f"[INFO] Saved unified ICD-O-3 code for session={session_id}, note={note_id}: {query_code}")
 
@@ -2346,13 +2463,7 @@ async def get_unified_icdo3_code(
     """
     try:
         # Load session
-        import importlib.util
-        sessions_path = Path(__file__).parent / "sessions.py"
-        spec = importlib.util.spec_from_file_location("sessions", sessions_path)
-        if spec is None or spec.loader is None:
-            raise HTTPException(status_code=500, detail="Failed to load sessions module")
-        sessions_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(sessions_module)
+        from routes import sessions as sessions_module
 
         try:
             session = sessions_module._load_session(session_id)
@@ -2387,7 +2498,6 @@ async def _sequential_process_core(
     session_id: str,
 ):
     """Shared logic for sequential endpoints. Yields (event_type, data_dict) tuples."""
-    import importlib.util
     import json as _json
 
     _ensure_prompts_loaded()
@@ -2395,12 +2505,7 @@ async def _sequential_process_core(
         _ensure_fast_prompts_loaded()
 
     # Load session
-    sessions_path = Path(__file__).parent / "sessions.py"
-    spec = importlib.util.spec_from_file_location("sessions", sessions_path)
-    if spec is None or spec.loader is None:
-        raise HTTPException(status_code=500, detail="Failed to load sessions module")
-    sessions_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(sessions_module)
+    from routes import sessions as sessions_module
 
     try:
         session = sessions_module._load_session(session_id)
@@ -2553,11 +2658,12 @@ async def _sequential_process_core(
                 )
                 note_annotations[pt] = _annotation_result_to_dict(result, note_id, pt)
 
-            # Save annotations to session immediately
-            if note_id not in session.get('annotations', {}):
-                session.setdefault('annotations', {})[note_id] = {}
-            session['annotations'][note_id].update(note_annotations)
-            sessions_module._save_session(session_id, session)
+            # Save annotations to session immediately. Merge onto a freshly read
+            # copy rather than writing back `session`, which has been held in
+            # memory across minutes of LLM work and would clobber edits made
+            # meanwhile.
+            sessions_module.merge_note_annotations(session_id, note_id, note_annotations)
+            session.setdefault('annotations', {}).setdefault(note_id, {}).update(note_annotations)
 
             note_time = time.time() - note_start
             processed_count += 1

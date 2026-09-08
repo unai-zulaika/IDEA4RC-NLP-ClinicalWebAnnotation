@@ -16,11 +16,21 @@ async def get_server_status():
     """Get vLLM server status"""
     client = get_vllm_client()
     status = client.get_status()
-    
+
+    # Surface few-shot retrieval health here too: a degraded retrieval mode
+    # changes every annotation, and previously only showed up in startup logs.
+    from routes.annotate import get_fewshot_retrieval_status
+    fewshot = get_fewshot_retrieval_status()
+
     return ServerStatus(
         status=status.get("status", "unknown"),
         model_name=status.get("model_name"),
-        endpoint=status.get("endpoint")
+        endpoint=status.get("endpoint"),
+        served_models=status.get("served_models"),
+        error=status.get("error"),
+        fewshot_retrieval=fewshot["mode"],
+        fewshot_error=fewshot["error"],
+        fewshot_indexes=fewshot["indexes"],
     )
 
 

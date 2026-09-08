@@ -6,14 +6,19 @@ from fastapi import APIRouter, HTTPException, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
 from typing import List, Dict, Optional, Tuple
 from pathlib import Path
+from contextlib import contextmanager
+import fcntl
 import json
 import io
+import os
 import re
+import tempfile
 from datetime import datetime
 
 import pandas as pd
 from datetime import timezone
 
+from lib.safe_paths import safe_json_path, validate_id
 from models.schemas import (
     SessionCreate, SessionInfo, SessionData, SessionUpdate,
     SessionMetadataUpdate, SessionPromptTypesUpdate, CSVRow,
@@ -25,9 +30,6 @@ from models.schemas import (
 )
 
 router = APIRouter()
-
-# In-memory session storage (could be replaced with database)
-_sessions: Dict[str, Dict] = {}
 
 
 def _get_sessions_dir() -> Path:
@@ -41,7 +43,7 @@ def _get_sessions_dir() -> Path:
 def _load_session(session_id: str) -> Dict:
     """Load session from file"""
     sessions_dir = _get_sessions_dir()
-    session_file = sessions_dir / f"{session_id}.json"
+    session_file = safe_json_path(sessions_dir, session_id, "session_id")
     
     if not session_file.exists():
         raise FileNotFoundError(f"Session {session_id} not found")
@@ -71,17 +73,86 @@ def _json_serial(obj):
 
 
 def _save_session(session_id: str, session_data: Dict):
-    """Save session to file"""
+    """Save session to file.
+
+    Writes to a temporary file in the same directory and renames it into place,
+    so a crash or a concurrent reader never observes a half-written session.
+    os.replace is atomic within a filesystem.
+    """
     sessions_dir = _get_sessions_dir()
-    session_file = sessions_dir / f"{session_id}.json"
+    session_file = safe_json_path(sessions_dir, session_id, "session_id")
 
     session_data['updated_at'] = datetime.now().isoformat()
 
-    with open(session_file, 'w', encoding='utf-8') as f:
-        json.dump(session_data, f, indent=2, ensure_ascii=False, default=_json_serial)
-    
-    # Also update in-memory cache
-    _sessions[session_id] = session_data
+    tmp_fd, tmp_name = tempfile.mkstemp(
+        dir=str(sessions_dir), prefix=f".{session_id}.", suffix=".tmp"
+    )
+    try:
+        with os.fdopen(tmp_fd, 'w', encoding='utf-8') as f:
+            json.dump(session_data, f, indent=2, ensure_ascii=False, default=_json_serial)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_name, session_file)
+    except BaseException:
+        # Never leave a stray temp file behind on failure.
+        try:
+            os.unlink(tmp_name)
+        except OSError:
+            pass
+        raise
+
+
+@contextmanager
+def session_write_lock(session_id: str):
+    """Serialise read-modify-write cycles on one session across processes.
+
+    Sessions are persisted as a single whole-file JSON blob, so two overlapping
+    load/mutate/save cycles used to drop whichever write landed first — losing
+    unrelated edits, not just conflicting ones. Callers that read a session and
+    then save it back must hold this lock across both.
+
+    The lock is a separate .lock file (flock), so it survives the atomic rename
+    of the session file itself. Advisory and per-host, which matches the current
+    single-node deployment; a multi-node deployment needs shared-storage locking
+    or a database.
+    """
+    sessions_dir = _get_sessions_dir()
+    validate_id(session_id, "session_id")
+    lock_path = sessions_dir / f".{session_id}.lock"
+    with open(lock_path, 'a+') as lock_file:
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+
+
+@contextmanager
+def mutate_session(session_id: str):
+    """Load a session, yield it for mutation, and save it — all under the lock.
+
+    Use for short read-modify-write cycles. For long-running work that holds a
+    session across `await`s, use merge_note_annotations instead: the in-memory
+    copy goes stale and saving it whole would clobber concurrent edits.
+    """
+    with session_write_lock(session_id):
+        session = _load_session(session_id)
+        yield session
+        _save_session(session_id, session)
+
+
+def merge_note_annotations(session_id: str, note_id: str, note_annotations: Dict) -> None:
+    """Merge freshly computed annotations for one note into the stored session.
+
+    Batch and sequential runs keep a session object in memory for minutes while
+    the LLM works. Writing that whole stale object back would silently discard
+    anything an annotator changed meanwhile, so only the new per-note entries are
+    applied, onto a freshly read copy, under the write lock.
+    """
+    with session_write_lock(session_id):
+        session = _load_session(session_id)
+        session.setdefault('annotations', {}).setdefault(note_id, {}).update(note_annotations)
+        _save_session(session_id, session)
 
 
 @router.post("/import", response_model=SessionInfo)
@@ -377,7 +448,13 @@ async def list_sessions():
     sessions_dir = _get_sessions_dir()
     sessions = []
     
+    # upload.py keeps report_type_mappings.json in this directory too. It is not
+    # a session, so skip it rather than logging a spurious warning on every list.
+    NON_SESSION_FILES = {"report_type_mappings.json"}
+
     for session_file in sessions_dir.glob("*.json"):
+        if session_file.name in NON_SESSION_FILES:
+            continue
         try:
             with open(session_file, 'r', encoding='utf-8') as f:
                 session_data = json.load(f)
@@ -412,16 +489,13 @@ async def list_sessions():
 async def delete_session(session_id: str):
     """Delete a session"""
     sessions_dir = _get_sessions_dir()
-    session_file = sessions_dir / f"{session_id}.json"
+    session_file = safe_json_path(sessions_dir, session_id, "session_id")
     
     if not session_file.exists():
         raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
     
     try:
         session_file.unlink()
-        # Also remove from in-memory cache if present
-        if session_id in _sessions:
-            del _sessions[session_id]
         return {"success": True, "message": f"Session {session_id} deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete session: {str(e)}")

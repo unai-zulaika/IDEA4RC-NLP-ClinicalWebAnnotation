@@ -122,10 +122,12 @@ class TopographyResolver:
         norm = self._normalise_text(text)
         entries = self._text_to_entries.get(norm)
         if entries:
-            return entries[0]
+            return {**entries[0], "match_score": 1.0, "match_type": "exact"}
 
-        # Strategy 2: substring match — check if any known subsite is
-        # contained in the input or vice-versa.
+        # Strategy 2: token-overlap match. The score rides along on the returned
+        # entry so callers can distinguish a certain hit from a plausible guess —
+        # auto-resolving a diagnosis on a 0.6 guess removes a patient from the
+        # human review queue, which is the wrong direction to fail in.
         best_match: Optional[dict] = None
         best_score = 0.0
         for key, entries in self._text_to_entries.items():
@@ -134,7 +136,9 @@ class TopographyResolver:
                 best_score = score
                 best_match = entries[0]
 
-        return best_match
+        if best_match is None:
+            return None
+        return {**best_match, "match_score": best_score, "match_type": "fuzzy"}
 
     def resolve_code(self, code: str) -> Optional[dict]:
         """Resolve a topography code to its entry."""
@@ -240,26 +244,35 @@ class TopographyResolver:
 
     @staticmethod
     def _fuzzy_score(a: str, b: str) -> float:
-        """Simple token-overlap score between two normalised strings."""
+        """Simple token-overlap score between two normalised strings.
+
+        Containment is checked on whole-token boundaries. A bare substring match
+        used to qualify, so "test" scored 0.9 against "testis" and resolved to
+        C62.0 — a wrong code delivered with no signal that it was a guess.
+        """
         if not a or not b:
             return 0.0
         # Exact match
         if a == b:
             return 1.0
-        # One contains the other
-        if a in b or b in a:
-            shorter = min(len(a), len(b))
-            longer = max(len(a), len(b))
-            return 0.7 + 0.3 * (shorter / longer)
 
-        tokens_a = set(a.split())
-        tokens_b = set(b.split())
+        tokens_a = a.split()
+        tokens_b = b.split()
         if not tokens_a or not tokens_b:
             return 0.0
-        overlap = tokens_a & tokens_b
+        set_a, set_b = set(tokens_a), set(tokens_b)
+
+        # One is a whole-token subsequence of the other (e.g. "left thigh" in
+        # "soft tissue left thigh"). Substrings of a single word do not qualify.
+        if set_a <= set_b or set_b <= set_a:
+            shorter = min(len(tokens_a), len(tokens_b))
+            longer = max(len(tokens_a), len(tokens_b))
+            return 0.7 + 0.3 * (shorter / longer)
+
+        overlap = set_a & set_b
         if not overlap:
             return 0.0
-        return len(overlap) / max(len(tokens_a), len(tokens_b))
+        return len(overlap) / max(len(set_a), len(set_b))
 
 
 def get_topography_resolver(condition_dir: Optional[Path] = None) -> TopographyResolver:

@@ -16,6 +16,16 @@ class ServerStatus(BaseModel):
     status: str
     model_name: Optional[str] = None
     endpoint: Optional[str] = None
+    # Few-shot retrieval health. "faiss" means semantic retrieval is live;
+    # "static" means FAISS is unavailable and prompts fall back to first-k
+    # examples, which changes results — fewshot_error carries the reason.
+    fewshot_retrieval: Optional[str] = None
+    fewshot_error: Optional[str] = None
+    fewshot_indexes: Optional[int] = None
+    # Model ids the vLLM server actually serves, and why a call would fail.
+    # status becomes "model_mismatch" when model_name is not among them.
+    served_models: Optional[List[str]] = None
+    error: Optional[str] = None
 
 
 class ServerMetrics(BaseModel):
@@ -43,7 +53,13 @@ class OutputWordMapping(BaseModel):
 
 class EntityFieldMapping(BaseModel):
     """Mapping from template placeholder to entity field"""
-    template_placeholder: str = Field(..., description="The placeholder in the template, e.g., '[select intention]'")
+    # Descriptive metadata only — the export path reads entity_type/field_name/
+    # value_code_mappings straight from prompts.json and never consults this.
+    # It was required, so a hand-edited prompt that omitted it (multifocality, in
+    # all four centres) made GET /api/prompts raise and every prompt vanish from
+    # the UI. Defaulted rather than required: an incomplete mapping should
+    # degrade one prompt's metadata, not hide the whole catalogue.
+    template_placeholder: str = Field("", description="The placeholder in the template, e.g., '[select intention]'")
     entity_type: str = Field(..., description="The entity type, e.g., 'Radiotherapy'")
     field_name: str = Field(..., description="The field name on the entity, e.g., 'intent'")
     hardcoded_value: Optional[str] = Field(None, description="If set, use this value for the field instead of extracting from the annotation")
@@ -188,6 +204,12 @@ class AnnotationResult(BaseModel):
     derived_field_values: Optional[Dict[str, str]] = None  # Values resolved via output_word_mappings at annotation time
     hallucination_flags: Optional[List[HallucinationFlag]] = None  # Detected hallucination patterns (e.g., repetition loops)
     multi_value_info: Optional[Dict[str, Any]] = None  # Metadata about multi-event extraction from history notes
+    # How the few-shot examples in the prompt were selected. "faiss" = semantic
+    # nearest-neighbour retrieval; "static" = first-k from the flat store, which
+    # happens when FAISS is unavailable and is NOT equivalent; "none" = zero-shot.
+    # Recorded per result so a run's retrieval mode is auditable after the fact.
+    fewshot_source: Optional[str] = None
+    fewshot_count: Optional[int] = None
 
 
 class ProcessNoteRequest(BaseModel):
@@ -220,6 +242,10 @@ class BatchProcessResponse(BaseModel):
     results: List[ProcessNoteResponse]
     total_time_seconds: float
     timing_breakdown: Optional[Dict[str, float]] = None  # Aggregate timing breakdown
+    # Prompts that were selected but are mapped to no report type in this batch,
+    # so they ran on no note and produced nothing. Reported because the per-note
+    # view cannot show it and the omission is otherwise silent.
+    unpaired_prompt_types: Optional[List[str]] = None
 
 
 # Sequential Processing Schemas

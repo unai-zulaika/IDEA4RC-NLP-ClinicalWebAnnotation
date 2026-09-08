@@ -82,11 +82,30 @@ class EnhancedVLLMClient:
             
             response = requests.get(f"{base_endpoint}/v1/models", timeout=5)
             if response.status_code == 200:
-                return {
+                configured = self.config["model_name"]
+                result = {
                     "status": "available",
                     "endpoint": self.config["vllm_endpoint"],
-                    "model_name": self.config["model_name"]
+                    "model_name": configured,
                 }
+                # /v1/models answering 200 only proves the server is up. If it
+                # serves a different model id than the one configured, every
+                # /chat/completions call fails with a bare 400 while this
+                # endpoint still reports "available" — so check the id here.
+                try:
+                    served = [m.get("id") for m in response.json().get("data", []) if m.get("id")]
+                    result["served_models"] = served
+                    if served and configured not in served:
+                        result["status"] = "model_mismatch"
+                        result["error"] = (
+                            f"Configured model {configured!r} is not served by "
+                            f"{base_endpoint}. Available: {', '.join(served)}. "
+                            f"Annotation requests will fail with HTTP 400 until "
+                            f"model_name in vllm_config.json matches one of these."
+                        )
+                except Exception:
+                    pass
+                return result
             else:
                 return {"status": "error", "error": f"HTTP {response.status_code}"}
         except Exception as e:

@@ -1,8 +1,23 @@
 examples/
 HOSPITAL*
 INT_DEPL*
-docs/
 extra_data/
+
+# docs/ was ignored wholesale, which silently dropped every new document from
+# `git add` while the 21 files predating the rule stayed tracked. Only the parts
+# that genuinely must not be committed are ignored now: generated clinician
+# reports and workshop artefacts embed verbatim note text, and the rendered
+# binaries are large and regenerable.
+docs/reports/
+docs/workshop/
+docs/analysis/
+docs/*.pdf
+docs/*.docx
+docs/*.pptx
+docs/*.zip
+docs/**/*.pdf
+docs/**/*.docx
+docs/**/*.pptx
 .playwright*
 medgemma-1.5-4b-it-W4A16-G128_old/
 .worktrees/

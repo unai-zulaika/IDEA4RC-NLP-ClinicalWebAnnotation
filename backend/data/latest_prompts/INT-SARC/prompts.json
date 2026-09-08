@@ -1483,6 +1483,7 @@
     "entity_mapping": {
       "field_mappings": [
         {
+          "template_placeholder": "[unifocal / multifocal / unknown]",
           "entity_type": "Diagnosis",
           "field_name": "isMultifocalTumor",
           "value_code_mappings": {
@@ -1491,7 +1492,9 @@
             "unknown": ""
           }
         }
-      ]
+      ],
+      "entity_type": "Diagnosis.isMultifocalTumor",
+      "fact_trigger": null
     }
   },
   "response-to-chemo": {

@@ -13,8 +13,14 @@ from pathlib import Path
 
 def _enrich_code_label(code: str, description: str, code_type: str) -> str:
     """
-    Return an individual label from condition files, falling back to the
-    annotation's own description if not found.
+    Return an individual label for a code from the condition files.
+
+    Returns '' when the code is unknown rather than echoing `description`. The
+    description on an annotation is frequently a *combination* name from
+    diagnosis-codes-list.csv (morphology + topography together, e.g. "Steroid
+    cell tumour NOS of parotid gland"), and presenting one as the label for a
+    single morphology or topography code mislabels the diagnosis. Showing the
+    bare code is the safer failure.
     """
     try:
         from lib.condition_label_loader import get_condition_labels
@@ -28,7 +34,7 @@ def _enrich_code_label(code: str, description: str, code_type: str) -> str:
                 return label
     except Exception:
         pass
-    return description
+    return ''
 
 
 def _classify_prompt_type(prompt_type: str) -> Optional[str]:
@@ -80,6 +86,20 @@ def _extract_site_category(text: str) -> Optional[str]:
     if m:
         return m.group(1).strip()
     return None
+
+
+# A resolver hit below this score is a guess, not a determination. Accepting one
+# as a definitive code can collapse two genuinely different sites into a single
+# code and auto-resolve a patient who should have gone to human review, so
+# anything less confident is dropped and surfaces as "needs review" instead.
+MIN_RESOLVER_MATCH_SCORE = 0.8
+
+
+def _is_confident_match(entry: dict) -> bool:
+    """True if a resolver entry is exact or a high-scoring token match."""
+    if entry.get("match_type") == "exact":
+        return True
+    return float(entry.get("match_score") or 0.0) >= MIN_RESOLVER_MATCH_SCORE
 
 
 def _extract_code_from_annotation(ann: dict, classification: str) -> Optional[str]:
@@ -135,7 +155,7 @@ def _extract_code_from_annotation(ann: dict, classification: str) -> Optional[st
                                 entry = resolver.resolve_text(part)
                                 if entry:
                                     break
-                if entry:
+                if entry and _is_confident_match(entry):
                     return entry['code']
         except Exception:
             pass

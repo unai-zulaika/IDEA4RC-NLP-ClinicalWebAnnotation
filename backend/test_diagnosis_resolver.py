@@ -21,8 +21,13 @@ def _make_note(p_id, note_id):
     return {'p_id': p_id, 'note_id': note_id, 'text': '...'}
 
 
-def _make_annotation(morphology_code=None, topography_code=None, description=''):
-    """Build a SessionAnnotation-like dict with icdo3_code."""
+def _make_annotation(morphology_code=None, topography_code=None, description='', annotation_text=None):
+    """Build a SessionAnnotation-like dict with icdo3_code.
+
+    `annotation_text` carries the code the way real annotations do, because that
+    is the extractor's primary source: the icdo3_code field is only a fallback
+    for histology, and is deliberately not consulted at all for topography.
+    """
     icdo3 = None
     if morphology_code or topography_code:
         icdo3 = {
@@ -30,8 +35,15 @@ def _make_annotation(morphology_code=None, topography_code=None, description='')
             'topography_code': topography_code or '',
             'description': description,
         }
+    if annotation_text is None:
+        if morphology_code:
+            annotation_text = f'Histological type: {description or "sarcoma"} ({morphology_code}).'
+        elif topography_code:
+            annotation_text = f'Tumor site: {description or "soft tissue"} ({topography_code}).'
+        else:
+            annotation_text = 'Not applicable'
     return {
-        'annotation_text': 'test',
+        'annotation_text': annotation_text,
         'values': [],
         'status': 'success',
         'icdo3_code': icdo3,

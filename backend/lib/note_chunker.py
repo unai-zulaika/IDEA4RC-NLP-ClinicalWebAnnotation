@@ -18,9 +18,31 @@ logger = logging.getLogger(__name__)
 _NULL_PATTERNS: frozenset = frozenset({
     "", "unknown", "n/a", "not mentioned", "not found", "not available",
     "not stated", "not provided", "not specified", "not documented",
+    # STANDARD_ABSENCE_INDICATOR from lib.annotation_normalizer: every prompt
+    # normalizes its abstention to this, so it is the value a chunk with no
+    # finding actually returns. Omitting it made the scan treat "I found
+    # nothing here" as a confident answer and stop at the first chunk, which
+    # defeats chunking entirely.
+    "not applicable",
     "nessuno", "non specificato", "non disponibile", "non menzionato",
     "non presente", "non riportato", "non indicato",
+    "non applicabile",
 })
+
+
+def _strip_label(text: str) -> str:
+    """Drop a leading "Label: " so "Tumor depth: Not applicable" is recognised.
+
+    Prompts emit absence either bare or as "[Label]: Not applicable"
+    (normalize_absence_indicator), and only the bare form was being matched.
+    """
+    if ":" in text:
+        head, _, tail = text.partition(":")
+        # Only treat it as a label if the head is short and word-like, so a
+        # real finding containing a colon is not truncated.
+        if len(head) <= 60 and tail.strip():
+            return tail.strip()
+    return text
 
 # Sentence boundary: period/!/? followed by whitespace, or two+ newlines
 _SENTENCE_BOUNDARY = re.compile(r'(?<=[.!?])\s+|\n{2,}')
@@ -232,4 +254,7 @@ class NoteChunker:
         normalized = annotation_text.strip().lower()
         if normalized.startswith("error:"):
             return False
+        # Trailing punctuation and a leading label are both common in real
+        # output ("Tumor depth: Not applicable.").
+        normalized = _strip_label(normalized).rstrip(".").strip()
         return normalized not in _NULL_PATTERNS

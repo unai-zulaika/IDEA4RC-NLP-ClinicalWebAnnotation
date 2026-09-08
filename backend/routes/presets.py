@@ -11,6 +11,7 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
+from lib.safe_paths import safe_json_path
 from models.schemas import AnnotationPreset, AnnotationPresetCreate, AnnotationPresetUpdate
 
 router = APIRouter()
@@ -23,14 +24,14 @@ def _get_presets_dir() -> Path:
 
 
 def _load_preset(preset_id: str) -> dict:
-    path = _get_presets_dir() / f"{preset_id}.json"
+    path = safe_json_path(_get_presets_dir(), preset_id, "preset_id")
     if not path.exists():
         raise HTTPException(status_code=404, detail=f"Preset {preset_id} not found")
     return json.loads(path.read_text())
 
 
 def _save_preset(preset_id: str, data: dict) -> None:
-    path = _get_presets_dir() / f"{preset_id}.json"
+    path = safe_json_path(_get_presets_dir(), preset_id, "preset_id")
     path.write_text(json.dumps(data, indent=2))
 
 
@@ -90,7 +91,7 @@ async def update_preset(preset_id: str, body: AnnotationPresetUpdate):
 @router.delete("/{preset_id}", status_code=200)
 async def delete_preset(preset_id: str):
     """Delete a preset."""
-    path = _get_presets_dir() / f"{preset_id}.json"
+    path = safe_json_path(_get_presets_dir(), preset_id, "preset_id")
     if not path.exists():
         raise HTTPException(status_code=404, detail=f"Preset {preset_id} not found")
     path.unlink()

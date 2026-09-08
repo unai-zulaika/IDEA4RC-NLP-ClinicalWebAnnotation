@@ -4,7 +4,11 @@
 
 import axios from 'axios'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+// `??` (not `||`) so an explicit empty NEXT_PUBLIC_API_URL is honoured: an empty
+// base makes every request relative (same-origin `/api/...`), which lets ONE
+// pre-built image work behind any Ingress/domain. Unset still falls back to the
+// local dev/compose default.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8001'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -14,12 +18,21 @@ const api = axios.create({
   },
 })
 
-// Retry interceptor for 502/503/504 errors (2 retries with exponential backoff)
+// Retry interceptor for 502/503/504 errors (2 retries with exponential backoff).
+// Only idempotent methods are retried: a gateway timeout does not mean the
+// request failed, so replaying a POST can create a second session or launch a
+// second annotation run that is already in flight server-side.
+const IDEMPOTENT_METHODS = ['get', 'head', 'options', 'put', 'delete']
+
 api.interceptors.response.use(undefined, async (error) => {
   const config = error.config
   if (!config || config.__retryCount >= 2) return Promise.reject(error)
   const status = error.response?.status
-  if (status === 502 || status === 503 || status === 504) {
+  const method = (config.method || 'get').toLowerCase()
+  if (
+    (status === 502 || status === 503 || status === 504) &&
+    IDEMPOTENT_METHODS.includes(method)
+  ) {
     config.__retryCount = (config.__retryCount || 0) + 1
     const delay = 1000 * Math.pow(2, config.__retryCount - 1) // 1s, 2s
     await new Promise((r) => setTimeout(r, delay))

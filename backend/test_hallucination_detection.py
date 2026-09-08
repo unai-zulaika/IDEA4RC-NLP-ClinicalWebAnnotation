@@ -91,29 +91,27 @@ class TestDetectRepetitionHallucination:
     def test_no_hallucination(self):
         result = detect_repetition_hallucination(
             reasoning="The patient was diagnosed with sarcoma. Treatment plan involves surgery.",
-            evidence="sarcoma indifferenziato con metastasi polmonari bilaterali",
-            raw_output='{"evidence": "...", "reasoning": "...", "final_output": "Sarcoma"}',
+            raw_output='{"reasoning": "...", "final_output": "Sarcoma"}',
         )
         assert result is None
 
     def test_hallucination_in_reasoning(self):
         base = "The note also mentions subcutaneous lesions in the thoracic region suspected in sensoripetitivo"
         reasoning = ". ".join([base] * 30)
-        result = detect_repetition_hallucination(
-            reasoning=reasoning,
-            evidence="normal evidence text here",
-        )
+        result = detect_repetition_hallucination(reasoning=reasoning)
         assert result is not None
         assert len(result) >= 1
         assert any(f.field == "reasoning" for f in result)
         assert all(isinstance(f, HallucinationFlag) for f in result)
 
-    def test_hallucination_in_evidence(self):
-        base = "lesioni sottocutanee multiple in sede toracica sospette in sensoripetitivo"
-        evidence = ". ".join([base] * 15)
-        result = detect_repetition_hallucination(evidence=evidence)
-        assert result is not None
-        assert any(f.field == "evidence" for f in result)
+    def test_evidence_is_not_a_scanned_field(self):
+        """`evidence` was removed from the LLM output schema.
+
+        Detection now covers reasoning and raw_output only; passing an evidence
+        kwarg must not silently be accepted as if it were still scanned.
+        """
+        with pytest.raises(TypeError):
+            detect_repetition_hallucination(evidence="anything")
 
     def test_hallucination_in_raw_output(self):
         base = "The note also mentions repeated finding about the patient"
@@ -124,7 +122,7 @@ class TestDetectRepetitionHallucination:
 
     def test_empty_inputs(self):
         assert detect_repetition_hallucination() is None
-        assert detect_repetition_hallucination(reasoning="", evidence="", raw_output="") is None
+        assert detect_repetition_hallucination(reasoning="", raw_output="") is None
 
     def test_flag_structure(self):
         base = "Repeated clinical observation about the patient's ongoing treatment plan"
@@ -140,15 +138,15 @@ class TestDetectRepetitionHallucination:
 
     def test_multiple_fields_flagged(self):
         base_r = "Repeated reasoning sentence about clinical findings in the patient"
-        base_e = "Repeated evidence sentence from the medical note text content"
+        base_o = "Repeated raw output sentence from the medical note text content"
         result = detect_repetition_hallucination(
             reasoning=". ".join([base_r] * 20),
-            evidence=". ".join([base_e] * 20),
+            raw_output=". ".join([base_o] * 20),
         )
         assert result is not None
         fields = {f.field for f in result}
         assert "reasoning" in fields
-        assert "evidence" in fields
+        assert "raw_output" in fields
 
     def test_truncated_reasoning_not_detected(self):
         """Reasoning truncated to 500 chars loses enough repetition to miss detection."""

@@ -56,13 +56,22 @@ class TestStructuredAnnotationValidators:
         assert ann.final_output == "Infiltrating duct carcinoma"
 
     def test_reasoning_truncation(self):
-        long_reasoning = "A" * 600
+        # The cap is 2000 chars (StructuredAnnotation.reasoning_max_length);
+        # annotate.py keys its "incomplete" status off the resulting 1997+"..."
+        # length, so the two must stay in step.
+        long_reasoning = "A" * 2600
         ann = StructuredAnnotation(
             final_output="test",
             reasoning=long_reasoning,
         )
-        assert len(ann.reasoning) == 500
+        assert len(ann.reasoning) == 2000
         assert ann.reasoning.endswith("...")
+
+    def test_reasoning_at_cap_unchanged(self):
+        """Exactly 2000 chars is not over the limit, so it is left alone."""
+        ann = StructuredAnnotation(final_output="test", reasoning="A" * 2000)
+        assert len(ann.reasoning) == 2000
+        assert not ann.reasoning.endswith("...")
 
     def test_reasoning_short_unchanged(self):
         ann = StructuredAnnotation(
@@ -87,7 +96,9 @@ class TestJSONSchemaGeneration:
     def test_schema_has_required_fields(self):
         schema = ANNOTATION_JSON_SCHEMA["json_schema"]["schema"]
         props = schema.get("properties", {})
-        assert "evidence" in props
+        # `evidence` was removed from the LLM output schema; reasoning carries the
+        # supporting phrases now and spans are derived from it.
+        assert "evidence" not in props
         assert "reasoning" in props
         assert "final_output" in props
         assert "is_negated" in props
@@ -97,7 +108,7 @@ class TestJSONSchemaGeneration:
         schema = ANNOTATION_JSON_SCHEMA["json_schema"]["schema"]
         props = schema.get("properties", {})
         # All fields should have descriptions
-        for field_name in ["evidence", "reasoning", "final_output", "is_negated", "date"]:
+        for field_name in ["reasoning", "final_output", "is_negated", "date"]:
             assert "description" in props[field_name], f"Missing description for {field_name}"
 
     def test_schema_is_valid_json(self):
@@ -125,7 +136,7 @@ class TestLayer1DirectParse:
         })
         result = parse_structured_annotation(raw, used_guided_decoding=True)
         assert result.final_output == "Infiltrating duct carcinoma"
-        assert result.evidence == "Patient presents with ductal carcinoma"
+        assert not hasattr(result, "evidence")
         assert result.is_negated is False
 
     def test_valid_json_with_date(self):
@@ -326,7 +337,6 @@ class TestFastMode:
         })
         result = parse_structured_annotation(raw, fast_mode=True, used_guided_decoding=True)
         assert result.final_output == "Infiltrating duct carcinoma"
-        assert result.evidence == ""
         assert result.reasoning == "Fast mode: no reasoning requested"
         assert result.is_negated is False
 
@@ -372,7 +382,6 @@ class TestFastMode:
         result = parse_structured_annotation(raw, fast_mode=True)
         assert result.final_output == "Full result"
         # Fast mode discards evidence/reasoning — uses defaults
-        assert result.evidence == ""
         assert result.reasoning == "Fast mode: no reasoning requested"
 
     def test_fast_model_to_structured_annotation(self):
@@ -386,7 +395,6 @@ class TestFastMode:
         assert isinstance(full, StructuredAnnotation)
         assert full.final_output == "Test output"
         assert full.is_negated is True
-        assert full.evidence == ""
         assert full.reasoning == "Fast mode: no reasoning requested"
 
     def test_fast_markdown_extraction(self):
@@ -399,7 +407,6 @@ class TestFastMode:
         raw = f"```json\n{json.dumps(json_obj)}\n```"
         result = parse_structured_annotation(raw, fast_mode=True)
         assert result.final_output == "FNCLCC Grade 1"
-        assert result.evidence == ""
 
 
 # ---------------------------------------------------------------------------
@@ -553,7 +560,7 @@ class TestPerPromptSchema:
         assert "Not applicable" in enum_values
 
     def test_standard_mode_has_all_fields(self):
-        """Standard mode schema should have evidence/reasoning fields."""
+        """Standard mode schema carries reasoning (evidence was removed)."""
         entity_mapping = {
             "field_mappings": [{
                 "field_name": "status",
@@ -563,7 +570,7 @@ class TestPerPromptSchema:
         schema = build_per_prompt_schema(entity_mapping, fast_mode=False)
         assert schema is not None
         props = schema["json_schema"]["schema"]["properties"]
-        assert "evidence" in props
+        assert "evidence" not in props
         assert "reasoning" in props
         assert "final_output" in props
 

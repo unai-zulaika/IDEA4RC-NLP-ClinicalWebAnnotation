@@ -151,6 +151,10 @@ class TestFewshotDownload:
 class TestFewshotStatus:
     """Tests for GET /api/upload/fewshots/status with FAISS scanning."""
 
+    # routes.annotate._simple_fewshots is populated at import time from
+    # backend/data/fewshots.json, and the status endpoint reads it directly.
+    # Without emptying it here the real store leaks into the assertions.
+    @patch("routes.annotate._simple_fewshots", {})
     @patch("routes.upload._scan_faiss_counts", return_value={"gender-int": 101, "ageatdiagnosis-int": 131})
     @patch("routes.upload._load_fewshots_from_disk", return_value={})
     def test_status_includes_faiss_counts(self, _mock_disk, _mock_faiss):
@@ -160,6 +164,7 @@ class TestFewshotStatus:
         assert data["total_examples"] == 232
         assert "gender-int" in data["counts_by_prompt"]
 
+    @patch("routes.annotate._simple_fewshots", {})
     @patch("routes.upload._scan_faiss_counts", return_value={})
     @patch("routes.upload._load_fewshots_from_disk", return_value={})
     def test_status_missing_when_no_source(self, _mock_disk, _mock_faiss):

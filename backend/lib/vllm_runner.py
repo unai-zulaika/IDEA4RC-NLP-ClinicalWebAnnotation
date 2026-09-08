@@ -7,12 +7,15 @@ Supports batch inference and falls back to llama.cpp if VLLM is unavailable.
 
 import os
 import json
+import logging
 import time
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
+logger = logging.getLogger(__name__)
 
 try:
     import httpx
@@ -321,6 +324,22 @@ class VLLMClient:
 
         async with httpx.AsyncClient(timeout=httpx.Timeout(self.timeout, connect=10.0)) as client:
             response = await client.post(url, json=payload)
+            if response.is_error:
+                # raise_for_status() alone reports only the status code, which
+                # leaves a 400 from vLLM undiagnosable — the server's message
+                # (unknown model, token limit exceeded, unsupported parameter)
+                # is in the body. Surface it, plus the request shape that caused it.
+                detail = ""
+                try:
+                    body = response.json()
+                    detail = body.get("message") or body.get("error") or str(body)
+                except Exception:
+                    detail = (response.text or "").strip()
+                logger.error(
+                    "vLLM %s from %s: %s | model=%r max_tokens=%s response_format=%s extra=%s",
+                    response.status_code, url, str(detail)[:800], self.model_name,
+                    max_new_tokens, bool(response_format), sorted(kwargs.keys()),
+                )
             response.raise_for_status()
 
         result = response.json()

@@ -13,6 +13,7 @@ try:
     from lib.prompt_adapter import adapt_int_prompts
 except ImportError as e:
     raise ImportError(f"Could not import prompt_adapter from lib: {e}")
+from lib.safe_paths import safe_center_dir
 from models.schemas import PromptInfo, PromptUpdate, PromptRename, EntityMapping, CenterCreate
 
 router = APIRouter()
@@ -150,7 +151,7 @@ def save_prompts_json(data: Dict, mode: str = "standard"):
             raw_key = key[: -len(suffix)] if key.endswith(suffix) else key
             raw_prompts[raw_key] = value
 
-        center_dir = prompts_dir / center
+        center_dir = safe_center_dir(prompts_dir, center)
         center_dir.mkdir(parents=True, exist_ok=True)
         prompts_file = center_dir / "prompts.json"
         with open(prompts_file, 'w', encoding='utf-8') as f:
@@ -186,7 +187,7 @@ async def create_center(body: CenterCreate, mode: str = Query("standard", descri
         raise HTTPException(status_code=400, detail="Center name cannot be empty")
 
     prompts_dir = _get_prompts_dir(mode)
-    center_dir = prompts_dir / center
+    center_dir = safe_center_dir(prompts_dir, center)
     if center_dir.is_dir() and (center_dir / "prompts.json").exists():
         raise HTTPException(status_code=400, detail=f"Center '{center}' already exists")
 
@@ -209,7 +210,18 @@ async def list_prompts(
     center_prompts = _get_center_prompts(prompts_data, c)
     result = []
     for prompt_type, prompt_data in center_prompts.items():
-        template, mapping = _extract_template_and_mapping(prompt_data)
+        # One unparseable prompt must not empty the whole catalogue. A single
+        # malformed entity_mapping used to raise here and 500 the endpoint, so
+        # the UI showed no prompts at all for that centre.
+        try:
+            template, mapping = _extract_template_and_mapping(prompt_data)
+        except Exception as e:
+            print(
+                f"[WARN] Prompt '{prompt_type}' in center '{c}' has an invalid "
+                f"entity_mapping and is listed without it: {e}"
+            )
+            template = prompt_data.get('template', '') if isinstance(prompt_data, dict) else str(prompt_data)
+            mapping = None
         result.append(PromptInfo(
             prompt_type=prompt_type,
             template=template,

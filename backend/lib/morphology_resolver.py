@@ -172,9 +172,10 @@ class MorphologyResolver:
         norm = self._normalise_text(text)
         entries = self._text_to_entries.get(norm)
         if entries:
-            return entries[0]
+            return {**entries[0], "match_score": 1.0, "match_type": "exact"}
 
-        # Strategy 2: fuzzy token-overlap match
+        # Strategy 2: fuzzy token-overlap match. Score rides along so callers can
+        # tell a certain hit from a plausible guess.
         best_match: Optional[dict] = None
         best_score = 0.0
         for key, entries in self._text_to_entries.items():
@@ -183,7 +184,9 @@ class MorphologyResolver:
                 best_score = score
                 best_match = entries[0]
 
-        return best_match
+        if best_match is None:
+            return None
+        return {**best_match, "match_score": best_score, "match_type": "fuzzy"}
 
     def resolve_code(self, code: str) -> Optional[dict]:
         """Resolve a morphology code to its entry."""
@@ -248,14 +251,19 @@ class MorphologyResolver:
 
     @staticmethod
     def _fuzzy_score(a: str, b: str) -> float:
-        """Simple token-overlap score between two normalised strings."""
+        """Simple token-overlap score between two normalised strings.
+
+        Containment is checked on whole-token boundaries — a bare substring of a
+        single word is not a match (see TopographyResolver._fuzzy_score).
+        """
         if not a or not b:
             return 0.0
         if a == b:
             return 1.0
-        if a in b or b in a:
-            shorter = min(len(a), len(b))
-            longer = max(len(a), len(b))
+        _ta, _tb = set(a.split()), set(b.split())
+        if _ta and _tb and (_ta <= _tb or _tb <= _ta):
+            shorter = min(len(_ta), len(_tb))
+            longer = max(len(_ta), len(_tb))
             return 0.7 + 0.3 * (shorter / longer)
 
         tokens_a = set(a.split())

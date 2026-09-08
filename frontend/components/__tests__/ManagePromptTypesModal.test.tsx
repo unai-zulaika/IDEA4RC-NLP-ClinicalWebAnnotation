@@ -32,9 +32,9 @@ const makeSession = (overrides: Partial<SessionData> = {}): SessionData => ({
 })
 
 const makePrompts = (): PromptInfo[] => [
-  { prompt_type: 'gender-int', description: 'Gender', system_prompt: '', user_prompt: '', center: 'test' },
-  { prompt_type: 'diagnosis', description: 'Diagnosis', system_prompt: '', user_prompt: '', center: 'test' },
-  { prompt_type: 'staging', description: 'Staging', system_prompt: '', user_prompt: '', center: 'test' },
+  { prompt_type: 'gender-int', template: 'Gender: {value}', center: 'test' },
+  { prompt_type: 'diagnosis', template: 'Diagnosis: {value}', center: 'test' },
+  { prompt_type: 'staging', template: 'Staging: {value}', center: 'test' },
 ]
 
 const makePreset = (mapping: Record<string, string[]>) => ({

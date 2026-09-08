@@ -11,6 +11,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements first for better caching
 COPY requirements.txt .
 
+# torch arrives transitively via sentence-transformers (FAISS embeddings). Install
+# the CPU build first so pip does not pull the default CUDA wheels: this service
+# only talks to vLLM over HTTP and has no GPU, and the CUDA stack adds several GB.
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch
+
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 

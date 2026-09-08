@@ -266,10 +266,15 @@ interface HistoryDetection {
 
 **File:** `backend/config/vllm_config.json`
 
+> **Shipped default is `false`.** `backend/config/vllm_config.json` ships with
+> `history_splitting.enabled: false`, because the splitting pre-pass costs one
+> extra LLM call per detected history note and is opt-in per deployment. Turn it
+> on explicitly for a centre whose notes are anamnesis-heavy.
+
 ```json
 {
   "history_splitting": {
-    "enabled": true,
+    "enabled": false,
     "detection_thresholds": {
       "min_date_count": 3,
       "min_event_markers": 3,
@@ -283,14 +288,14 @@ interface HistoryDetection {
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `enabled` | `true` | Master switch for the entire feature |
+| `enabled` | `false` | Master switch for the entire feature (opt-in; see note above) |
 | `min_date_count` | `3` | Minimum distinct dates to trigger detection |
 | `min_event_markers` | `3` | Minimum event markers (e.g., "stan po") |
 | `min_distinct_treatment_types` | `2` | Minimum different treatment types |
 | `max_events` | `20` | Maximum events in JSON schema for guided decoding |
 | `max_new_tokens` | `4096` | Token budget for the splitting LLM call |
 
-Set `"enabled": false` to disable splitting entirely and revert to single-value extraction.
+Set `"enabled": true` to turn splitting on; leaving it `false` uses single-value extraction.
 
 ## Data Models
 
